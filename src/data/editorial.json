@@ -1,0 +1,72 @@
+{
+  "promos": [
+    {
+      "id": "ipoteka-sanaly-ot-sensata-group-na-kazahskij",
+      "title": "Ипотечная программа Sanaly",
+      "source": "https://sensata.kz/ru/akcii_view/ipoteka-sanaly-ot-sensata-group-na-kazahskij",
+      "image": "/sensata/promos-1.jpg"
+    },
+    {
+      "id": "skidki-do-12-na-kvartiry-v-astane",
+      "title": "Скидки до 12% на квартиры в Астане",
+      "source": "https://sensata.kz/ru/akcii_view/skidki-do-12-na-kvartiry-v-astane",
+      "image": "/sensata/promos-2.jpeg"
+    },
+    {
+      "id": "partnerskaa-ipoteka-po-snizennym-stavkam",
+      "title": "Партнерская ипотека по сниженным ставкам",
+      "source": "https://sensata.kz/ru/akcii_view/partnerskaa-ipoteka-po-snizennym-stavkam",
+      "image": "/sensata/promos-3.jpg"
+    },
+    {
+      "id": "partnerskaa-ipoteka",
+      "title": "Партнерская ипотека",
+      "source": "https://sensata.kz/ru/akcii_view/partnerskaa-ipoteka",
+      "image": "/sensata/promos-4.jpg"
+    },
+    {
+      "id": "karta-loal-nosti",
+      "title": "Карта лояльности",
+      "source": "https://sensata.kz/ru/akcii_view/karta-loal-nosti",
+      "image": "/sensata/promos-5.jpg"
+    }
+  ],
+  "news": [
+    {
+      "id": "sensata-invest-i-hotel-lotte-dogovorilis-o-stroitel-stve-otelej-lotte-v-kazahstane",
+      "title": "Sensata Invest и Hotel Lotte договорились о строительстве отелей Lotte в Казахстане",
+      "source": "https://sensata.kz/ru/news/sensata-invest-i-hotel-lotte-dogovorilis-o-stroitel-stve-otelej-lotte-v-kazahstane",
+      "image": "/sensata/news-1.jpeg"
+    },
+    {
+      "id": "sensata-finance-zapustila-unikal-nuu-ipotecnuu-programmu-sanaly-so-stavkoj-nize-bazovoj",
+      "title": "Sensata Finance запустила уникальную ипотечную программу Sanaly со ставкой ниже базовой",
+      "source": "https://sensata.kz/ru/news/sensata-finance-zapustila-unikal-nuu-ipotecnuu-programmu-sanaly-so-stavkoj-nize-bazovoj",
+      "image": "/sensata/news-2.jpeg"
+    },
+    {
+      "id": "sensata-group-menaet-standarty-kacestva-kazahstanskogo-developmenta",
+      "title": "Sensata Group меняет стандарты качества казахстанского девелопмента",
+      "source": "https://sensata.kz/ru/news/sensata-group-menaet-standarty-kacestva-kazahstanskogo-developmenta",
+      "image": "/sensata/news-3.jpeg"
+    },
+    {
+      "id": "sensata-group-prosla-mezdunarodnyj-audit-finansovoj-otcetnosti-po-standartam-msfo",
+      "title": "Sensata Group прошла международный аудит финансовой отчетности по стандартам МСФО",
+      "source": "https://sensata.kz/ru/news/sensata-group-prosla-mezdunarodnyj-audit-finansovoj-otcetnosti-po-standartam-msfo",
+      "image": "/sensata/news-4.jfif"
+    },
+    {
+      "id": "v-stolicnom-ofise-sensata-group-prosli-sovmestnye-pozarno-takticeskie-ucenia",
+      "title": "В столичном офисе Sensata Group прошли совместные пожарно-тактические учения",
+      "source": "https://sensata.kz/ru/news/v-stolicnom-ofise-sensata-group-prosli-sovmestnye-pozarno-takticeskie-ucenia",
+      "image": "/sensata/news-5.jpg"
+    },
+    {
+      "id": "bezopasnost-i-motivacia-v-sensata-group-nagradili-lucsih-sotrudnikov",
+      "title": "Безопасность и мотивация: в Sensata Group наградили лучших сотрудников",
+      "source": "https://sensata.kz/ru/news/bezopasnost-i-motivacia-v-sensata-group-nagradili-lucsih-sotrudnikov",
+      "image": "/sensata/news-6.jpeg"
+    }
+  ]
+}

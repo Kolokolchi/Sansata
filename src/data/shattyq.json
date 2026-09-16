@@ -1,0 +1,372 @@
+{
+  "source": "https://sensata.kz/ru/project/shattyq",
+  "checkedAt": "2026-09-16",
+  "plans": [
+    {
+      "id": "shattyq-1",
+      "rooms": 2,
+      "src": "/img/plans/3ecd068fec1c401a5bff77de52348a58.jpg",
+      "image": "/sensata/plan-1.jpg"
+    },
+    {
+      "id": "shattyq-2",
+      "rooms": 2,
+      "src": "/img/plans/f3790ecf0064cd3ace55228539a6714e.jpg",
+      "image": "/sensata/plan-2.jpg"
+    },
+    {
+      "id": "shattyq-3",
+      "rooms": 2,
+      "src": "/img/plans/16caf15fec8b8108f707bc7d78d5c0d3.jpg",
+      "image": "/sensata/plan-3.jpg"
+    },
+    {
+      "id": "shattyq-4",
+      "rooms": 2,
+      "src": "/img/plans/d4ac0e88f794b405dcf6cbd2873201f5.jpg",
+      "image": "/sensata/plan-4.jpg"
+    },
+    {
+      "id": "shattyq-5",
+      "rooms": 2,
+      "src": "/img/plans/73574b3ca17107622692b4d24ece4ca6.jpg",
+      "image": "/sensata/plan-5.jpg"
+    },
+    {
+      "id": "shattyq-6",
+      "rooms": 3,
+      "src": "/img/plans/c5fc8ed1d30d6fa81b78f5c83752aa7b.jpg",
+      "image": "/sensata/plan-6.jpg"
+    },
+    {
+      "id": "shattyq-7",
+      "rooms": 3,
+      "src": "/img/plans/0a371deeba49bf850ad93de2ad61f42e.jpg",
+      "image": "/sensata/plan-7.jpg"
+    },
+    {
+      "id": "shattyq-8",
+      "rooms": 3,
+      "src": "/img/plans/a4d2669948d90c26d8884e9aed256df0.jpg",
+      "image": "/sensata/plan-8.jpg"
+    },
+    {
+      "id": "shattyq-9",
+      "rooms": 3,
+      "src": "/img/plans/542360128e06e6d6bfa9f6ad60ae40aa.jpg",
+      "image": "/sensata/plan-9.jpg"
+    },
+    {
+      "id": "shattyq-10",
+      "rooms": 3,
+      "src": "/img/plans/1ae99ed7f968d3d497ecee3cbcff2ce3.jpg",
+      "image": "/sensata/plan-10.jpg"
+    },
+    {
+      "id": "shattyq-11",
+      "rooms": 3,
+      "src": "/img/plans/e30d220a45a9f9c553595b7ccd91866f.jpg",
+      "image": "/sensata/plan-11.jpg"
+    },
+    {
+      "id": "shattyq-12",
+      "rooms": 3,
+      "src": "/img/plans/c219a2ac37d1eb9e714e6b673bf81fab.jpg",
+      "image": "/sensata/plan-12.jpg"
+    },
+    {
+      "id": "shattyq-13",
+      "rooms": 3,
+      "src": "/img/plans/363c061116fb9f50de1d168ed29d2b42.jpg",
+      "image": "/sensata/plan-13.jpg"
+    },
+    {
+      "id": "shattyq-14",
+      "rooms": 3,
+      "src": "/img/plans/317527f5dc5c6323d0d8bbca695e4e5b.jpg",
+      "image": "/sensata/plan-14.jpg"
+    },
+    {
+      "id": "shattyq-15",
+      "rooms": 3,
+      "src": "/img/plans/3eaeea9cc05b3a86dd4852f5746027f9.jpg",
+      "image": "/sensata/plan-15.jpg"
+    },
+    {
+      "id": "shattyq-16",
+      "rooms": 3,
+      "src": "/img/plans/7ee1dd1d69f61e063c2d051ac4246429.jpg",
+      "image": "/sensata/plan-16.jpg"
+    },
+    {
+      "id": "shattyq-17",
+      "rooms": 3,
+      "src": "/img/plans/b7e3aeca2fffb32a8fa60256e9576279.jpg",
+      "image": "/sensata/plan-17.jpg"
+    },
+    {
+      "id": "shattyq-18",
+      "rooms": 4,
+      "src": "/img/plans/12d4c4ce1849775d77e8044109d6a1de.jpg",
+      "image": "/sensata/plan-18.jpg"
+    },
+    {
+      "id": "shattyq-19",
+      "rooms": 4,
+      "src": "/img/plans/d40e1489a63c14b72491d5b983a95181.jpg",
+      "image": "/sensata/plan-19.jpg"
+    },
+    {
+      "id": "shattyq-20",
+      "rooms": 4,
+      "src": "/img/plans/e492ec7d3a068bc651af344c8f835889.jpg",
+      "image": "/sensata/plan-20.jpg"
+    }
+  ],
+  "assets": [
+    {
+      "src": "/img/logo_v2.png",
+      "image": "/sensata/logo.png"
+    },
+    {
+      "src": "/img/logo-wh-1.png",
+      "image": "/sensata/logo-white.png"
+    },
+    {
+      "src": "/img/projects/fe4a3d79b4be9436c73ca3c0ae3b5d70.jpg",
+      "image": "/sensata/hero.jpg"
+    },
+    {
+      "src": "/img/photos/5af74f2b773af4cd7a25e39e2da14132.jpg",
+      "image": "/sensata/architecture.jpg"
+    },
+    {
+      "id": "shattyq-1",
+      "rooms": 2,
+      "src": "/img/plans/3ecd068fec1c401a5bff77de52348a58.jpg",
+      "image": "/sensata/plan-1.jpg"
+    },
+    {
+      "id": "shattyq-2",
+      "rooms": 2,
+      "src": "/img/plans/f3790ecf0064cd3ace55228539a6714e.jpg",
+      "image": "/sensata/plan-2.jpg"
+    },
+    {
+      "id": "shattyq-3",
+      "rooms": 2,
+      "src": "/img/plans/16caf15fec8b8108f707bc7d78d5c0d3.jpg",
+      "image": "/sensata/plan-3.jpg"
+    },
+    {
+      "id": "shattyq-4",
+      "rooms": 2,
+      "src": "/img/plans/d4ac0e88f794b405dcf6cbd2873201f5.jpg",
+      "image": "/sensata/plan-4.jpg"
+    },
+    {
+      "id": "shattyq-5",
+      "rooms": 2,
+      "src": "/img/plans/73574b3ca17107622692b4d24ece4ca6.jpg",
+      "image": "/sensata/plan-5.jpg"
+    },
+    {
+      "id": "shattyq-6",
+      "rooms": 3,
+      "src": "/img/plans/c5fc8ed1d30d6fa81b78f5c83752aa7b.jpg",
+      "image": "/sensata/plan-6.jpg"
+    },
+    {
+      "id": "shattyq-7",
+      "rooms": 3,
+      "src": "/img/plans/0a371deeba49bf850ad93de2ad61f42e.jpg",
+      "image": "/sensata/plan-7.jpg"
+    },
+    {
+      "id": "shattyq-8",
+      "rooms": 3,
+      "src": "/img/plans/a4d2669948d90c26d8884e9aed256df0.jpg",
+      "image": "/sensata/plan-8.jpg"
+    },
+    {
+      "id": "shattyq-9",
+      "rooms": 3,
+      "src": "/img/plans/542360128e06e6d6bfa9f6ad60ae40aa.jpg",
+      "image": "/sensata/plan-9.jpg"
+    },
+    {
+      "id": "shattyq-10",
+      "rooms": 3,
+      "src": "/img/plans/1ae99ed7f968d3d497ecee3cbcff2ce3.jpg",
+      "image": "/sensata/plan-10.jpg"
+    },
+    {
+      "id": "shattyq-11",
+      "rooms": 3,
+      "src": "/img/plans/e30d220a45a9f9c553595b7ccd91866f.jpg",
+      "image": "/sensata/plan-11.jpg"
+    },
+    {
+      "id": "shattyq-12",
+      "rooms": 3,
+      "src": "/img/plans/c219a2ac37d1eb9e714e6b673bf81fab.jpg",
+      "image": "/sensata/plan-12.jpg"
+    },
+    {
+      "id": "shattyq-13",
+      "rooms": 3,
+      "src": "/img/plans/363c061116fb9f50de1d168ed29d2b42.jpg",
+      "image": "/sensata/plan-13.jpg"
+    },
+    {
+      "id": "shattyq-14",
+      "rooms": 3,
+      "src": "/img/plans/317527f5dc5c6323d0d8bbca695e4e5b.jpg",
+      "image": "/sensata/plan-14.jpg"
+    },
+    {
+      "id": "shattyq-15",
+      "rooms": 3,
+      "src": "/img/plans/3eaeea9cc05b3a86dd4852f5746027f9.jpg",
+      "image": "/sensata/plan-15.jpg"
+    },
+    {
+      "id": "shattyq-16",
+      "rooms": 3,
+      "src": "/img/plans/7ee1dd1d69f61e063c2d051ac4246429.jpg",
+      "image": "/sensata/plan-16.jpg"
+    },
+    {
+      "id": "shattyq-17",
+      "rooms": 3,
+      "src": "/img/plans/b7e3aeca2fffb32a8fa60256e9576279.jpg",
+      "image": "/sensata/plan-17.jpg"
+    },
+    {
+      "id": "shattyq-18",
+      "rooms": 4,
+      "src": "/img/plans/12d4c4ce1849775d77e8044109d6a1de.jpg",
+      "image": "/sensata/plan-18.jpg"
+    },
+    {
+      "id": "shattyq-19",
+      "rooms": 4,
+      "src": "/img/plans/d40e1489a63c14b72491d5b983a95181.jpg",
+      "image": "/sensata/plan-19.jpg"
+    },
+    {
+      "id": "shattyq-20",
+      "rooms": 4,
+      "src": "/img/plans/e492ec7d3a068bc651af344c8f835889.jpg",
+      "image": "/sensata/plan-20.jpg"
+    },
+    {
+      "src": "/img/advans/fa593e3909b259ccd5f3f8fcb1ef9ce1.jpg",
+      "image": "/sensata/lobby-1.jpg"
+    },
+    {
+      "src": "/img/advans/d6fd7d715562877b5cd3a215deeddbf2.jpg",
+      "image": "/sensata/lobby-2.jpg"
+    },
+    {
+      "src": "/img/advans/9c619b661e5b17fa5e66b614ecfe5c19.jpg",
+      "image": "/sensata/lobby-3.jpg"
+    },
+    {
+      "src": "/img/advans/458412a7bf66787d8a4ca13b5e0dd176.jpg",
+      "image": "/sensata/lobby-4.jpg"
+    },
+    {
+      "src": "/img/advans/27dd898f1f4800ce568411b677c40395.jpg",
+      "image": "/sensata/lobby-5.jpg"
+    },
+    {
+      "src": "/img/advans/1cea470cb206b83e18a0238c337ce991.jpg",
+      "image": "/sensata/lobby-6.jpg"
+    },
+    {
+      "src": "/img/advans/e1bcf543316d64feed2ee7d8807f298c.jpg",
+      "image": "/sensata/lobby-7.jpg"
+    },
+    {
+      "src": "/img/advans/00d98045705c8a38547b02becd9048b9.jpg",
+      "image": "/sensata/lobby-8.jpg"
+    },
+    {
+      "src": "/img/advans/99325abf67823e8b62c73bea0b8a369a.jpg",
+      "image": "/sensata/lobby-9.jpg"
+    },
+    {
+      "src": "/img/advans/0242eab2ec8faa4a3b78b422dd3ddf62.jpg",
+      "image": "/sensata/lobby-10.jpg"
+    },
+    {
+      "src": "/img/advans/e1ca645e2dd0007e2a1a47acebaf3724.jpg",
+      "image": "/sensata/lobby-11.jpg"
+    },
+    {
+      "src": "/img/advans/d805e140f59d60a28d147537c2cd1f0e.jpg",
+      "image": "/sensata/lobby-12.jpg"
+    },
+    {
+      "src": "/img/advans/59755873bb11f0731882f0fdc829ab5b.jpg",
+      "image": "/sensata/lobby-13.jpg"
+    },
+    {
+      "src": "/img/advans/0b0c6ae3d2b74eb68351eff999aac2e3.jpg",
+      "image": "/sensata/courtyard-1.jpg"
+    },
+    {
+      "src": "/img/advans/2617f74d52af6841acba1c4c21027ca7.jpg",
+      "image": "/sensata/courtyard-2.jpg"
+    },
+    {
+      "src": "/img/advans/3600eb645b263a3ce8626841acb28c7b.jpg",
+      "image": "/sensata/courtyard-3.jpg"
+    },
+    {
+      "src": "/img/advans/af544e1d3a61f11ef72c746e97335d31.jpg",
+      "image": "/sensata/courtyard-4.jpg"
+    },
+    {
+      "src": "/img/advans/198bca63284d32f0a27216743860aad5.jpg",
+      "image": "/sensata/courtyard-5.jpg"
+    },
+    {
+      "src": "/img/advans/7dad72ae56d2f95200d20a9408b2245e.jpg",
+      "image": "/sensata/courtyard-6.jpg"
+    },
+    {
+      "src": "/img/advans/36909fd6ee04697274327fc62adaa71f.jpg",
+      "image": "/sensata/courtyard-7.jpg"
+    },
+    {
+      "src": "/img/advans/7fe183f950ffde6620d039a59c9fea22.jpg",
+      "image": "/sensata/courtyard-8.jpg"
+    },
+    {
+      "src": "/img/advans/484018cbc94e8dbbca47b3b34528a122.jpg",
+      "image": "/sensata/courtyard-9.jpg"
+    },
+    {
+      "src": "/img/advans/4ca443cd1ce5b8fb5200acdb30244819.jpg",
+      "image": "/sensata/courtyard-10.jpg"
+    },
+    {
+      "src": "/img/advans/d01039ac5d82862cf14d994045bc502b.jpg",
+      "image": "/sensata/courtyard-11.jpg"
+    },
+    {
+      "src": "/fonts/OpenSans.ttf",
+      "image": "/sensata/OpenSans.ttf"
+    },
+    {
+      "src": "/fonts/OpenSans-Semibold.ttf",
+      "image": "/sensata/OpenSans-Semibold.ttf"
+    },
+    {
+      "src": "/fonts/Roboto-Regular.ttf",
+      "image": "/sensata/Roboto-Regular.ttf"
+    }
+  ]
+}

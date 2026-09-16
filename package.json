@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "start": "node server/index.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "build:pages": "tsc && vite build --base=/Sansata/ --mode pages && node scripts/prepare-pages.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

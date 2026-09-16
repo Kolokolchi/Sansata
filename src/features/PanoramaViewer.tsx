@@ -1,3 +1,4 @@
+import {siteUrl} from '../lib/site';
 import {useEffect,useRef,useState} from 'react';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -12,7 +13,7 @@ export function PanoramaViewer({panoramas}:{panoramas:Panorama[]}){
   camera.position.set(0,0,.01);const controls=new OrbitControls(camera,renderer.domElement);
   controls.enableZoom=false;controls.enablePan=false;controls.rotateSpeed=-.35;controls.enableDamping=true;
   const geometry=new THREE.SphereGeometry(40,64,32);geometry.scale(-1,1,1);const material=new THREE.MeshBasicMaterial();
-  const texture=new THREE.TextureLoader().load(p.src,()=>{if(ended){texture.dispose();return;}texture.colorSpace=THREE.SRGBColorSpace;material.map=texture;material.needsUpdate=true;},undefined,()=>{if(!ended)setError('Не удалось загрузить панораму. Выберите другую точку.');});
+  const texture=new THREE.TextureLoader().load(siteUrl(p.src),()=>{if(ended){texture.dispose();return;}texture.colorSpace=THREE.SRGBColorSpace;material.map=texture;material.needsUpdate=true;},undefined,()=>{if(!ended)setError('Не удалось загрузить панораму. Выберите другую точку.');});
   scene.add(new THREE.Mesh(geometry,material));renderer.setPixelRatio(Math.min(devicePixelRatio,2));el.appendChild(renderer.domElement);
   const markers=(p.links||[]).map(link=>{const button=document.createElement('button');button.className='panorama-marker';button.textContent='↗';button.ariaLabel='Перейти: '+(panoramas.find(v=>v.id===link.target)?.title||link.target);button.title=button.ariaLabel;button.onclick=()=>setId(link.target);el.appendChild(button);const yaw=THREE.MathUtils.degToRad(link.yaw),pitch=THREE.MathUtils.degToRad(link.pitch);return{button,position:new THREE.Vector3(20*Math.sin(yaw)*Math.cos(pitch),20*Math.sin(pitch),-20*Math.cos(yaw)*Math.cos(pitch))};});
   const resize=()=>{if(!el.clientHeight)return;renderer.setSize(el.clientWidth,el.clientHeight);camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();};const obs=new ResizeObserver(resize);obs.observe(el);resize();

@@ -7,6 +7,7 @@ const editorial = JSON.parse(await readFile('src/data/editorial.json', 'utf8'));
 const routes = [
   'parametric-search',
   'visual',
+  'visual/free',
   'favorite',
   'tour',
   'audiogid',

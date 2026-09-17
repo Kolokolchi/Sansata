@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "start": "node server/index.mjs",
     "test": "node --test tests/*.test.mjs",
+    "test:e2e": "playwright test",
+    "security:scan": "node scripts/scan-bundle-secrets.mjs",
     "build:pages": "tsc && vite build --base=/Sansata/ --mode pages && node scripts/prepare-pages.mjs"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "three": "^0.186.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@types/three": "^0.186.0",

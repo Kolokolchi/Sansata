@@ -9,3 +9,10 @@ dist/
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+test-results/
+playwright-report/
+*.db
+*.db-shm
+*.db-wal
+.agents/*/
+!.agents/skills/

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Руководство по запеканию света и текстур в 3ds Max для WebGL (Three.js / glTF)</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 15mm 18mm 15mm;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.6;
+    font-size: 13px;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+  .header-block {
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+  }
+  .badge {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 26px;
+    color: #0f172a;
+    margin: 6px 0 10px;
+    line-height: 1.25;
+  }
+  .lead {
+    font-size: 14px;
+    color: #475569;
+    margin: 0;
+  }
+  h2 {
+    font-size: 18px;
+    color: #1e3a8a;
+    border-left: 4px solid #3b82f6;
+    padding-left: 10px;
+    margin: 28px 0 12px;
+  }
+  h3 {
+    font-size: 15px;
+    color: #0f172a;
+    margin: 18px 0 8px;
+  }
+  p, li {
+    color: #334155;
+  }
+  ul, ol {
+    margin: 8px 0 16px 20px;
+    padding: 0;
+  }
+  li {
+    margin-bottom: 6px;
+  }
+  .box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 14px 0;
+  }
+  .alert-tip {
+    background: #f0fdf4;
+    border-left: 4px solid #22c55e;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 14px 0;
+    color: #166534;
+  }
+  .alert-warning {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 14px 0;
+    color: #92400e;
+  }
+  .alert-info {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 14px 0;
+    color: #1e40af;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 12px;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 600;
+  }
+  code {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: bold;
+    margin-right: 6px;
+  }
+  .page-break {
+    page-break-after: always;
+  }
+  .footer-note {
+    font-size: 10px;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 30px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header-block">
+  <span class="badge">PROPETECH / WEBGL GUIDE</span>
+  <h1>Запекание света и текстур в 3ds Max для WebGL и glTF</h1>
+  <p class="lead">Пошаговая инструкция по подготовке архитектурной модели жилого комплекса для Three.js: оптимизация геометрии, настройка света, UV Channel 2, Bake to Texture и экспорт в .GLB.</p>
+</div>
+
+<div class="alert-info">
+  <strong>Главная цель:</strong> Перенести готовую тяжелую модель жилого комплекса из 3ds Max (Corona / V-Ray) в браузер так, чтобы она весила до 20–30 МБ, работала со скоростью 60 кадров/сек на смартфонах и сохраняла фотореалистичный свет, тени и объем.
+</div>
+
+<h2>Часть 1. Подготовка и оптимизация готовой модели</h2>
+<p>Перед тем как запекать свет, модель необходимо очистить от лишнего балласта. В интерьерном рендере миллион полигонов допустим, но в WebGL каждый лишний полигон замедляет работу мобильных телефонов.</p>
+
+<ol>
+  <li><strong>Проверка системных единиц (System Units)</strong>:
+    <ul>
+      <li>Зайдите в меню: <code>Customize &rarr; Units Setup &rarr; System Unit Setup</code>.</li>
+      <li>Убедитесь, что <code>1 Unit = 1.0 Meters</code> (или <code>Centimeters</code>). Если стояли миллиметры или дюймы, в браузере модель будет либо гигантской, либо микроскопической.</li>
+    </ul>
+  </li>
+
+  <li><strong>Удаление скрытой и невидимой геометрии</strong>:
+    <ul>
+      <li>Удалите внутренние перекрытия, мебель, сантехнику, внутренние шахты лифтов, невидимые извне стены (если мы делаем экстерьер).</li>
+      <li>Удалите нижние плоскости (днища) фундамента и дорог, которые находятся под землей.</li>
+    </ul>
+  </li>
+
+  <li><strong>Оптимизация количества объектов (Attach)</strong>:
+    <div class="alert-warning">
+      <strong>Критическое правило WebGL (Draw Calls):</strong> Если у вас в сцене 4000 отдельных оконных рам, перил и столбиков — браузер будет сильно тормозить. Видеокарте гораздо проще нарисовать 15–25 крупных объектов, чем тысячи мелких!
+    </div>
+    <ul>
+      <li>Объедините геометрию по смысловым блокам через <code>Editable Poly &rarr; Attach</code>:
+        <ul>
+          <li><code>Section_1_Facade</code> (все травертиновые пилоны секции 1)</li>
+          <li><code>Section_2_Facade</code> (все травертиновые пилоны секции 2)</li>
+          <li><code>Windows_Frames</code> (все металлические переплеты окон)</li>
+          <li><code>Courtyard_Landscape</code> (брусчатка, бордюры, площадка)</li>
+          <li><code>Stylobate_Podium</code> (коммерческий первый этаж)</li>
+        </ul>
+      </li>
+      <li><strong>Важно:</strong> Если вы хотите, чтобы этажи нажимались в веб-каталоге квартир, оставьте каждый этаж отдельным мешем с именами: <code>Section_1_Floor_1</code>, <code>Section_1_Floor_2</code> ... <code>Section_2_Floor_9</code>.</li>
+    </ul>
+  </li>
+
+  <li><strong>Сброс трансформаций (Reset XForm)</strong>:
+    <ul>
+      <li>Выделите все объекты &rarr; перейдите во вкладку <code>Utilities (значок гаечного ключа)</code> &rarr; нажмите <code>Reset XForm &rarr; Reset Selected</code>.</li>
+      <li>Кликните правой кнопкой мыши &rarr; <code>Convert to &rarr; Convert to Editable Poly</code>. Это предотвратит вывернутые нормали и смещения при экспорте.</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="page-break"></div>
+
+<h2>Часть 2. Развертка под световую карту (UV Channel 2)</h2>
+<p>Для запекания света у каждого объекта <strong>обязательно</strong> должна быть вторая текстурная развертка (UV Channel 2), в которой ни один полигон не пересекается (Non-overlapping UVs).</p>
+
+<div class="box">
+  <strong>Почему нужны 2 канала UV?</strong><br>
+  &bull; <strong>UV Channel 1:</strong> Для обычных материалов (плитка травертина, кирпич, асфальт). Они тайлятся (повторяются десятки раз).<br>
+  &bull; <strong>UV Channel 2 (Lightmap UV):</strong> Для запекания света. Здесь вся поверхность здания разложена на плоскости один раз, чтобы на одну сторону здания ложился солнечный свет, а на другую — тень.
+</div>
+
+<h3>Пошаговое создание развертки UV Channel 2:</h3>
+<ol>
+  <li>Выделите объект (например, <code>Section_1_Facade</code>).</li>
+  <li>Примените модификатор <code>Unwrap UVW</code>.</li>
+  <li>В параметрах модификатора найдите строку <strong>Map Channel</strong>:
+    <ul>
+      <li>Переключите переключатель с <code>1</code> на <code>2</code>.</li>
+      <li>Появится окно <em>Warning: Move or Abandon?</em> &rarr; выберите <strong>Abandon</strong> (это создаст чистый второй канал).</li>
+    </ul>
+  </li>
+  <li>Нажмите кнопку <strong>Open UV Editor</strong>.</li>
+  <li>В открывшемся окне редактора нажмите: <code>Ctrl + A</code> (выделить все полигоны).</li>
+  <li>В верхнем меню выберите: <code>Mapping &rarr; Flatten Mapping</code>:
+    <ul>
+      <li><code>Polygon Angle Threshold</code>: <strong>45.0</strong></li>
+      <li><code>Spacing (Padding)</code>: <strong>0.01 – 0.02</strong> (обязательно! Отступ между островами в 4–8 пикселей предотвратит протекание черных полос по краям полигонов).</li>
+      <li>Нажмите <strong>OK</strong>.</li>
+    </ul>
+  </li>
+  <li>Нажмите <code>Pack Custom</code> (или <code>Pack UVs</code>), чтобы развертка идеально уложилась в квадрат 0-1.</li>
+  <li>Кликните правой кнопкой мыши по стеку модификаторов &rarr; <strong>Collapse To</strong> (зафиксируйте развертку).</li>
+</ol>
+
+<h2>Часть 3. Настройка и оптимизация освещения</h2>
+<p>Чтобы запеченный свет выглядел дорого, как в архитектурных журналах, важно правильно сбалансировать источники света:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Источник света</th>
+      <th>Параметр в Corona / V-Ray</th>
+      <th>Рекомендуемое значение и эффект</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Sun (Солнце)</strong></td>
+      <td>Размер солнца (Sun Size)</td>
+      <td><strong>2.5 &ndash; 3.5</strong> (вместо 1.0). Это даст мягкие реалистичные полутени вместо резких пиксельных контуров.</td>
+    </tr>
+    <tr>
+      <td><strong>Sun (Солнце)</strong></td>
+      <td>Интенсивность (Intensity)</td>
+      <td><strong>0.5 &ndash; 0.8</strong>. Предотвращает белые пересветы на фасаде из светлого камня.</td>
+    </tr>
+    <tr>
+      <td><strong>Sky (Небо)</strong></td>
+      <td>CoronaSky / VRaySky / HDRI</td>
+      <td>Интенсивность <strong>1.0 &ndash; 1.2</strong>. Мягкая голубая подсветка в теневых зонах здания.</td>
+    </tr>
+    <tr>
+      <td><strong>Ambient Occlusion</strong></td>
+      <td>CoronaAO / VRayDirt</td>
+      <td>Радиус <strong>0.5 &ndash; 1.5м</strong>. Подчеркивает стыки этажей, карнизы и подоконники густыми контактными тенями.</td>
+    </tr>
+    <tr>
+      <td><strong>Denoiser (Шумоподавление)</strong></td>
+      <td>Corona High Quality / Intel OpenImageDenoise</td>
+      <td><strong>Включить обязательно!</strong> Позволяет запечь чистую гладкую карту света всего за 30–50 пассов без зернистости.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="page-break"></div>
+
+<h2>Часть 4. Процесс запекания (Render to Texture / Bake to Texture)</h2>
+
+<p>В современных версиях 3ds Max запекание делается через окно <strong>Bake to Texture</strong> (или классическое <strong>Render to Texture</strong> по горячей клавише <code>0</code>).</p>
+
+<h3>Пошаговый алгоритм запекания:</h3>
+<ol>
+  <li>Нажмите клавишу <kbd>0</kbd> (ноль на клавиатуре) или меню <code>Rendering &rarr; Bake to Texture</code>.</li>
+  <li>В списке объектов слева выберите объекты для запекания (фасады, стилобат, площадка).</li>
+  <li>В столбце <strong>Mapping / UV Channel</strong> укажите: <strong>Use Existing Channel: 2</strong>.</li>
+  <li>В столбце <strong>Output Maps</strong> нажмите <code>Add Maps to Selected Objects</code>:
+    <div class="box">
+      <strong>Что именно запекать? (2 варианта):</strong><br><br>
+      <strong>Вариант А (Самый простой и красивый — Complete Map / Shaded Beauty):</strong><br>
+      Запекается текстура камня + солнце + мягкие тени + AO в единую готовую текстуру (Albedo). В Three.js модель не требует тяжелых динамических теней и выглядит абсолютно фотореалистично.<br>
+      &bull; Карта: <code>Corona_Shaded</code> / <code>VRayCompleteMap</code> / <code>CompleteMap</code>.<br>
+      &bull; Разрешение: <strong>2048 &times; 2048</strong> для башен, <strong>1024 &times; 1024</strong> для двора.<br><br>
+      <strong>Вариант Б (Световая карта — Lightmap / Raw Total Lighting):</strong><br>
+      Запекается только свет и тень (черно-белая или цветная карта освещения), которая в Three.js накладывается поверх базовых тайловых текстур через слот <code>mesh.material.lightMap</code>.<br>
+      &bull; Карта: <code>Corona_Direct + Indirect</code> / <code>VRayRawTotalLightingMap</code>.
+    </div>
+  </li>
+  <li>Настройте <strong>Edge Padding</strong>: установите <strong>4 &ndash; 6 пикселей</strong> (растягивание пикселей по краям островков развертки, чтобы на гранях не появились черные швы).</li>
+  <li>Укажите папку сохранения (например, <code>D:/Bake_Maps/</code>) и формат <strong>PNG (24-bit / 8-bit per channel)</strong>.</li>
+  <li>Нажмите кнопку <strong>Bake</strong> внизу окна.</li>
+</ol>
+
+<h2>Часть 5. Сборка материалов PBR под WebGL и glTF</h2>
+
+<p>После запекания текстур модель нужно перевести на стандартный материал, понятный веб-движкам (<strong>Physical Material</strong> или <strong>glTF Material</strong>):</p>
+
+<ol>
+  <li>Откройте редактор материалов (<kbd>M</kbd>).</li>
+  <li>Создайте материал <strong>Physical Material</strong> (или <code>glTF Material</code> в 3ds Max 2023+).</li>
+  <li><strong>Назначение запеченной карты</strong>:
+    <ul>
+      <li>В слот <code>Base Color Map</code> подключите запеченный файл PNG.</li>
+      <li>В свойствах текстуры <code>Bitmap</code> убедитесь, что параметр <strong>Coordinates &rarr; Map Channel</strong> установлен в <strong>2</strong> (канал запекания).</li>
+    </ul>
+  </li>
+  <li><strong>Шероховатость (Roughness)</strong>:
+    <ul>
+      <li>Для травертина/штукатурки: установите <code>Roughness = 0.65 – 0.75</code>.</li>
+      <li>Для металлических профилей: <code>Roughness = 0.35</code>, <code>Metalness = 0.7</code>.</li>
+    </ul>
+  </li>
+  <li><strong>Стекла окон (Критически важный момент!)</strong>:
+    <div class="alert-tip">
+      <strong>Не запекайте свет на стекло!</strong> Стекло в вебе должно быть динамическим. Назначьте стеклам отдельный материал <code>Glass</code> со свойствами:<br>
+      &bull; <code>Base Color</code>: темно-серый/синий (#2a3b4c)<br>
+      &bull; <code>Roughness</code>: <strong>0.08 &ndash; 0.12</strong><br>
+      &bull; <code>Transparency / Opacity</code>: <strong>0.7 &ndash; 0.85</strong><br>
+      В браузере Three.js наложит на него живые отражения неба, и здание будет выглядеть живым!
+    </div>
+  </li>
+</ol>
+
+<h2>Часть 6. Экспорт в формат .GLB (glTF Binary)</h2>
+
+<ol>
+  <li>Выделите готовый жилой комплекс.</li>
+  <li>Нажмите: <code>File &rarr; Export &rarr; Export Selected</code>.</li>
+  <li>Тип файла: <strong>glTF Binary (*.glb)</strong>.</li>
+  <li>В окне настроек экспорта glTF включите следующие чекбоксы:
+    <ul>
+      <li>&check; <strong>Embed Textures</strong> (текстуры упакуются прямо внутрь одного файла .glb).</li>
+      <li>&check; <strong>Convert to PBR</strong>.</li>
+      <li>&check; <strong>Include Normal Maps / Coordinates</strong>.</li>
+      <li>&check; <strong>Draco Compression</strong> (по желанию — сжимает геометрию в 3–4 раза без потери качества).</li>
+    </ul>
+  </li>
+  <li>Сохраните файл под именем <code>shattyq_complex.glb</code>.</li>
+</ol>
+
+<h2>Часть 7. Интеграция в наш проект Sansata</h2>
+<ol>
+  <li>Скопируйте полученный файл <code>shattyq_complex.glb</code> в папку проекта: <code>public/models/shattyq_complex.glb</code>.</li>
+  <li>В конфигурационном файле <code>public/experience.json</code> укажите:
+    <pre><code>"model": {
+  "url": "/models/shattyq_complex.glb",
+  "label": "ЖК Shattyq · 3D-тур",
+  "scale": 1
+}</code></pre>
+  </li>
+  <li>Наш вьюер <code>SceneViewer.tsx</code> автоматически загрузит модель, подключит мягкие тени, ракурсы и интерактивный выбор этажей.</li>
+</ol>
+
+<div class="footer-note">
+  Подготовлено для команды проекта ЖК Shattyq (Sensata Group) &bull; 2026
+</div>
+
+</body>
+</html>

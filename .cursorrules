@@ -1,0 +1,49 @@
+# Sansata Project Rules & Specialized Skills
+
+You are pair programming on an interactive real-estate floorplan, 3D building viewer & 360° panorama tour system with hardened Bitrix24 CRM integration.
+
+## Active Project Skills
+
+1. SVG Coordinate & Geometry Expert (`.antigravity/skills/svg-coordinate-expert.md`):
+   - Always use `viewBox` for scalable SVG coordinate spaces.
+   - Never hardcode screen pixel dimensions for `<polygon points="...">`.
+   - Set `pointer-events: visiblePainted` on polygons, and `pointer-events: none` on background floor plans and decorators.
+   - Use centroid algorithms (Shoelace/Gauss) for positioning pins, labels, and tooltips.
+
+2. Real Estate Data Architect (`.antigravity/skills/real-estate-data-architect.md`):
+   - Enforce entity hierarchy: Building -> Section -> Floor -> Apartment.
+   - Mandatory Apartment attributes: `id`, `number`, `rooms`, `area`, `price`, `status` ('available' | 'reserved' | 'sold'), `polygonPoints`.
+   - Use normalized lookup dictionaries (`apartmentsById`) for instant O(1) hover search; avoid `array.find()` in hot mouse handlers.
+   - Ensure SQLite compatibility with `apartments.db`.
+
+3. Interactive Canvas UX Specialist (`.antigravity/skills/interactive-canvas-ux.md`):
+   - Seamless pan/zoom using GPU-accelerated CSS `transform: translate3d(...) scale(...)` and `will-change: transform`.
+   - Floating UI integration using virtual elements (`@floating-ui/dom`) for tooltips anchored to polygon centroids.
+   - Prevent full React tree re-renders on hover; leverage CSS states and isolated lightweight overlays.
+
+4. WebGL / Three.js Performance Engineer (`.antigravity/skills/webgl-3d-architect.md`):
+   - Always load compressed `.glb` models with local Draco decoder (`/assets/draco/gltf/`).
+   - Implement strict disposal pipeline (`geometry.dispose()`, `material.dispose()`, textures).
+   - Throttle Raycaster queries with proxy collider boxes for building sections.
+   - Clamp OrbitControls angles and distance to prevent subterranean views or clipping.
+
+5. 360° Panorama & Virtual Tour Specialist (`.antigravity/skills/panorama-360-expert.md`):
+   - Use 2:1 Equirectangular projections with low-res preview crossfade.
+   - Map hotspots with spherical `(yaw, pitch)` coordinates and fade transitions.
+   - Guard mobile gyroscope permissions behind user gestures and avoid page scroll hijacking.
+   - Bind panoramas to apartment floors and room types for automated window views.
+
+6. BFF Proxy Security Architect (`.antigravity/skills/bff-proxy-security.md`):
+   - Zero Trust to Client. Never call Bitrix24 directly from frontend.
+   - Never use `VITE_`, `NEXT_PUBLIC_`, `REACT_APP_` for CRM secrets.
+   - Isolate calls via server endpoints (`/api/lead`, `/api/booking`, `/api/apartments/status`).
+   - Strict response masking: return only clean public DTOs without raw CRM metadata.
+
+7. Application Defense Engineer (`.antigravity/skills/form-sanitization-ratelimit.md`):
+   - Zod validation on all inputs (E.164 phone, sanitized names, max 8 KB payload).
+   - Enforce rate limit (max 3-5 requests per 10 min per IP).
+   - Silent honeypot drop and CAPTCHA token verification.
+
+8. DevSecOps & Secrets Guard (`.antigravity/skills/secrets-leak-prevention.md`):
+   - Never commit real `.env*` files (only `.env.example`).
+   - Enforce bundle secret scan via `npm run security:scan` before releases.

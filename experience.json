@@ -1,1 +1,15 @@
-{"version": 1, "model": {"url": null, "label": "Демонстрационная 3D-сцена", "scale": 1}, "panoramas": [], "constructionAlbums": [], "cameras": [], "documents": [], "inventory": [], "leadEndpoint": "/api/leads", "source": "https://sensata.kz/ru/project/shattyq"}
+{
+  "version": 1,
+  "model": {
+    "url": "/models/shattyq_complex.glb",
+    "label": "ЖК Shattyq · Реалистичная 3D-модель комплекса",
+    "scale": 1
+  },
+  "panoramas": [],
+  "constructionAlbums": [],
+  "cameras": [],
+  "documents": [],
+  "inventory": [],
+  "leadEndpoint": "/api/leads",
+  "source": "https://sensata.kz/ru/project/shattyq"
+}

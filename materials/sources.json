@@ -1,0 +1,93 @@
+[
+  {
+    "file": "sky-hdri.hdr",
+    "asset": "kloppenheim_06_puresky",
+    "source": "https://polyhaven.com/a/kloppenheim_06_puresky",
+    "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloppenheim_06_puresky_2k.hdr",
+    "license": "CC0"
+  },
+  {
+    "file": "stone-color.jpg",
+    "asset": "concrete_wall_003",
+    "source": "https://polyhaven.com/a/concrete_wall_003",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_003/concrete_wall_003_diff_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "stone-normal.jpg",
+    "asset": "concrete_wall_003",
+    "source": "https://polyhaven.com/a/concrete_wall_003",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_003/concrete_wall_003_nor_gl_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "stone-roughness.jpg",
+    "asset": "concrete_wall_003",
+    "source": "https://polyhaven.com/a/concrete_wall_003",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_003/concrete_wall_003_rough_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "paving-color.jpg",
+    "asset": "pavement_02",
+    "source": "https://polyhaven.com/a/pavement_02",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_02/pavement_02_diff_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "paving-normal.jpg",
+    "asset": "pavement_02",
+    "source": "https://polyhaven.com/a/pavement_02",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_02/pavement_02_nor_gl_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "paving-roughness.jpg",
+    "asset": "pavement_02",
+    "source": "https://polyhaven.com/a/pavement_02",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_02/pavement_02_rough_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "asphalt-color.jpg",
+    "asset": "asphalt_02",
+    "source": "https://polyhaven.com/a/asphalt_02",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "asphalt-normal.jpg",
+    "asset": "asphalt_02",
+    "source": "https://polyhaven.com/a/asphalt_02",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "asphalt-roughness.jpg",
+    "asset": "asphalt_02",
+    "source": "https://polyhaven.com/a/asphalt_02",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_rough_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "grass-color.jpg",
+    "asset": "aerial_grass_rock",
+    "source": "https://polyhaven.com/a/aerial_grass_rock",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/aerial_grass_rock/aerial_grass_rock_diff_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "grass-normal.jpg",
+    "asset": "aerial_grass_rock",
+    "source": "https://polyhaven.com/a/aerial_grass_rock",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/aerial_grass_rock/aerial_grass_rock_nor_gl_1k.jpg",
+    "license": "CC0"
+  },
+  {
+    "file": "grass-roughness.jpg",
+    "asset": "aerial_grass_rock",
+    "source": "https://polyhaven.com/a/aerial_grass_rock",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/aerial_grass_rock/aerial_grass_rock_rough_1k.jpg",
+    "license": "CC0"
+  }
+]

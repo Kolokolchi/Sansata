@@ -16,3 +16,5 @@ playwright-report/
 *.db-wal
 .agents/*/
 !.agents/skills/
+scratch/
+3d tour/

@@ -11,13 +11,16 @@ import {
   Sun,
   Sunset,
   Moon,
-  MapPin,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  Building2,
+  Home
 } from 'lucide-react';
 import { siteUrl, navigateTo } from '../lib/site';
-import { ExperienceConfig } from '../lib/experience';
+import { ExperienceConfig, LumaTourScene, flats } from '../lib/experience';
 import { PanoramaViewer } from './PanoramaViewer';
+import { VisualTourViewer } from './VisualTourViewer';
+import '../styles/luma-tour.css';
 import {
   createTravertineTexture,
   createPerforatedLatticeTexture,
@@ -34,58 +37,6 @@ interface SceneProps {
   onSelect?: (section: number, floor: number) => void;
   interior?: boolean;
 }
-
-interface Hotspot {
-  id: string;
-  title: string;
-  desc: string;
-  pos: [number, number, number];
-  cameraPos: [number, number, number];
-  cameraTarget: [number, number, number];
-}
-
-const HOTSPOTS: Hotspot[] = [
-  {
-    id: 'cafe',
-    title: 'Кафе и уличная терраса',
-    desc: 'Уютные кофейни и ресторанные террасы на первом этаже',
-    pos: [-18, 3.2, 21],
-    cameraPos: [-18, 4.5, 32],
-    cameraTarget: [-17, 3, 15]
-  },
-  {
-    id: 'courtyard',
-    title: 'Детский городок EPDM',
-    desc: 'Безопасное резиновое покрытие, горки, качели и развивающие зоны',
-    pos: [0, 6.5, 3],
-    cameraPos: [0, 22, 24],
-    cameraTarget: [0, 6, 0]
-  },
-  {
-    id: 'sec1',
-    title: 'Парадный вход · Секция 1',
-    desc: 'Дизайнерское лобби с консьерж-сервисом и зоной ожидания',
-    pos: [-18.5, 2.5, 19.5],
-    cameraPos: [-24, 6, 32],
-    cameraTarget: [-18.5, 4, 18]
-  },
-  {
-    id: 'sec2',
-    title: 'Парадный вход · Секция 2',
-    desc: 'Витражная входная группа с бесшумными скоростными лифтами',
-    pos: [18.5, 2.5, 19.5],
-    cameraPos: [24, 6, 32],
-    cameraTarget: [18.5, 4, 18]
-  },
-  {
-    id: 'workout',
-    title: 'Воркаут & Спортзона',
-    desc: 'Уличные тренажеры, брусья и зона для утренней йоги',
-    pos: [-7.5, 6.0, -4.5],
-    cameraPos: [-12, 12, 6],
-    cameraTarget: [-7.5, 6, -4.5]
-  }
-];
 
 export function SceneViewer({ config, section, floor, onSelect, interior = false }: SceneProps) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -112,13 +63,8 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
   const [loading, setLoading] = useState(false);
   const [timeMode, setTimeMode] = useState<'day' | 'golden' | 'night'>('day');
   const [activeSpot, setActiveSpot] = useState('Главный фасад');
-  const [showHotspots, setShowHotspots] = useState(true);
-  const showHotspotsRef = useRef(showHotspots);
-  showHotspotsRef.current = showHotspots;
   const [hoveredFloor, setHoveredFloor] = useState<{ section: number; floor: number } | null>(null);
-  const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const pinRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   useEffect(() => {
     const container = hostRef.current;
@@ -415,34 +361,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
       });
     };
 
-    const tempVec = new THREE.Vector3();
-
-    const updateHotspotsDOM = () => {
-      if (!showHotspotsRef.current || interior || !container) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      if (!w || !h) return;
-
-      for (const spot of HOTSPOTS) {
-        const pin = pinRefs.current[spot.id];
-        if (!pin) continue;
-
-        tempVec.set(...spot.pos);
-        tempVec.project(camera);
-        const isBehind = tempVec.z > 1;
-        const x = (tempVec.x * 0.5 + 0.5) * w;
-        const y = (-(tempVec.y * 0.5) + 0.5) * h;
-        const visible = !isBehind && x >= 10 && x <= w - 10 && y >= 10 && y <= h - 10;
-
-        if (visible) {
-          pin.style.display = '';
-          pin.style.transform = `translate(${x}px, ${y}px)`;
-        } else {
-          pin.style.display = 'none';
-        }
-      }
-    };
-
     if (!interior) {
       setLoading(true);
       new GLTFLoader().load(
@@ -466,7 +384,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
           enhanceModelHierarchy(root);
           scene.add(root);
           setLoading(false);
-          updateHotspotsDOM();
         },
         undefined,
         () => {
@@ -560,7 +477,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
     renderer.domElement.addEventListener('pointermove', handlePointerMove);
     renderer.domElement.addEventListener('pointerup', handlePointerUp);
     renderer.domElement.addEventListener('pointerleave', handlePointerLeave);
-    controls.addEventListener('change', updateHotspotsDOM);
 
     const handleResize = () => {
       const w = container.clientWidth;
@@ -569,7 +485,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
         renderer.setSize(w, h);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
-        updateHotspotsDOM();
       }
     };
 
@@ -588,7 +503,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
         camera.position.lerpVectors(cameraAnim.fromPos, cameraAnim.toPos, ease);
         controls.target.lerpVectors(cameraAnim.fromTarget, cameraAnim.toTarget, ease);
         controls.update();
-        updateHotspotsDOM();
 
         if (t >= 1) {
           cameraAnim = null;
@@ -622,7 +536,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
       }
       resizeObserver.disconnect();
       renderer.setAnimationLoop(null);
-      controls.removeEventListener('change', updateHotspotsDOM);
       renderer.domElement.removeEventListener('pointerdown', handlePointerDown);
       renderer.domElement.removeEventListener('pointermove', handlePointerMove);
       renderer.domElement.removeEventListener('pointerup', handlePointerUp);
@@ -685,37 +598,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
         ['Вид сверху (Генплан)', [0, 85, 1], [0, 0, 0]]
       ];
 
-  useEffect(() => {
-    const api = apiRef.current;
-    if (!api || !hostRef.current) return;
-    const container = hostRef.current;
-    const w = container.clientWidth;
-    const h = container.clientHeight;
-    if (!w || !h) return;
-    const tempVec = new THREE.Vector3();
-
-    for (const spot of HOTSPOTS) {
-      const pin = pinRefs.current[spot.id];
-      if (!pin) continue;
-      if (!showHotspots || interior) {
-        pin.style.display = 'none';
-        continue;
-      }
-      tempVec.set(...spot.pos);
-      tempVec.project(api.camera);
-      const isBehind = tempVec.z > 1;
-      const x = (tempVec.x * 0.5 + 0.5) * w;
-      const y = (-(tempVec.y * 0.5) + 0.5) * h;
-      const visible = !isBehind && x >= 10 && x <= w - 10 && y >= 10 && y <= h - 10;
-      if (visible) {
-        pin.style.display = '';
-        pin.style.transform = `translate(${x}px, ${y}px)`;
-      } else {
-        pin.style.display = 'none';
-      }
-    }
-  }, [showHotspots, interior]);
-
   return (
     <div className="scene-wrap" ref={wrapRef}>
       <div className="scene-canvas" ref={hostRef} />
@@ -729,33 +611,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
           : 'ЖК Shattyq · 3D-модель комплекса'}
       </div>
 
-      {showHotspots && !interior && (
-        <div className="scene-hotspots-layer" style={{ pointerEvents: 'none' }}>
-          {HOTSPOTS.map((spot) => (
-            <button
-              key={spot.id}
-              ref={(el) => {
-                pinRefs.current[spot.id] = el;
-              }}
-              className={`scene-hotspot-pin ${selectedHotspot?.id === spot.id ? 'active' : ''}`}
-              style={{
-                display: 'none',
-                transform: 'translate(0px, 0px)',
-                pointerEvents: 'auto'
-              }}
-              onClick={() => {
-                setSelectedHotspot(spot);
-                setViewPreset(spot.title, spot.cameraPos, spot.cameraTarget);
-              }}
-              title={spot.title}
-            >
-              <span className="pin-dot" />
-              <span className="pin-title">{spot.title}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
       {hoveredFloor && (
         <div
           ref={tooltipRef}
@@ -766,32 +621,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
             Секция {hoveredFloor.section} · Этаж {hoveredFloor.floor}
           </div>
           <div className="tooltip-sub">Нажмите для выбора квартир</div>
-        </div>
-      )}
-
-      {selectedHotspot && (
-        <div className="scene-spot-modal">
-          <div className="spot-modal-content">
-            <div className="spot-modal-badge">
-              <MapPin size={14} /> Инфраструктура комплекса
-            </div>
-            <h4>{selectedHotspot.title}</h4>
-            <p>{selectedHotspot.desc}</p>
-            <div className="spot-modal-actions">
-              <button
-                className="button-sm primary"
-                onClick={() => {
-                  setViewPreset(selectedHotspot.title, selectedHotspot.cameraPos, selectedHotspot.cameraTarget);
-                  setSelectedHotspot(null);
-                }}
-              >
-                Приблизить ракурс
-              </button>
-              <button className="button-sm secondary" onClick={() => setSelectedHotspot(null)}>
-                Закрыть
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
@@ -821,17 +650,6 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
           onClick={() => setLighting('night')}
         >
           <Moon size={18} />
-        </button>
-
-        <div className="tool-divider" />
-
-        <button
-          className={`icon ${showHotspots ? 'active-mode' : ''}`}
-          aria-label="Показать/скрыть инфраструктуру"
-          title="Метки инфраструктуры"
-          onClick={() => setShowHotspots(!showHotspots)}
-        >
-          <MapPin size={18} />
         </button>
 
         <div className="tool-divider" />
@@ -919,8 +737,13 @@ export function SceneViewer({ config, section, floor, onSelect, interior = false
   );
 }
 
-export function TourPage({ config }: { config: ExperienceConfig }) {
-  const [mode, setMode] = useState<'complex' | 'interior' | 'panorama'>('complex');
+export interface TourPageProps {
+  config: ExperienceConfig;
+  onConsult?: (topic: string) => void;
+}
+
+export function TourPage({ config, onConsult }: TourPageProps) {
+  const [mode, setMode] = useState<'complex' | 'panorama'>('panorama');
 
   return (
     <div className="experience-page">
@@ -932,45 +755,256 @@ export function TourPage({ config }: { config: ExperienceConfig }) {
           Почувствуйте атмосферу комплекса.
         </h1>
         <p>
-          Интерактивная 3D-модель жилого комплекса Shattyq (Sensata Group) с реалистичными материалами,
-          сеткой фасадов из травертина, благоустроенным двором, тремя режимами времени суток и выбором этажей.
+          Интерактивный 3D-план жилого комплекса Shattyq (Sensata Group) с реалистичными ракурсами комплекса,
+          интерактивным выбором секций, фильтрацией по комнатам и сферическим 360°-туром.
         </p>
       </div>
 
-      <div className="tabs feature-tabs">
-        <button className={mode === 'complex' ? 'active' : ''} onClick={() => setMode('complex')}>
-          Территория в 3D (Архитектура и двор)
-        </button>
-        <button className={mode === 'interior' ? 'active' : ''} onClick={() => setMode('interior')}>
-          3D-интерьер квартиры
-        </button>
-        {config.panoramas.length > 0 && (
-          <button className={mode === 'panorama' ? 'active' : ''} onClick={() => setMode('panorama')}>
+      {config.panoramas.length > 0 && (
+        <div className="tabs feature-tabs" role="tablist" aria-label="Вкладки 3D-тура">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === 'complex'}
+            className={mode === 'complex' ? 'active' : ''}
+            onClick={() => setMode('complex')}
+          >
+            Интерактивный 3D-план (Ракурсы комплекса)
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === 'panorama'}
+            className={mode === 'panorama' ? 'active' : ''}
+            onClick={() => setMode('panorama')}
+          >
             Панорамы 360°
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
-      {mode === 'panorama' ? (
+      {mode === 'panorama' && config.panoramas.length > 0 ? (
         <PanoramaViewer panoramas={config.panoramas} />
       ) : (
-        <SceneViewer key={mode} config={config} section={0} floor={0} interior={mode === 'interior'} />
+        <VisualTourViewer flats={flats} config={config} onConsult={onConsult} />
       )}
 
       <div className="feature-bottom">
         <p>
           Выберите понравившуюся планировку в каталоге или исследуйте расположение секций прямо на 3D-модели.
         </p>
-        <a
-          className="button blue"
-          href={siteUrl('/visual')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo(siteUrl('/visual'));
-          }}
-        >
-          Выбрать квартиру на 3D-плане <ArrowUpRight size={18} />
-        </a>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          {onConsult && (
+            <button
+              type="button"
+              className="button outline"
+              onClick={() => onConsult('Консультация по Shattyq')}
+            >
+              Заказать консультацию
+            </button>
+          )}
+          <a
+            className="button blue"
+            href={siteUrl('/visual')}
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('/visual');
+            }}
+          >
+            Выбрать квартиру на 3D-плане <ArrowUpRight size={18} />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const DEFAULT_LUMA_SCENES: LumaTourScene[] = [
+  {
+    id: 'exterior',
+    label: 'Экстерьер',
+    captureId: '4f362242-ad43-4851-9b04-88adf71f24f5',
+    title: 'Corsewall Lighthouse Hotel',
+    note: 'Демонстрационная сцена стороннего автора @LiftPlanner. Это не съёмка ЖК Shattyq.'
+  },
+  {
+    id: 'interior',
+    label: 'Интерьер',
+    captureId: 'b271fff7-37dd-47b1-8921-6375cd069c91',
+    title: 'Grand Central Terminal',
+    note: 'Демонстрационная сцена интерьера стороннего автора @FrancLucent. Это не съёмка ЖК Shattyq.'
+  }
+];
+
+export interface CloudTourPageProps {
+  config: ExperienceConfig;
+  onConsult?: (topic: string) => void;
+}
+
+export function CloudTourPage({ config, onConsult }: CloudTourPageProps) {
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  const scenes: LumaTourScene[] =
+    config.lumaScenes && config.lumaScenes.length > 0
+      ? config.lumaScenes
+      : config.lumaTour
+      ? [
+          {
+            id: 'exterior',
+            label: 'Экстерьер',
+            captureId: config.lumaTour.captureId,
+            title: config.lumaTour.title,
+            note: config.lumaTour.note
+          },
+          DEFAULT_LUMA_SCENES[1]
+        ]
+      : DEFAULT_LUMA_SCENES;
+
+  const [activeSceneId, setActiveSceneId] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace(/^#/, '');
+      if (scenes.some((s) => s.id === hash)) {
+        return hash;
+      }
+    }
+    return scenes[0]?.id || 'exterior';
+  });
+
+  const activeScene = scenes.find((s) => s.id === activeSceneId) || scenes[0] || DEFAULT_LUMA_SCENES[0];
+  const lumaCaptureId = activeScene.captureId;
+  const lumaTitle = activeScene.title;
+  const lumaNote = activeScene.note;
+  const lumaUrl = `https://lumalabs.ai/capture/${lumaCaptureId}`;
+
+  const handleSelectScene = (sceneId: string) => {
+    setActiveSceneId(sceneId);
+    if (typeof window !== 'undefined' && window.history?.replaceState) {
+      window.history.replaceState(null, '', `#${sceneId}`);
+    }
+  };
+
+  const toggleFrameFullscreen = () => {
+    if (!frameRef.current) return;
+    if (!document.fullscreenElement) {
+      frameRef.current.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  return (
+    <div className="experience-page">
+      <div className="page-heading">
+        <span className="eyebrow">SHATTYQ / ОБЛАЧНЫЙ 3D-ТУР</span>
+        <h1>Облачный 3D-тур</h1>
+        <p>
+          Интерактивная 3D-съёмка высокого разрешения с фотореалистичным рендерингом Luma Labs (3D Gaussian Splatting).
+          Исследуйте объёмное пространство со свободным вращением, плавным перемещением камеры и детальным обзором прямо в браузере.
+        </p>
+      </div>
+
+      <div className="tabs feature-tabs" role="tablist" aria-label="Выбор 3D-сцены">
+        {scenes.map((scene) => (
+          <button
+            key={scene.id}
+            type="button"
+            role="tab"
+            aria-selected={activeScene.id === scene.id}
+            className={activeScene.id === scene.id ? 'active' : ''}
+            onClick={() => handleSelectScene(scene.id)}
+          >
+            {scene.id === 'interior' ? <Home size={16} /> : <Building2 size={16} />}
+            <span>{scene.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="luma-tour">
+        <div className="luma-tour-frame" ref={frameRef}>
+          <div className="luma-frame-scene-bar" role="group" aria-label="Быстрое переключение сцены">
+            {scenes.map((scene) => (
+              <button
+                key={scene.id}
+                type="button"
+                className={`luma-frame-scene-btn ${activeScene.id === scene.id ? 'active' : ''}`}
+                onClick={() => handleSelectScene(scene.id)}
+                aria-pressed={activeScene.id === scene.id}
+                title={`Переключить на ${scene.label}`}
+              >
+                {scene.id === 'interior' ? <Home size={13} /> : <Building2 size={13} />}
+                <span>{scene.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className="luma-fullscreen-btn"
+            onClick={toggleFrameFullscreen}
+            title="Развернуть на весь экран"
+            aria-label="Развернуть на весь экран"
+          >
+            <Maximize size={14} />
+            <span>Во весь экран</span>
+          </button>
+          <iframe
+            key={lumaCaptureId}
+            src={`https://lumalabs.ai/embed/${lumaCaptureId}?mode=sparkles&showTitle=false&showMenu=false`}
+            title={`Интерактивный 3D-тур Luma: ${lumaTitle}`}
+            allow="fullscreen; xr-spatial-tracking; accelerometer; gyroscope"
+            allowFullScreen
+            sandbox="allow-scripts allow-same-origin"
+          />
+        </div>
+
+        <div className="luma-tour-hints">
+          <div className="luma-hint-item">
+            <span className="luma-hint-icon">🖱️</span>
+            <span><strong>Вращение</strong> · Зажмите ЛКМ или проведите одним пальцем</span>
+          </div>
+          <div className="luma-hint-item">
+            <span className="luma-hint-icon">✋</span>
+            <span><strong>Панорамирование</strong> · Зажмите ПКМ или проведите двумя пальцами</span>
+          </div>
+          <div className="luma-hint-item">
+            <span className="luma-hint-icon">🔍</span>
+            <span><strong>Масштабирование</strong> · Колёсико мыши или щипок пальцами</span>
+          </div>
+        </div>
+
+        <div className="luma-tour-caption">
+          <p><strong>{lumaTitle}</strong> · {lumaNote}</p>
+          <a href={lumaUrl} target="_blank" rel="noopener noreferrer">
+            Открыть оригинал на Luma Labs <ArrowUpRight size={16} />
+          </a>
+        </div>
+      </div>
+
+      <div className="feature-bottom">
+        <p>
+          Облачный просмотрщик демонстрирует объёмные возможности формата фотограмметрии и нейросетевых 3D-сцен. Для выбора планировки Shattyq откройте 3D-план.
+        </p>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          {onConsult && (
+            <button
+              type="button"
+              className="button outline"
+              onClick={() => onConsult('Консультация по 3D-туру')}
+            >
+              Заказать консультацию
+            </button>
+          )}
+          <a
+            className="button blue"
+            href={siteUrl('/visual')}
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('/visual');
+            }}
+          >
+            Выбрать квартиру на 3D-плане <ArrowUpRight size={18} />
+          </a>
+        </div>
       </div>
     </div>
   );

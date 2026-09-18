@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
-const result=await build({stdin:{contents:"export * from './src/lib/journey'; export * from './src/lib/config'; export * from './src/lib/experience';",resolveDir:process.cwd()},bundle:true,write:false,format:'esm',platform:'node'});
-const {journeyRoute,matchingPlans,flats,readDesign,defaultDesign,parseExperience,fallbackConfig}=await import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64'));
+const result=await build({stdin:{contents:"export * from './src/lib/journey'; export * from './src/lib/config'; export * from './src/lib/experience'; export * from './src/data/floorPlansData';",resolveDir:process.cwd()},bundle:true,write:false,format:'esm',platform:'node'});
+const {journeyRoute,matchingPlans,flats,readDesign,defaultDesign,parseExperience,fallbackConfig,getFloorPlanMedia}=await import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64'));
 test('selection routes reject nonexistent sections and floors',()=>{
  assert.deepEqual(journeyRoute('/visual/section/2/floor/9'),{section:2,floor:9});
  for(const path of ['/visual/section/3','/visual/section/1/floor/0','/visual/section/1/floor/10','/visual/section/1/floor/2/extra'])assert.equal(journeyRoute(path),null);
@@ -27,3 +27,24 @@ test('selection polygons remain inside image coordinates with unique IDs',()=>{
  assert.ok(parseExperience({...fallbackConfig,selectionMedia:{floorPlans:{'1-2':image}}}).selectionMedia);
  for(const regions of [[{id:'x',points:[[0,0],[101,0],[0,80]]}],[image.regions[0],image.regions[0]]])assert.throws(()=>parseExperience({...fallbackConfig,selectionMedia:{masterplan:{...image,regions}}}));
 });
+test('floor plan media generates valid bounded polygons for all sections and floors',()=>{
+ for(const [section,maxFloor] of [[1,9],[2,9]]){
+  for(let floor=2; floor<=maxFloor; floor++){
+   const media=getFloorPlanMedia(section,floor);
+   assert.ok(media.width>0 && media.height>0);
+   assert.ok(media.regions.length>=3 && media.regions.length<=4);
+   const ids=new Set();
+   for(const region of media.regions){
+    assert.ok(flats.some((f)=>f.id===region.id),`Region ${region.id} not in catalog`);
+    assert.ok(!ids.has(region.id),`Duplicate region ${region.id} on ${section}-${floor}`);
+    ids.add(region.id);
+    assert.ok(region.points.length>=3,`Region ${region.id} has less than 3 vertices`);
+    for(const [x,y] of region.points){
+     assert.ok(x>=0 && x<=media.width,`X ${x} exceeds bounds [0, ${media.width}] on ${region.id}`);
+     assert.ok(y>=0 && y<=media.height,`Y ${y} exceeds bounds [0, ${media.height}] on ${region.id}`);
+    }
+   }
+  }
+ }
+});
+

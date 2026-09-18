@@ -28,12 +28,17 @@ export function sitePath(): string {
  * Клиентская SPA-навигация без перезагрузки страницы.
  */
 export function navigateTo(url: string, replace = false): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !url || typeof url !== 'string') return;
+
+  const trimmed = url.trim();
+  if (/^(?:javascript|data|vbscript):/i.test(trimmed) || trimmed.startsWith('//')) {
+    return;
+  }
 
   const targetUrl = siteUrl(url);
 
   // Если это внешняя ссылка или якорь на той же странице
-  if (url.startsWith('http') || url.startsWith('tel:') || url.startsWith('mailto:')) {
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('tel:') || url.startsWith('mailto:')) {
     window.location.href = url;
     return;
   }

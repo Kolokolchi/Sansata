@@ -36,6 +36,9 @@ export default defineConfig(({ mode }) => ({
   },
   server: {
     port: 3000,
-    host: true
+    host: true,
+    fs: {
+      deny: ['**/*.db', '**/.env*']
+    }
   }
 }));

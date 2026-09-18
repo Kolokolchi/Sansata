@@ -1,0 +1,273 @@
+.luma-tour {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.luma-tour-poster {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  min-height: clamp(450px, 60vw, 720px);
+  overflow: hidden;
+  border-radius: 6px;
+  background: #16233a;
+  color: #fff;
+}
+
+.luma-tour-poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(13, 22, 42, .88), rgba(13, 22, 42, .2));
+}
+
+.luma-tour-poster > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.luma-tour-poster-content { position: relative; z-index: 1; max-width: 570px; padding: clamp(24px, 5vw, 60px); }
+.luma-tour-poster-content > span { font-size: 10px; letter-spacing: .12em; }
+.luma-tour-poster-content h2 { margin: 16px 0; font-size: clamp(28px, 4vw, 48px); line-height: 1.12; }
+.luma-tour-poster-content p { margin: 0; font-size: 14px; line-height: 1.7; }
+.luma-tour-poster-content small { display: block; margin-top: 18px; font-size: 10px; line-height: 1.5; }
+.luma-tour-poster-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+.luma-tour-poster-actions button,
+.luma-tour-poster-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.luma-tour-poster-actions button { background: #fff; color: var(--blue); }
+.luma-tour-poster-actions a { border: 1px solid #fff; color: #fff; }
+
+.luma-tour-frame {
+  position: relative;
+  width: 100%;
+  height: clamp(450px, 60vw, 720px);
+  overflow: hidden;
+  border-radius: 6px;
+  background: #11141d;
+  box-shadow: 0 12px 36px rgba(18, 24, 48, 0.08);
+  border: 1px solid var(--line);
+}
+
+.luma-tour-frame:fullscreen {
+  height: 100svh;
+  width: 100vw;
+  border-radius: 0;
+  border: none;
+}
+
+.luma-tour-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.luma-fullscreen-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--blue);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.luma-fullscreen-btn:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+}
+
+.luma-frame-scene-bar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.luma-frame-scene-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border: 0;
+  background: transparent;
+}
+
+.luma-frame-scene-btn:hover {
+  color: var(--blue);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.luma-frame-scene-btn.active {
+  background: var(--blue);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.luma-tour-help {
+  position: absolute;
+  z-index: 10;
+  left: 16px;
+  bottom: 16px;
+  width: min(350px, calc(100% - 32px));
+  padding: 18px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.22);
+  color: var(--blue);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.luma-tour-help strong { display: block; padding-right: 20px; font-size: 14px; }
+.luma-tour-help p { margin: 7px 0 13px; color: var(--muted); }
+.luma-tour-help-close { position: absolute; top: 6px; right: 9px; font-size: 20px; line-height: 1; }
+.luma-tour-help-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+.luma-tour-help-actions a,
+.luma-tour-help-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 11px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.luma-tour-help-actions a { background: var(--blue); color: #fff; }
+.luma-tour-help-actions button { border: 1px solid var(--line); background: #fff; color: var(--blue); }
+
+.luma-tour-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.luma-hint-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #f7f8fc;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.luma-hint-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.luma-hint-item strong {
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.luma-tour-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  border-bottom: 1px solid var(--line);
+}
+
+.luma-tour-caption p {
+  margin: 0;
+}
+
+.luma-tour-caption strong {
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.luma-tour-caption a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .luma-tour-poster { min-height: 520px; }
+  .luma-tour-poster::after { background: linear-gradient(0deg, rgba(13, 22, 42, .92), rgba(13, 22, 42, .1)); }
+  .luma-tour-poster-content p { font-size: 12px; }
+  .luma-tour-frame {
+    height: min(70svh, 520px);
+    min-height: 360px;
+  }
+  .luma-fullscreen-btn span {
+    display: none;
+  }
+  .luma-fullscreen-btn {
+    padding: 8px;
+  }
+  .luma-frame-scene-bar {
+    top: 12px;
+    left: 12px;
+    padding: 3px;
+  }
+  .luma-frame-scene-btn {
+    padding: 5px 9px;
+    font-size: 10px;
+    gap: 4px;
+  }
+  .luma-tour-caption {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .luma-tour-hints {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .luma-hint-item {
+    font-size: 10px;
+    padding: 7px 12px;
+  }
+}

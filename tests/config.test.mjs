@@ -48,6 +48,47 @@ test('config rejects broken arrays, protocols, linked ids and values', () => {
   }
 });
 
+test('config accepts a Luma capture ID and rejects malformed embed identifiers', () => {
+  const validTour = {
+    captureId: '4f362242-ad43-4851-9b04-88adf71f24f5',
+    title: 'Example',
+    note: 'External scene'
+  };
+  assert.deepEqual(parseExperience({ ...fallbackConfig, lumaTour: validTour }).lumaTour, validTour);
+  assert.throws(() => parseExperience({
+    ...fallbackConfig,
+    lumaTour: { ...validTour, captureId: '../../javascript:alert(1)' }
+  }));
+});
+
+test('config accepts multiple Luma scenes and rejects invalid scene definitions', () => {
+  const validScenes = [
+    {
+      id: 'exterior',
+      label: 'Экстерьер',
+      captureId: '4f362242-ad43-4851-9b04-88adf71f24f5',
+      title: 'Corsewall Lighthouse Hotel',
+      note: 'External scene'
+    },
+    {
+      id: 'interior',
+      label: 'Интерьер',
+      captureId: 'b271fff7-37dd-47b1-8921-6375cd069c91',
+      title: 'Grand Central Terminal',
+      note: 'Interior scene'
+    }
+  ];
+  assert.deepEqual(parseExperience({ ...fallbackConfig, lumaScenes: validScenes }).lumaScenes, validScenes);
+  assert.throws(() => parseExperience({
+    ...fallbackConfig,
+    lumaScenes: [{ ...validScenes[0], captureId: 'invalid-uuid' }]
+  }));
+  assert.throws(() => parseExperience({
+    ...fallbackConfig,
+    lumaScenes: [validScenes[0], validScenes[0]] // duplicate id
+  }));
+});
+
 test('mortgage handles zero rate, full payment and annuity reference', () => {
   assert.equal(calculateMortgage(1200000, 0, 1, 0).payment, 100000);
   assert.equal(calculateMortgage(1200000, 1200000, 1, 18).payment, 0);

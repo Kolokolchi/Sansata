@@ -61,12 +61,18 @@ export function LeadForm({ topic, endpoint = '/api/leads' }: LeadFormProps) {
         signal: controller.signal
       });
 
-      const body = await response.json();
-      if (!response.ok) {
-        throw new Error(body.error || 'Не удалось отправить заявку.');
+      let body: any = null;
+      try {
+        body = await response.json();
+      } catch {
+        // Non-JSON response (e.g. HTML 502/504 from reverse proxy or server crash)
       }
 
-      setReceipt(body.message || 'Заявка принята.');
+      if (!response.ok) {
+        throw new Error(body?.error || 'Не удалось отправить заявку.');
+      }
+
+      setReceipt(body?.message || 'Заявка принята.');
       setStatus('success');
     } catch (err) {
       setStatus('error');

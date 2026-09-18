@@ -11,14 +11,32 @@ export class BitrixAdapter {
   }
 
   /**
-   * Проверяет, настроен ли реальный вебхук Bitrix24
+   * Проверяет, настроен ли реальный вебхук Bitrix24 и защищает от SSRF
    */
   isConfigured() {
-    return (
-      Boolean(this.webhookUrl) &&
-      !this.webhookUrl.includes('your-domain.bitrix24.ru') &&
-      !this.webhookUrl.includes('secret_token')
-    );
+    if (!this.webhookUrl || typeof this.webhookUrl !== 'string') return false;
+    if (this.webhookUrl.includes('your-domain.bitrix24.ru') || this.webhookUrl.includes('secret_token')) {
+      return false;
+    }
+
+    try {
+      const parsed = new URL(this.webhookUrl);
+      // Разрешен https (или http строго для локальных тестов на 127.0.0.1 / localhost)
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+      if (parsed.protocol === 'http:' && parsed.hostname !== '127.0.0.1' && parsed.hostname !== 'localhost') {
+        return false;
+      }
+
+      // Защита от SSRF: запрет адресов метаданных облачных провайдеров
+      const host = parsed.hostname.toLowerCase();
+      if (host === '169.254.169.254' || host === 'metadata.google.internal' || host === 'instance-data') {
+        return false;
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -32,10 +50,12 @@ export class BitrixAdapter {
       return {
         success: true,
         leadId,
+        id: leadId,
         mode: 'local',
         message: 'Заявка принята в обработку (локальный режим консультации).'
       };
     }
+
 
     const payload = {
       fields: {

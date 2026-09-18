@@ -9,6 +9,9 @@ const isNonEmptyString = (v: unknown): v is string =>
 const isValidUrl = (v: unknown): v is string =>
   isNonEmptyString(v) && (/^\/(?!\/)/.test(v) || /^https:\/\//.test(v));
 
+export const isValidLeadEndpoint = (v: unknown): v is string =>
+  isNonEmptyString(v) && /^\/(?!\/)/.test(v);
+
 const isPositiveNumber = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v) && v > 0;
 
@@ -31,6 +34,40 @@ export function parseExperience(value: unknown): ExperienceConfig {
     !isPositiveNumber(config.model.scale)
   ) {
     throw new Error('Invalid model');
+  }
+
+  if (config.lumaTour !== undefined) {
+    if (
+      !isObject(config.lumaTour) ||
+      typeof config.lumaTour.captureId !== 'string' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(config.lumaTour.captureId) ||
+      !isNonEmptyString(config.lumaTour.title) ||
+      !isNonEmptyString(config.lumaTour.note)
+    ) {
+      throw new Error('Invalid Luma tour');
+    }
+  }
+
+  if (config.lumaScenes !== undefined) {
+    if (!Array.isArray(config.lumaScenes) || config.lumaScenes.length === 0) {
+      throw new Error('Invalid Luma scenes');
+    }
+    const sceneIds = new Set<string>();
+    for (const scene of config.lumaScenes) {
+      if (
+        !isObject(scene) ||
+        !isNonEmptyString(scene.id) ||
+        sceneIds.has(scene.id) ||
+        !isNonEmptyString(scene.label) ||
+        typeof scene.captureId !== 'string' ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(scene.captureId) ||
+        !isNonEmptyString(scene.title) ||
+        !isNonEmptyString(scene.note)
+      ) {
+        throw new Error('Invalid Luma tour scene');
+      }
+      sceneIds.add(scene.id);
+    }
   }
 
   // Проверка массивов данных
@@ -152,7 +189,7 @@ export function parseExperience(value: unknown): ExperienceConfig {
     return sanitized;
   });
 
-  if (!isValidUrl(config.leadEndpoint) || !isValidUrl(config.source)) {
+  if (!isValidLeadEndpoint(config.leadEndpoint) || !isValidUrl(config.source)) {
     throw new Error('Invalid endpoint');
   }
 

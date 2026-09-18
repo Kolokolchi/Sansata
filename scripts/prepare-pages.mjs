@@ -10,6 +10,7 @@ const routes = [
   'visual/free',
   'favorite',
   'tour',
+  'cloud-tour',
   'audiogid',
   'mortgage',
   'how-to-buy',
@@ -27,6 +28,7 @@ const routes = [
     ...Array.from({ length: 9 }, (_, index) => `visual/section/${section}/floor/${index + 1}`)
   ]),
   ...project.plans.map((plan) => `flat/${plan.id}`),
+  ...project.plans.map((plan) => `flat-classic/${plan.id}`),
   ...editorial.promos.map((item) => `akcii/${item.id}`),
   ...editorial.news.map((item) => `news/${item.id}`)
 ];

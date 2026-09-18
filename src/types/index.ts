@@ -30,6 +30,8 @@ export interface Panorama {
   src: string;
   poster?: string;
   links?: PanoramaLink[];
+  initialYaw?: number;
+  initialPitch?: number;
 }
 
 export interface MediaAlbum {
@@ -53,7 +55,21 @@ export interface CameraStream {
   url: string;
 }
 
+export interface LumaTourScene {
+  id: string;
+  label: string;
+  captureId: string;
+  title: string;
+  note: string;
+}
+
 export interface ExperienceConfig {
+  lumaTour?: {
+    captureId: string;
+    title: string;
+    note: string;
+  };
+  lumaScenes?: LumaTourScene[];
   selectionMedia?: {
     masterplan?: SelectionImage;
     facades?: Record<string, SelectionImage>;
@@ -188,4 +204,3 @@ export interface LeadResponseDto {
   mode: 'crm' | 'local';
   message: string;
 }
-

@@ -11,6 +11,7 @@ const Journey = lazy(() => import('./Journey').then(m=>({default:m.Journey})));
 const FlatExperience = lazy(() => import('./FlatExperience').then(m=>({default:m.FlatExperience})));
 const Audio = lazy(() => import('./AudioTour').then((m) => ({ default: m.AudioTour })));
 const Tour = lazy(() => import('./SceneViewer').then((m) => ({ default: m.TourPage })));
+const CloudTour = lazy(() => import('./SceneViewer').then((m) => ({ default: m.CloudTourPage })));
 const Mortgage = lazy(() => import('./InfoPages').then((m) => ({ default: m.Mortgage })));
 const Purchase = lazy(() => import('./InfoPages').then((m) => ({ default: m.Purchase })));
 const Finishing = lazy(() => import('./InfoPages').then((m) => ({ default: m.Finishing })));
@@ -43,8 +44,17 @@ export const projectLinks: [string, string][] = [
   ['/documents', 'Документы'],
   ['/contacts', 'Контакты'],
   ['/audiogid', 'Аудиоэкскурсия'],
-  ['/tour', '3D-туры']
+  ['/tour', '3D-тур'],
+  ['/cloud-tour', 'Облачный 3D-тур']
 ];
+
+export function safeDecode(str: string): string {
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+}
 
 export function ExperienceRoutes(props: ExperienceRoutesProps) {
   const path = sitePath().replace(/\/$/, '') || '/';
@@ -67,7 +77,10 @@ export function ExperienceRoutes(props: ExperienceRoutesProps) {
       page = <Audio />;
       break;
     case '/tour':
-      page = <Tour config={props.config} />;
+      page = <Tour config={props.config} onConsult={props.onConsult} />;
+      break;
+    case '/cloud-tour':
+      page = <CloudTour config={props.config} onConsult={props.onConsult} />;
       break;
     case '/mortgage':
       page = <Mortgage onConsult={props.onConsult} />;
@@ -104,13 +117,13 @@ export function ExperienceRoutes(props: ExperienceRoutesProps) {
       if (path.startsWith('/visual/section/')) {
         page = <Journey {...props} />;
       } else if (path.startsWith('/flat-classic/')) {
-        page = <FlatPage {...props} key={path} id={decodeURIComponent(path.slice(14))} />;
+        page = <FlatPage {...props} key={path} id={safeDecode(path.slice(14))} />;
       } else if (path.startsWith('/flat/')) {
-        page = <FlatExperience {...props} key={path} id={decodeURIComponent(path.slice(6))} />;
+        page = <FlatExperience {...props} key={path} id={safeDecode(path.slice(6))} />;
       } else if (path.startsWith('/akcii/')) {
-        page = <Editorial kind="promos" slug={decodeURIComponent(path.slice(7))} />;
+        page = <Editorial kind="promos" slug={safeDecode(path.slice(7))} />;
       } else if (path.startsWith('/news/')) {
-        page = <Editorial kind="news" slug={decodeURIComponent(path.slice(6))} />;
+        page = <Editorial kind="news" slug={safeDecode(path.slice(6))} />;
       } else {
         page = (
           <div className="experience-page empty">
@@ -142,6 +155,7 @@ export function ExperienceRoutes(props: ExperienceRoutesProps) {
 export function HomeExperiences() {
   return (
     <>
+      <div id="advantages" style={{ position: 'relative', top: '-80px', visibility: 'hidden' }} />
       <section className="section feature-intro" id="benefits">
         <div className="section-heading">
           <span className="eyebrow">ЗНАКОМСТВО С ПРОЕКТОМ</span>
@@ -228,6 +242,7 @@ export function HomeExperiences() {
         </div>
       </section>
 
+      <div id="akcii" style={{ position: 'relative', top: '-80px', visibility: 'hidden' }} />
       <section className="section" id="promos">
         <div className="section-heading">
           <span className="eyebrow">АКЦИИ SENSATA GROUP</span>
@@ -333,6 +348,7 @@ export function HomeExperiences() {
           <ArrowUpRight />
         </a>
 
+        <div id="docs" style={{ position: 'relative', top: '-80px', visibility: 'hidden' }} />
         <a
           href={siteUrl('/documents')}
           id="documents"

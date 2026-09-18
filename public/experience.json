@@ -5,7 +5,89 @@
     "label": "ЖК Shattyq · Реалистичная 3D-модель комплекса",
     "scale": 1
   },
-  "panoramas": [],
+  "panoramas": [
+    {
+      "id": "pano_250",
+      "title": "Общий вид 360° (Аэросъёмка)",
+      "src": "/images/3d_tour/pano_250_4k.jpg",
+      "poster": "/images/3d_tour/pano_250_preview.jpg",
+      "initialYaw": -100,
+      "initialPitch": -50,
+      "links": [
+        {
+          "target": "cam_5",
+          "yaw": -100,
+          "pitch": -50
+        },
+        {
+          "target": "cam_6",
+          "yaw": -80,
+          "pitch": -50
+        }
+      ]
+    },
+    {
+      "id": "cam_5",
+      "title": "Фасад с проспекта 360°",
+      "src": "/images/3d_tour/cam_5_4k.jpg",
+      "poster": "/images/3d_tour/cam_5_preview.jpg",
+      "initialYaw": -100,
+      "initialPitch": -28,
+      "links": [
+        {
+          "target": "cam_6",
+          "yaw": -108,
+          "pitch": -7
+        },
+        {
+          "target": "pano_250",
+          "yaw": -100,
+          "pitch": 45
+        }
+      ]
+    },
+    {
+      "id": "cam_6",
+      "title": "Двор и бульвар 360°",
+      "src": "/images/3d_tour/cam_6_4k.jpg",
+      "poster": "/images/3d_tour/cam_6_preview.jpg",
+      "initialYaw": -80,
+      "initialPitch": -28,
+      "links": [
+        {
+          "target": "cam_5",
+          "yaw": -80,
+          "pitch": -8
+        },
+        {
+          "target": "pano_250",
+          "yaw": -80,
+          "pitch": 45
+        }
+      ]
+    }
+  ],
+  "lumaTour": {
+    "captureId": "4f362242-ad43-4851-9b04-88adf71f24f5",
+    "title": "Corsewall Lighthouse Hotel",
+    "note": "Демонстрационная сцена стороннего автора @LiftPlanner. Это не съёмка ЖК Shattyq."
+  },
+  "lumaScenes": [
+    {
+      "id": "exterior",
+      "label": "Экстерьер",
+      "captureId": "4f362242-ad43-4851-9b04-88adf71f24f5",
+      "title": "Corsewall Lighthouse Hotel",
+      "note": "Демонстрационная сцена стороннего автора @LiftPlanner. Это не съёмка ЖК Shattyq."
+    },
+    {
+      "id": "interior",
+      "label": "Интерьер",
+      "captureId": "b271fff7-37dd-47b1-8921-6375cd069c91",
+      "title": "Grand Central Terminal",
+      "note": "Демонстрационная сцена интерьера стороннего автора @FrancLucent. Это не съёмка ЖК Shattyq."
+    }
+  ],
   "constructionAlbums": [],
   "cameras": [],
   "documents": [],

@@ -6,3 +6,341 @@
 @media print{.flat-route,.viewer-topbar,.flat-view-tabs,.flat-purchase,.flat-related,.flat-info-actions,.flat-info-panel>.button,.viewer-help,.tour-bottom-controls{display:none!important}.flat-experience-grid{display:block}.flat-info-panel{break-inside:avoid}.flat-viewer-column{break-inside:avoid}}
 .selection-image{display:block;width:100%;height:auto;background:#f4f4f7;border-radius:5px}.selection-image polygon,.selection-polygon{fill:#30228215;stroke:#30228277;stroke-width:2;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill .15s ease,stroke .15s ease}.selection-image polygon:hover,.selection-image polygon:focus,.selection-image polygon[aria-pressed=true],.selection-polygon:hover,.selection-polygon:focus,.selection-polygon[aria-pressed=true]{fill:#30228266;stroke:#302282;outline:none}.selection-image polygon[aria-disabled=true],.selection-polygon[aria-disabled=true]{opacity:.2;cursor:default;pointer-events:none}.selection-tooltip-marker{pointer-events:none;transition:transform .2s ease,opacity .2s ease}.selection-tooltip-badge{fill:#ffffff;stroke:var(--blue);stroke-width:1.5;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.15))}.selection-tooltip-text{font-size:11px;font-weight:600;fill:var(--blue);user-select:none}.selection-tooltip-marker.selected .selection-tooltip-badge{fill:var(--blue);stroke:#ffffff}.selection-tooltip-marker.selected .selection-tooltip-text{fill:#ffffff}.selection-tooltip-marker.disabled{opacity:.3}.print-plan{display:none}.plan-zoom-scroll>img{min-height:0;object-fit:contain}.tour-canvas-area .panorama-canvas{height:425px}.tour-canvas-area .muted-note{display:none}@media(min-width:1240px){.selection-image{width:100%;height:auto;max-height:none}}
 @media print{.print-plan{display:block;width:100%;max-height:700px;object-fit:contain}.flat-viewer{display:none!important}}
+
+/* ==========================================================================
+   Интерактивный чертёж этажа, плавающий тултип и мобильная шторка
+   ========================================================================== */
+
+.selection-image-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(18, 25, 39, 0.06);
+}
+
+.floor-map-visual-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.floor-map-sub {
+  color: var(--blue, #1946b8);
+  font-weight: 500;
+}
+
+/* Стилизация полигонов: ховер, фокус и диммирование */
+.selection-polygon {
+  transition: fill 0.2s ease, stroke 0.2s ease, opacity 0.25s ease;
+}
+
+.selection-polygon.is-hovered {
+  fill: rgba(25, 70, 184, 0.38) !important;
+  stroke: #1946b8 !important;
+  stroke-width: 3 !important;
+  filter: drop-shadow(0 2px 8px rgba(25, 70, 184, 0.3));
+}
+
+.selection-polygon.is-dimmed {
+  opacity: 0.38;
+}
+
+/* Плавающий HTML-тултип (Floating Tooltip) */
+.apartment-floating-tooltip {
+  position: absolute;
+  width: 260px;
+  background: #ffffff;
+  border: 1px solid rgba(25, 70, 184, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(18, 25, 39, 0.18), 0 2px 8px rgba(18, 25, 39, 0.08);
+  pointer-events: none;
+  z-index: 50;
+  overflow: hidden;
+  animation: tooltipFadeIn 0.15s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tooltip-thumb-wrap {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: #f7f6f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #edebe7;
+}
+
+.tooltip-thumb {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.tooltip-fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c87a1;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tooltip-fav-btn.active {
+  color: #e53e3e;
+  border-color: #e53e3e;
+}
+
+.tooltip-body {
+  padding: 12px 14px;
+}
+
+.tooltip-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.tooltip-title strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #121927;
+}
+
+.tooltip-title span {
+  font-size: 11px;
+  color: #7d7264;
+}
+
+.tooltip-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.tooltip-area {
+  font-weight: 600;
+  color: var(--blue, #1946b8);
+}
+
+.tooltip-status {
+  font-size: 10px;
+  background: #f0f4fd;
+  color: var(--blue, #1946b8);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.tooltip-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #121927;
+  margin-bottom: 6px;
+}
+
+.tooltip-cta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--blue, #1946b8);
+  font-weight: 500;
+  padding-top: 6px;
+  border-top: 1px solid #f2f0ec;
+}
+
+/* Мобильная нижняя шторка (Bottom Sheet) */
+.mobile-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 25, 39, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  animation: sheetFadeIn 0.2s ease-out;
+}
+
+@keyframes sheetFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mobile-apartment-sheet {
+  position: relative;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 20px 20px 30px;
+  box-shadow: 0 -8px 32px rgba(18, 25, 39, 0.2);
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: sheetSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.mobile-sheet-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: #f0edf8;
+  color: #121927;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mobile-sheet-content {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.mobile-sheet-thumb {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  background: #f7f6f4;
+  border-radius: 8px;
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+.mobile-sheet-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-sheet-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--blue, #1946b8);
+  background: #edf2fc;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+
+.mobile-sheet-details h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 2px 0 6px;
+  color: #121927;
+}
+
+.mobile-sheet-specs {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  color: #6d6c7d;
+  margin-bottom: 6px;
+}
+
+.mobile-sheet-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #121927;
+  margin-bottom: 12px;
+}
+
+.mobile-sheet-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mobile-sheet-btn {
+  flex: 1;
+  font-size: 12px;
+  padding: 10px 16px;
+  min-height: 40px;
+}
+
+.mobile-sheet-fav {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #e2e1e9);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mobile-sheet-fav.saved {
+  color: #e53e3e;
+  border-color: #e53e3e;
+}
+
+/* Стрелочный переключатель этажей в шапке чертежа */
+.journey-floor-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.floor-quick-arrows {
+  display: inline-flex;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.floor-nav-arrow {
+  border: 0;
+  background: transparent;
+  padding: 3px 6px;
+  color: var(--blue, #1946b8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.floor-nav-arrow:hover:not(:disabled) {
+  background: #eef2fb;
+}
+
+.floor-nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

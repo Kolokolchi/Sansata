@@ -3,12 +3,15 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { siteUrl } from '../lib/site';
 import { Panorama } from '../lib/experience';
+import { Plus, Minus, RotateCcw, Maximize, Compass, X } from 'lucide-react';
 
-interface PanoramaViewerProps {
+export interface PanoramaViewerProps {
   panoramas: Panorama[];
   selectedId?: string;
   onSelect?: (id: string) => void;
   captureToken?: number;
+  inline?: boolean;
+  onClose?: () => void;
 }
 
 interface MarkerItem {
@@ -16,15 +19,39 @@ interface MarkerItem {
   position: THREE.Vector3;
 }
 
+function orientCameraTo(camera: THREE.PerspectiveCamera, controls: OrbitControls, yaw = 0, pitch = 0) {
+  const yawRad = THREE.MathUtils.degToRad(yaw);
+  const pitchRad = THREE.MathUtils.degToRad(pitch);
+  const camDir = new THREE.Vector3(
+    Math.sin(yawRad) * Math.cos(pitchRad),
+    Math.sin(pitchRad),
+    -Math.cos(yawRad) * Math.cos(pitchRad)
+  ).normalize();
+
+  camera.position.copy(camDir).multiplyScalar(-0.01);
+  camera.lookAt(0, 0, 0);
+  controls.target.set(0, 0, 0);
+  controls.update();
+}
+
 export function PanoramaViewer({
   panoramas,
   selectedId,
   onSelect,
-  captureToken = 0
+  captureToken = 0,
+  inline = false,
+  onClose
 }: PanoramaViewerProps) {
-  const [currentId, setCurrentId] = useState<string>(panoramas[0]?.id || '');
+  const [internalId, setInternalId] = useState<string>(selectedId || panoramas[0]?.id || '');
+
+  useEffect(() => {
+    if (selectedId) {
+      setInternalId(selectedId);
+    }
+  }, [selectedId]);
+
   const choose = (id: string) => {
-    setCurrentId(id);
+    setInternalId(id);
     onSelect?.(id);
   };
 
@@ -35,7 +62,7 @@ export function PanoramaViewer({
 
   const [error, setError] = useState<string>('');
 
-  const currentPanorama = panoramas.find((p) => p.id === (selectedId || currentId)) || panoramas[0];
+  const currentPanorama = panoramas.find((p) => p.id === internalId) || panoramas[0];
   const hostRef = useRef<HTMLDivElement>(null);
 
   const apiRef = useRef<{
@@ -74,6 +101,10 @@ export function PanoramaViewer({
     controls.rotateSpeed = -0.35;
     controls.enableDamping = true;
 
+    const initYaw = currentPanorama?.initialYaw ?? 0;
+    const initPitch = currentPanorama?.initialPitch ?? 0;
+    orientCameraTo(camera, controls, initYaw, initPitch);
+
     // Inverted sphere for 360-degree equirectangular panorama projection
     const geometry = new THREE.SphereGeometry(40, 64, 32);
     geometry.scale(-1, 1, 1);
@@ -83,6 +114,9 @@ export function PanoramaViewer({
     scene.add(mesh);
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.display = 'block';
     container.appendChild(renderer.domElement);
 
     captureRef.current = () => {
@@ -96,15 +130,22 @@ export function PanoramaViewer({
     apiRef.current = { renderer, scene, camera, controls, material, geometry };
 
     const handleResize = () => {
-      if (!container.clientHeight) return;
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      camera.aspect = container.clientWidth / container.clientHeight;
+      if (isDisposed || !container) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w === 0 || h === 0) return;
+
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
     handleResize();
+    requestAnimationFrame(handleResize);
+    const timeoutId = setTimeout(handleResize, 150);
+    window.addEventListener('resize', handleResize);
 
     const forward = new THREE.Vector3();
 
@@ -125,10 +166,20 @@ export function PanoramaViewer({
       }
     });
 
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      camera.fov = Math.min(95, Math.max(30, camera.fov + e.deltaY * 0.05));
+      camera.updateProjectionMatrix();
+    };
+    renderer.domElement.addEventListener('wheel', handleWheel, { passive: false });
+
     return () => {
       isDisposed = true;
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', handleResize);
       captureRef.current = null;
       resizeObserver.disconnect();
+      renderer.domElement.removeEventListener('wheel', handleWheel);
       renderer.setAnimationLoop(null);
       controls.dispose();
 
@@ -210,7 +261,16 @@ export function PanoramaViewer({
     };
   }, [currentPanorama?.id, currentPanorama?.src, currentPanorama?.poster]);
 
-  // 3. Update spatial navigation markers on room switch
+  // 3. Re-orient camera when switching panoramas to each room's canonical initial view
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api || !currentPanorama) return;
+    const yaw = currentPanorama.initialYaw ?? 0;
+    const pitch = currentPanorama.initialPitch ?? 0;
+    orientCameraTo(api.camera, api.controls, yaw, pitch);
+  }, [currentPanorama?.id, currentPanorama?.initialYaw, currentPanorama?.initialPitch]);
+
+  // 4. Update spatial navigation markers on room switch
   useEffect(() => {
     const container = hostRef.current;
     if (!container || !currentPanorama) return;
@@ -247,26 +307,128 @@ export function PanoramaViewer({
     };
   }, [currentPanorama?.id, currentPanorama?.links, panoramas]);
 
+  const zoomIn = () => {
+    if (!apiRef.current) return;
+    const cam = apiRef.current.camera;
+    cam.fov = Math.max(30, cam.fov - 8);
+    cam.updateProjectionMatrix();
+  };
+
+  const zoomOut = () => {
+    if (!apiRef.current) return;
+    const cam = apiRef.current.camera;
+    cam.fov = Math.min(95, cam.fov + 8);
+    cam.updateProjectionMatrix();
+  };
+
+  const resetView = () => {
+    if (!apiRef.current) return;
+    const { camera, controls } = apiRef.current;
+    camera.fov = 70;
+    camera.updateProjectionMatrix();
+    const yaw = currentPanorama?.initialYaw ?? 0;
+    const pitch = currentPanorama?.initialPitch ?? 0;
+    orientCameraTo(camera, controls, yaw, pitch);
+  };
+
+  const toggleFullscreen = () => {
+    const el = hostRef.current?.parentElement;
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+    }
+  };
+
   return (
-    <div>
-      <div className="tabs">
-        {panoramas.map((item) => (
+    <div className={`panorama-viewer-root ${inline ? 'is-inline' : 'is-full'}`}>
+      {/* Top Bar with scene switching chips */}
+      <div className="panorama-top-bar">
+        <div className="panorama-chips-container" role="tablist" aria-label="Точки обзора 360°">
+          {panoramas.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={currentPanorama?.id === item.id}
+              onClick={() => choose(item.id)}
+              className={`panorama-scene-chip ${currentPanorama?.id === item.id ? 'is-active' : ''}`}
+            >
+              <Compass size={14} />
+              <span>{item.title}</span>
+            </button>
+          ))}
+        </div>
+
+        {onClose && (
           <button
-            key={item.id}
-            onClick={() => choose(item.id)}
-            className={currentPanorama?.id === item.id ? 'active' : ''}
+            type="button"
+            className="panorama-close-button"
+            onClick={onClose}
+            aria-label="Закрыть 360-тур"
+            title="Закрыть 360-тур"
           >
-            {item.title}
+            <X size={20} />
           </button>
-        ))}
+        )}
       </div>
 
-      <div className="panorama-canvas" ref={hostRef} />
+      {/* Canvas Wrap taking all remaining height */}
+      <div className="panorama-canvas-wrap">
+        <div className="panorama-canvas" ref={hostRef} />
 
-      {error && <p role="alert">{error}</p>}
-      <p className="muted-note">
-        Вращайте изображение мышью или пальцем. Стрелки и кнопки названий перемещают между точками.
-      </p>
+        {/* Floating Controls (Zoom, Reset, Fullscreen) */}
+        <div className="panorama-floating-controls">
+          <button
+            type="button"
+            className="panorama-ctrl-btn"
+            onClick={zoomIn}
+            title="Приблизить (+)"
+            aria-label="Приблизить"
+          >
+            <Plus size={18} />
+          </button>
+          <button
+            type="button"
+            className="panorama-ctrl-btn"
+            onClick={zoomOut}
+            title="Отдалить (-)"
+            aria-label="Отдалить"
+          >
+            <Minus size={18} />
+          </button>
+          <button
+            type="button"
+            className="panorama-ctrl-btn"
+            onClick={resetView}
+            title="Сбросить угол обзора"
+            aria-label="Сбросить угол обзора"
+          >
+            <RotateCcw size={17} />
+          </button>
+          <button
+            type="button"
+            className="panorama-ctrl-btn"
+            onClick={toggleFullscreen}
+            title="Во весь экран"
+            aria-label="Во весь экран"
+          >
+            <Maximize size={17} />
+          </button>
+        </div>
+
+        {/* Subtle Hint Badge at Bottom Center */}
+        <div className="panorama-hint-badge">
+          <span>Вращайте панораму 360° мышью или пальцем · Колёсико для зума</span>
+        </div>
+
+        {error && (
+          <div className="panorama-error-banner" role="alert">
+            {error}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

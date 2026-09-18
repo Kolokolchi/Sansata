@@ -1,0 +1,723 @@
+/* ==========================================================================
+   SHATTYQ 3D VISUALIZER & 360° TOUR (STAVNI OBVODNY REFERENCE STYLE)
+   ========================================================================== */
+
+.visual-tour-container {
+  position: relative;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #12141c;
+  box-shadow: 0 16px 48px rgba(10, 15, 30, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.visual-tour-container.masterplan-stage {
+  height: auto;
+  min-height: auto;
+}
+
+.visual-stage-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 320px;
+  overflow: hidden;
+  background: #0f121d;
+  user-select: none;
+}
+
+.visual-canvas-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.visual-bg-image {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 0.4s ease-in-out;
+}
+
+/* SVG Interactive Section Polygons */
+.visual-section-polygon {
+  fill: rgba(255, 123, 0, 0.08);
+  stroke: rgba(255, 138, 0, 0.85);
+  stroke-width: 2.5px;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  transition: fill 0.22s ease, stroke 0.22s ease, opacity 0.25s ease, filter 0.22s ease;
+  pointer-events: visiblePainted;
+}
+
+.visual-section-polygon:hover,
+.visual-section-polygon:focus-visible,
+.visual-section-polygon.is-active {
+  fill: rgba(255, 123, 0, 0.28);
+  stroke: #ff6a00;
+  stroke-width: 3.5px;
+  filter: drop-shadow(0 0 14px rgba(255, 123, 0, 0.55));
+  outline: none;
+}
+
+.visual-section-polygon.is-dimmed {
+  opacity: 0.28;
+}
+
+/* Section Floating Badge Pins */
+.visual-section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 123, 0, 0.4);
+  border-radius: 20px;
+  color: #1a1e2d;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  pointer-events: auto;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, border-color 0.2s ease;
+}
+
+.visual-section-badge:hover,
+.visual-section-badge.is-active {
+  transform: scale(1.06) translateY(-2px);
+  background: #ffffff;
+  border-color: #ff6a00;
+  box-shadow: 0 6px 20px rgba(255, 123, 0, 0.35);
+}
+
+.visual-section-badge .badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff6a00;
+  box-shadow: 0 0 8px #ff6a00;
+}
+
+.visual-section-badge .badge-subtitle {
+  font-size: 10px;
+  font-weight: 400;
+  color: #64748b;
+  margin-left: 2px;
+}
+
+/* POI Pins (Yard, School, 360 Tour) */
+.visual-poi-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(20, 26, 46, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.visual-poi-pin:hover {
+  background: rgba(30, 41, 74, 0.96);
+  border-color: #ff6a00;
+  transform: translateY(-2px);
+}
+
+.visual-poi-pin.type-360 {
+  background: linear-gradient(135deg, #ff6a00, #ea580c);
+  border-color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(255, 106, 0, 0.5);
+  animation: visualBeaconGlow 2.5s infinite;
+}
+
+.visual-poi-pin.type-360:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 106, 0, 0.7);
+}
+
+@keyframes visualBeaconGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 106, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 106, 0, 0);
+  }
+}
+
+/* Floating Section Detail Card (Tooltip) */
+.visual-floating-card {
+  position: absolute;
+  width: 280px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(255, 123, 0, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 16px 36px rgba(10, 18, 38, 0.24), 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  z-index: 40;
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+  animation: cardAppear 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #1e293b;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.visual-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 8px;
+}
+
+.visual-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.visual-card-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #ea580c;
+  background: #fff7ed;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.visual-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.visual-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.visual-card-row strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.visual-card-rooms {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.visual-card-room-tag {
+  font-size: 10px;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.visual-card-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #1946b8;
+  color: #ffffff;
+  border: 0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+
+.visual-card-action:hover {
+  background: #143794;
+}
+
+/* Bottom Bar: Filters & Rotate Button */
+.visual-bottom-bar {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* Room Filter Buttons (Stavni Style) */
+.visual-room-filter {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 5px 6px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+}
+
+.visual-room-filter-btn {
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.visual-room-filter-btn:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.visual-room-filter-btn.is-active {
+  background: #1946b8;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(25, 70, 184, 0.35);
+}
+
+/* Change Angle Button ("Сменить ракурс") */
+.visual-rotate-control {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 30px;
+  color: #1e293b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.visual-rotate-control:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+  color: #ff6a00;
+}
+
+.visual-rotate-control svg {
+  transition: transform 0.4s ease;
+}
+
+.visual-rotate-control:hover svg {
+  transform: rotate(180deg);
+}
+
+/* Top Angle Indicator & 360 Tour Launcher */
+.visual-top-bar {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.visual-title-badge {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.visual-view-mode-toggle {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 3px;
+  backdrop-filter: blur(8px);
+}
+
+.visual-mode-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.visual-mode-toggle-btn:hover {
+  color: #ffffff;
+}
+
+.visual-mode-toggle-btn.is-active {
+  background: linear-gradient(135deg, #ff6a00, #ea580c);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(234, 88, 12, 0.4);
+}
+
+.visual-tour-360-btn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #ea580c, #c2410c);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(234, 88, 12, 0.45);
+  transition: all 0.2s ease;
+}
+
+.visual-tour-360-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(234, 88, 12, 0.6);
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+/* 360 Panorama Modal Overlay */
+.visual-panorama-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2000;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   PANORAMA VIEWER (MODAL & INLINE 360)
+   ========================================================================== */
+
+.panorama-viewer-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+  display: flex;
+  flex-direction: column;
+  background: #000000;
+  overflow: hidden;
+  user-select: none;
+  border-radius: 8px;
+}
+
+.visual-panorama-overlay .panorama-viewer-root {
+  min-height: 100vh;
+  border-radius: 0;
+}
+
+.panorama-viewer-root.is-inline {
+  aspect-ratio: 16 / 9;
+  min-height: 480px;
+  border-radius: 0;
+}
+
+.panorama-top-bar {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 25;
+  pointer-events: none;
+}
+
+.panorama-top-bar > * {
+  pointer-events: auto;
+}
+
+.panorama-chips-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.panorama-scene-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(15, 20, 35, 0.78);
+  color: #f1f5f9;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.panorama-scene-chip:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.panorama-scene-chip.is-active {
+  background: linear-gradient(135deg, #ff6a00, #ea580c);
+  border-color: #ff6a00;
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.45);
+}
+
+.panorama-close-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.panorama-close-button:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  transform: scale(1.05);
+}
+
+.panorama-canvas-wrap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panorama-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.panorama-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.panorama-floating-controls {
+  position: absolute;
+  right: 16px;
+  top: 70px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+}
+
+.panorama-ctrl-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.82);
+  color: #f8fafc;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.panorama-ctrl-btn:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(255, 106, 0, 0.6);
+  color: #ff8a00;
+  transform: scale(1.06);
+}
+
+.panorama-hint-badge {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(10, 15, 30, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 11px;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  z-index: 15;
+}
+
+.panorama-error-banner {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  border-radius: 6px;
+  font-size: 12px;
+  z-index: 30;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .visual-stage-wrap {
+    aspect-ratio: 16 / 9;
+    min-height: 280px;
+  }
+  .visual-floating-card {
+    width: 250px;
+    padding: 12px;
+  }
+  .visual-bottom-bar {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+  }
+  .visual-top-bar {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+  }
+  .visual-room-filter-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+  .visual-rotate-control {
+    padding: 8px 14px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  .visual-stage-wrap {
+    aspect-ratio: 16 / 9;
+    min-height: 220px;
+  }
+  .visual-top-bar {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    gap: 8px;
+  }
+  .visual-title-badge {
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+  .visual-title-badge span:last-child {
+    display: none;
+  }
+  .visual-tour-360-btn {
+    padding: 6px 12px;
+    font-size: 10px;
+  }
+  .visual-bottom-bar {
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    flex-direction: column-reverse;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .visual-room-filter {
+    justify-content: center;
+    padding: 3px 4px;
+  }
+  .visual-room-filter-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  .visual-rotate-control {
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  .visual-floating-card {
+    width: 220px;
+    padding: 10px;
+    font-size: 11px;
+  }
+}

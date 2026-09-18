@@ -6,10 +6,11 @@ import {
   ProjectDocument,
   CameraStream,
   ExperienceConfig,
+  LumaTourScene,
   MortgageCalculationResult
 } from '../types';
 
-export type { Flat, Panorama, MediaAlbum, ProjectDocument, CameraStream, ExperienceConfig };
+export type { Flat, Panorama, MediaAlbum, ProjectDocument, CameraStream, ExperienceConfig, LumaTourScene };
 
 // Секции и этажи по оригинальным чертежам
 const positions: [number, number][] = [

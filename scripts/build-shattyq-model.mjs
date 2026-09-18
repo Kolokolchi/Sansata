@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -25,7 +26,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 }
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'shattyq_complex.glb');
 
-console.log('🏗️  Building high-fidelity photorealistic Shattyq 3D complex model...');
+console.log('Building the Shattyq presentation model (approximate geometry from project renders)...');
 
 const scene = new THREE.Scene();
 scene.name = 'Shattyq_Complex_Scene';
@@ -104,8 +105,38 @@ const matPlayCobalt = createMat({ color: cPlayCobalt, roughness: 0.92, metalness
 const matPlayMint = createMat({ color: cPlayMint, roughness: 0.92, metalness: 0.0 });
 const matNeonSign = createMat({ color: 0xfffaee, emissive: 0xffeedd, emissiveIntensity: 1.5, roughness: 0.2 });
 
+// Stable material roles survive GLB export. The viewer adds photographed PBR maps.
+for (const [name, material] of Object.entries({
+  stone: matTravertine, stoneInset: matTravertineShade, stoneLedge: matTravertineCornice,
+  bronzeScreen: matPerforatedLattice, charcoal: matCharcoal, bronze: matDarkBronze,
+  glass: matGlass, glassOccupied: matGlassLit, storefront: matCafeGlass,
+  podiumStone: matPodium, paving: matPaver, concrete: matPaverDark,
+  asphalt: matAsphalt, markings: matRoadMarking, grass: matGrass,
+  wood: matWood, steel: matSteelDark, silver: matSteelSilver,
+  railing: matGlassRailing, rubberTeal: matPlayTeal, rubberCoral: matPlayCoral,
+  rubberSand: matPlaySand, rubberBlue: matPlayCobalt, rubberMint: matPlayMint,
+  luminaire: matNeonSign
+})) material.name = name;
+
+const matInterior = createMat({ name: 'interior', color: 0x686256, roughness: 1, metalness: 0 });
+const matCurtain = createMat({ name: 'curtain', color: 0xc4bba9, roughness: 1, metalness: 0 });
+const matCurtainLit = createMat({ name: 'curtainOccupied', color: 0xc4bba9, roughness: 1, metalness: 0 });
+const matSelection = new THREE.MeshBasicMaterial({ name: 'selection', color: 0x62798b, transparent: true, opacity: 0, depthWrite: false });
+
+function metricUV(geometry) {
+  const p = geometry.getAttribute('position');
+  const n = geometry.getAttribute('normal');
+  const uv = geometry.getAttribute('uv');
+  for (let i = 0; i < p.count; i++) {
+    if (Math.abs(n.getY(i)) > 0.5) uv.setXY(i, p.getX(i), p.getZ(i));
+    else if (Math.abs(n.getX(i)) > 0.5) uv.setXY(i, p.getZ(i), p.getY(i));
+    else uv.setXY(i, p.getX(i), p.getY(i));
+  }
+}
+
 function addBox(w, h, d, x, y, z, mat, parent = scene, name = '') {
   const geom = new THREE.BoxGeometry(w, h, d);
+  metricUV(geom);
   const mesh = new THREE.Mesh(geom, mat);
   mesh.position.set(x, y, z);
   mesh.castShadow = true;
@@ -144,8 +175,8 @@ const siteGroup = new THREE.Group();
 siteGroup.name = 'Site_and_Landscape';
 scene.add(siteGroup);
 
-addBox(150, 0.8, 130, 0, -0.4, 0, matPaverDark, siteGroup, 'Base_Ground');
-addBox(150, 0.2, 30, 0, 0.02, 42, matAsphalt, siteGroup, 'Avenue_Asphalt');
+addBox(1200, 0.8, 1200, 0, -0.45, 0, matGrass, siteGroup, 'Base_Ground');
+addBox(1200, 0.2, 30, 0, 0.02, 42, matAsphalt, siteGroup, 'Avenue_Asphalt');
 
 for (let i = -7; i <= 7; i++) {
   addBox(4.5, 0.02, 0.25, i * 10, 0.14, 42, matRoadMarking, siteGroup);
@@ -176,7 +207,7 @@ const PODIUM_D = 50;
 const PODIUM_X = 0;
 const PODIUM_Z = -5;
 
-addBox(PODIUM_W, PODIUM_H, PODIUM_D, PODIUM_X, PODIUM_H / 2, PODIUM_Z, matPodium, stylobateGroup, 'Stylobate_Core');
+addBox(PODIUM_W, PODIUM_H, PODIUM_D, PODIUM_X, PODIUM_H / 2, PODIUM_Z - 0.4, matPodium, stylobateGroup, 'Stylobate_Core');
 
 const frontZ = PODIUM_Z + PODIUM_D / 2 + 0.1;
 for (let x = -36; x <= 36; x += 6.0) {
@@ -250,91 +281,66 @@ function pseudoRandom() {
 
 function buildTowerFloor(sectionNum, floorNum, posX, posZ) {
   const floorGroup = new THREE.Group();
-  const floorName = `Section_${sectionNum}_Floor_${floorNum}`;
-  floorGroup.name = floorName;
-  floorGroup.userData = { section: sectionNum, floor: floorNum, name: `Секция ${sectionNum}, Этаж ${floorNum}` };
+  floorGroup.name = `Floor_Details_${sectionNum}_${floorNum}`;
+  const base = PODIUM_H + (floorNum - 1) * FLOOR_H;
+  const cy = base + FLOOR_H / 2;
 
-  const floorBaseY = PODIUM_H + (floorNum - 1) * FLOOR_H;
-  const floorCenterY = floorBaseY + FLOOR_H / 2;
+  // A separate, transparent picking hull preserves the canonical section/floor IDs.
+  const pick = addBox(TOWER_W + 0.65, FLOOR_H, TOWER_D + 0.65, posX, cy, posZ,
+    matSelection, floorGroup, `Section_${sectionNum}_Floor_${floorNum}`);
+  pick.userData = { section: sectionNum, floor: floorNum, pickOnly: true };
+  pick.castShadow = false;
+  pick.receiveShadow = false;
 
-  const slabCore = addBox(TOWER_W, FLOOR_H - 0.08, TOWER_D, posX, floorCenterY, posZ, matTravertine, floorGroup, `Slab_${floorName}`);
-  slabCore.userData = { section: sectionNum, floor: floorNum };
+  addBox(TOWER_W - 1.6, FLOOR_H - 0.1, TOWER_D - 1.6, posX, cy, posZ, matInterior, floorGroup);
+  addBox(TOWER_W + 0.5, 0.38, TOWER_D + 0.5, posX, base + FLOOR_H - 0.13, posZ, matTravertineCornice, floorGroup);
 
-  addBox(TOWER_W + 0.4, 0.26, TOWER_D + 0.4, posX, floorBaseY + FLOOR_H, posZ, matTravertineCornice, floorGroup);
-
-  const numBaysX = 6;
-  const baySpacingX = TOWER_W / numBaysX;
-
-  for (let b = 0; b <= numBaysX; b++) {
-    const colX = posX - TOWER_W / 2 + b * baySpacingX;
-    addBox(0.58, FLOOR_H + 0.02, 0.42, colX, floorCenterY, posZ + TOWER_D / 2 + 0.16, matTravertine, floorGroup);
-    addBox(0.58, FLOOR_H + 0.02, 0.42, colX, floorCenterY, posZ - TOWER_D / 2 - 0.16, matTravertine, floorGroup);
-  }
-
-  for (let b = 0; b < numBaysX; b++) {
-    const bayCenterX = posX - TOWER_W / 2 + (b + 0.5) * baySpacingX;
-    const isOrnamentalBay = (b === 2 || b === 4);
-    const isLitWindow = pseudoRandom() > 0.55;
-
-    const winFront = addBox(
-      baySpacingX - 0.65,
-      FLOOR_H - 0.65,
-      0.12,
-      bayCenterX,
-      floorCenterY,
-      posZ + TOWER_D / 2 + 0.08,
-      isLitWindow ? matGlassLit : matGlass,
-      floorGroup,
-      `Win_Front_${sectionNum}_${floorNum}_${b}`
-    );
-    winFront.userData = { section: sectionNum, floor: floorNum, lit: isLitWindow };
-
-    addBox(baySpacingX - 0.55, 0.1, 0.35, bayCenterX, floorBaseY + 0.25, posZ + TOWER_D / 2 + 0.15, matDarkBronze, floorGroup);
-    addBox(baySpacingX - 0.55, 0.1, 0.35, bayCenterX, floorBaseY + FLOOR_H - 0.25, posZ + TOWER_D / 2 + 0.15, matDarkBronze, floorGroup);
-
-    if (isOrnamentalBay) {
-      addBox(0.95, FLOOR_H - 0.65, 0.18, bayCenterX - (baySpacingX / 2 - 0.8), floorCenterY, posZ + TOWER_D / 2 + 0.15, matPerforatedLattice, floorGroup);
+  function facade(width, count, x, z, angle) {
+    const face = new THREE.Group();
+    face.position.set(x, 0, z);
+    face.rotation.y = angle;
+    floorGroup.add(face);
+    const spacing = width / count;
+    for (let bay = 0; bay <= count; bay++) {
+      addBox(0.68, FLOOR_H, 0.52, -width / 2 + bay * spacing, cy, 0.08, matTravertine, face);
+      // Real horizontal cladding joints at 0.8 m intervals.
+      for (let j = 1; j < 4; j++) {
+        addBox(0.68, 0.012, 0.014, -width / 2 + bay * spacing, base + j * 0.8, 0.345, matTravertineShade, face);
+      }
     }
-
-    const isBackLit = pseudoRandom() > 0.6;
-    const winBack = addBox(
-      baySpacingX - 0.65,
-      FLOOR_H - 0.65,
-      0.12,
-      bayCenterX,
-      floorCenterY,
-      posZ - TOWER_D / 2 - 0.08,
-      isBackLit ? matGlassLit : matGlass,
-      floorGroup,
-      `Win_Back_${sectionNum}_${floorNum}_${b}`
-    );
-    winBack.userData = { section: sectionNum, floor: floorNum, lit: isBackLit };
-
-    addBox(baySpacingX - 0.55, 0.1, 0.35, bayCenterX, floorBaseY + 0.25, posZ - TOWER_D / 2 - 0.15, matDarkBronze, floorGroup);
+    for (let bay = 0; bay < count; bay++) {
+      const bx = -width / 2 + (bay + 0.5) * spacing;
+      const w = spacing - 0.72;
+      const h = FLOOR_H - 0.55;
+      const occupied = pseudoRandom() > 0.69;
+      const glass = occupied ? matGlassLit : matGlass;
+      const sill = base + 0.1;
+      // Deep reveals and physical mullions replace the painted window frames.
+      addBox(w, 0.12, 0.54, bx, sill, 0.04, matTravertineCornice, face);
+      addBox(w, h, 0.05, bx, cy - 0.04, -0.18, glass, face);
+      addBox(w, 0.045, 0.12, bx, base + 0.26, -0.10, matDarkBronze, face);
+      addBox(w, 0.045, 0.12, bx, base + FLOOR_H - 0.27, -0.10, matDarkBronze, face);
+      for (const offset of [-w / 2, w / 2, -w * 0.22]) {
+        addBox(0.052, h, 0.12, bx + offset, cy - 0.04, -0.10, matDarkBronze, face);
+      }
+      addBox(w * 0.27, 0.05, 0.13, bx - w * 0.36, base + 1.08, -0.095, matDarkBronze, face);
+      // Rooms are recessed behind the glass; curtains have different openings per bay.
+      const curtainWidth = w * (0.12 + pseudoRandom() * 0.5);
+      const curtainMat = occupied ? matCurtainLit : matCurtain;
+      addBox(curtainWidth, h - 0.12, 0.025, bx - w / 2 + curtainWidth / 2, cy - 0.04, -0.40, curtainMat, face);
+      addBox(w * 0.15, h - 0.12, 0.025, bx + w * 0.42, cy - 0.04, -0.42, curtainMat, face);
+      if (bay === 2 || bay === count - 2) {
+        // Narrow bronze fins cast shadows instead of a flat painted lattice.
+        for (let fin = 0; fin < 7; fin++) {
+          addBox(0.018, h, 0.11, bx + w / 2 - 0.50 + fin * 0.065, cy - 0.04, 0.02, matPerforatedLattice, face);
+        }
+      }
+    }
   }
-
-  const numBaysZ = 4;
-  const baySpacingZ = TOWER_D / numBaysZ;
-  for (let bz = 0; bz <= numBaysZ; bz++) {
-    const colZ = posZ - TOWER_D / 2 + bz * baySpacingZ;
-    addBox(0.42, FLOOR_H + 0.02, 0.58, posX + TOWER_W / 2 + 0.16, floorCenterY, colZ, matTravertine, floorGroup);
-    addBox(0.42, FLOOR_H + 0.02, 0.58, posX - TOWER_W / 2 - 0.16, floorCenterY, colZ, matTravertine, floorGroup);
-  }
-  for (let bz = 0; bz < numBaysZ; bz++) {
-    const bayCenterZ = posZ - TOWER_D / 2 + (bz + 0.5) * baySpacingZ;
-    const isEastLit = pseudoRandom() > 0.65;
-    const winEast = addBox(0.12, FLOOR_H - 0.65, baySpacingZ - 0.65, posX + TOWER_W / 2 + 0.08, floorCenterY, bayCenterZ, isEastLit ? matGlassLit : matGlass, floorGroup);
-    winEast.userData = { section: sectionNum, floor: floorNum, lit: isEastLit };
-
-    const isWestLit = pseudoRandom() > 0.65;
-    const winWest = addBox(0.12, FLOOR_H - 0.65, baySpacingZ - 0.65, posX - TOWER_W / 2 - 0.08, floorCenterY, bayCenterZ, isWestLit ? matGlassLit : matGlass, floorGroup);
-    winWest.userData = { section: sectionNum, floor: floorNum, lit: isWestLit };
-  }
-
-  // Panoramic corner balcony glazing
-  addBox(0.14, FLOOR_H - 0.6, 2.2, posX + TOWER_W / 2 - 0.02, floorCenterY, posZ + TOWER_D / 2 - 1.1, matGlass, floorGroup);
-  addBox(2.2, FLOOR_H - 0.6, 0.14, posX + TOWER_W / 2 - 1.1, floorCenterY, posZ + TOWER_D / 2 - 0.02, matGlass, floorGroup);
-
+  facade(TOWER_W, 6, posX, posZ + TOWER_D / 2, 0);
+  facade(TOWER_W, 6, posX, posZ - TOWER_D / 2, Math.PI);
+  facade(TOWER_D, 4, posX + TOWER_W / 2, posZ, Math.PI / 2);
+  facade(TOWER_D, 4, posX - TOWER_W / 2, posZ, -Math.PI / 2);
   scene.add(floorGroup);
   return floorGroup;
 }
@@ -478,16 +484,11 @@ scene.add(vegGroup);
 
 function createDetailedTree(x, y, z, scale = 1, foliageMat = matFoliage1) {
   const tree = new THREE.Group();
+  tree.name = 'Tree_Anchor';
   tree.position.set(x, y, z);
   tree.scale.setScalar(scale);
-
-  addCylinder(0.18, 0.28, 3.6, 8, 0, 1.8, 0, matWood, tree);
-
-  addSphere(1.8, 2, 0, 4.2, 0, foliageMat, tree);
-  addSphere(1.4, 2, 0.8, 3.6, 0.6, foliageMat === matFoliage1 ? matFoliage2 : matFoliage1, tree);
-  addSphere(1.3, 2, -0.7, 3.8, -0.5, foliageMat === matFoliage1 ? matFoliage3 : matFoliage2, tree);
-  addSphere(1.1, 2, 0.2, 4.9, -0.4, foliageMat, tree);
-
+  tree.rotation.y = pseudoRandom() * Math.PI * 2;
+  tree.userData = { landscape: 'tree', height: 6.8 };
   vegGroup.add(tree);
   return tree;
 }
@@ -521,9 +522,12 @@ function createFlowerBed(x, y, z, w, d) {
 
   for (let fx = -w / 2 + 0.6; fx <= w / 2 - 0.6; fx += 1.0) {
     for (let fz = -d / 2 + 0.6; fz <= d / 2 - 0.6; fz += 1.0) {
-      const isLav = Math.random() > 0.45;
-      const r = 0.25 + Math.random() * 0.15;
-      addSphere(r, 1, fx + (Math.random() - 0.5) * 0.3, 0.3 + r / 2, fz + (Math.random() - 0.5) * 0.3, isLav ? matLavender : matHydrangea, bed);
+      const shrub = new THREE.Group();
+      shrub.name = 'Shrub_Anchor';
+      shrub.position.set(fx + (pseudoRandom() - 0.5) * 0.3, 0.16, fz + (pseudoRandom() - 0.5) * 0.3);
+      shrub.rotation.y = pseudoRandom() * Math.PI * 2;
+      shrub.userData = { landscape: 'shrub', height: 0.55 + pseudoRandom() * 0.3 };
+      bed.add(shrub);
     }
   }
   vegGroup.add(bed);
@@ -645,6 +649,32 @@ createCar(12, 0.14, 45, -Math.PI / 2, createMat({ color: cCarBlue, roughness: 0.
 createCar(-35, 0.14, 45, -Math.PI / 2, createMat({ color: cCarBlack, roughness: 0.2, metalness: 0.85 }));
 createCar(38, 0.14, 35, Math.PI / 2, createMat({ color: cCarRed, roughness: 0.3, metalness: 0.7 }));
 
+// Merge static pieces by material after applying their world transforms. Keep
+// picking hulls and landscape anchors as distinct nodes with their public metadata.
+scene.updateMatrixWorld(true);
+const batches = new Map();
+const staticMeshes = [];
+scene.traverse((obj) => {
+  if (!obj.isMesh || obj.userData.pickOnly) return;
+  const material = obj.material;
+  if (!batches.has(material)) batches.set(material, []);
+  batches.get(material).push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
+  staticMeshes.push(obj);
+});
+for (const obj of staticMeshes) {
+  obj.removeFromParent();
+  obj.geometry.dispose();
+}
+for (const [material, geometries] of batches) {
+  const merged = mergeGeometries(geometries, false);
+  const mesh = new THREE.Mesh(merged, material);
+  mesh.name = `Architecture_${material.name || material.uuid}`;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+  for (const geometry of geometries) geometry.dispose();
+}
+
 // ==========================================
 // EXPORT TO STANDALONE BINARY GLB
 // ==========================================
@@ -661,4 +691,4 @@ const buffer = Buffer.from(glbArrayBuffer);
 fs.writeFileSync(OUTPUT_FILE, buffer);
 
 const sizeMb = (buffer.byteLength / (1024 * 1024)).toFixed(2);
-console.log(`✅ Photorealistic Shattyq GLB Model successfully created at: ${OUTPUT_FILE} (${sizeMb} MB)`);
+console.log(`Shattyq presentation GLB created at: ${OUTPUT_FILE} (${sizeMb} MB)`);

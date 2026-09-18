@@ -30,6 +30,7 @@ import './styles/experience.css';
 import { ExperienceRoutes, HomeExperiences, projectLinks } from './features/ExperienceRoutes';
 import { LeadForm } from './features/LeadForm';
 import { useExperience } from './lib/useExperience';
+import { ScrollToTopButton, CookieNotice } from './features/GlobalWidgets';
 
 type Plan = typeof data.plans[number];
 type Gallery = 'Архитектура' | 'Благоустройство' | 'Холлы';
@@ -506,6 +507,15 @@ export default function App() {
               >
                 3D-тур
               </a>
+              <a
+                href={siteUrl('/cloud-tour')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/cloud-tour');
+                }}
+              >
+                Облачный 3D-тур
+              </a>
             </>
           ) : (
             <span className="terminal-title">
@@ -520,6 +530,36 @@ export default function App() {
             <strong>700</strong>
             <span>Отдел продаж</span>
           </a>
+
+          <button
+            type="button"
+            className="header-callback-btn"
+            onClick={() => openConsultModal('Заказ обратного звонка')}
+            aria-label="Заказать звонок"
+          >
+            Мы вам перезвоним
+          </button>
+
+          <a
+            href={siteUrl('/documents/Shattyq-presentation.pdf')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="header-booklet-btn"
+            download="Shattyq-presentation.pdf"
+            aria-label="Скачать буклет"
+          >
+            <Download size={15} />
+            <span>Скачать буклет</span>
+          </a>
+
+          <button
+            type="button"
+            className="icon header-mobile-phone"
+            onClick={() => openConsultModal('Заказ обратного звонка')}
+            aria-label="Заказать звонок"
+          >
+            <Phone size={19} />
+          </button>
 
           <button
             className="icon header-heart"
@@ -699,6 +739,7 @@ export default function App() {
               {galleryView}
             </section>
 
+            <div id="flats" style={{ position: 'relative', top: '-80px', visibility: 'hidden' }} />
             <section id="layouts" className="section layouts-section">
               <div className="section-heading">
                 <span className="eyebrow">03 / ПЛАНИРОВКИ</span>
@@ -743,6 +784,7 @@ export default function App() {
               />
             </section>
 
+            <div id="mesto" style={{ position: 'relative', top: '-80px', visibility: 'hidden' }} />
             <section id="location" className="section">
               <span className="eyebrow location-number">04 / ЛОКАЦИЯ</span>
               {locationView}
@@ -826,6 +868,15 @@ export default function App() {
                 }}
               >
                 3D-тур ↗
+              </a>
+              <a
+                href={siteUrl('/cloud-tour')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/cloud-tour');
+                }}
+              >
+                Облачный 3D-тур ↗
               </a>
               <a
                 href={siteUrl('/audiogid')}
@@ -957,6 +1008,15 @@ export default function App() {
           3D-тур
         </a>
         <a
+          href={siteUrl('/cloud-tour')}
+          onClick={(e) => {
+            e.preventDefault();
+            navigateTo('/cloud-tour');
+          }}
+        >
+          Облачный 3D-тур
+        </a>
+        <a
           href={siteUrl('/audiogid')}
           onClick={(e) => {
             e.preventDefault();
@@ -1015,6 +1075,13 @@ export default function App() {
           {mode === 'web' ? 'Режим терминала' : 'Веб-версия'}
         </button>
       </footer>
+
+      {mode === 'web' && (
+        <>
+          <ScrollToTopButton />
+          <CookieNotice />
+        </>
+      )}
 
       {isMenuOpen && (
         <Modal close={() => setIsMenuOpen(false)} label="Навигация" wide>

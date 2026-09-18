@@ -131,6 +131,9 @@ export function Catalog({
   const [minArea, setMinArea] = useState(queryParams.get('minArea') || '');
   const [maxArea, setMaxArea] = useState(queryParams.get('maxArea') || '');
   const [maxPrice, setMaxPrice] = useState(queryParams.get('maxPrice') || '');
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>(
+    queryParams.get('features')?.split(',').filter(Boolean) || []
+  );
   const [sort, setSort] = useState(queryParams.get('sort') || 'rooms');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -148,6 +151,7 @@ export function Catalog({
       minArea,
       maxArea,
       maxPrice,
+      features: selectedFeatures.join(','),
       sort
     };
 
@@ -157,7 +161,7 @@ export function Catalog({
     });
 
     history.replaceState(null, '', url);
-  }, [rooms, section, floor, minArea, maxArea, maxPrice, sort]);
+  }, [rooms, section, floor, minArea, maxArea, maxPrice, selectedFeatures, sort]);
 
   const displayedFlats = flats
     .filter(
@@ -168,7 +172,8 @@ export function Catalog({
         (!floor || p.floor === Number(floor)) &&
         (!minArea || (p.area !== null && p.area >= Number(minArea))) &&
         (!maxArea || (p.area !== null && p.area <= Number(maxArea))) &&
-        (!maxPrice || (p.price !== null && p.price <= Number(maxPrice)))
+        (!maxPrice || (p.price !== null && p.price <= Number(maxPrice))) &&
+        (!selectedFeatures.length || selectedFeatures.every((f) => p.features?.includes(f)))
     )
     .sort((a, b) => {
       if (sort === 'area') return (a.area ?? Infinity) - (b.area ?? Infinity);
@@ -184,6 +189,7 @@ export function Catalog({
     setMinArea('');
     setMaxArea('');
     setMaxPrice('');
+    setSelectedFeatures([]);
     setSort('rooms');
   };
 
@@ -321,7 +327,27 @@ export function Catalog({
             onChange={(e) => setMaxPrice(e.target.value)}
             placeholder="Любой"
           />
-          <small>Опубликованные цены пока отсутствуют. При заданном бюджете варианты без цены не отображаются.</small>
+          <label>Особенности</label>
+          <div className="feature-filter-tags">
+            {['Лоджия', 'Гардеробная'].map((feat) => {
+              const active = selectedFeatures.includes(feat);
+              return (
+                <button
+                  key={feat}
+                  type="button"
+                  className={`feature-filter-tag ${active ? 'active' : ''}`}
+                  onClick={() =>
+                    setSelectedFeatures((prev) =>
+                      prev.includes(feat) ? prev.filter((x) => x !== feat) : [...prev, feat]
+                    )
+                  }
+                  aria-pressed={active}
+                >
+                  {feat}
+                </button>
+              );
+            })}
+          </div>
 
           <button className="text-link" onClick={handleResetFilters}>
             <X size={15} /> Сбросить фильтры
@@ -334,7 +360,17 @@ export function Catalog({
 
         <div className="catalog-results">
           <div className="catalog-results-head">
-            <span role="status">Найдено: {displayedFlats.length}</span>
+            <span role="status">
+              Найдено подходящих:{' '}
+              <strong>
+                {displayedFlats.length}{' '}
+                {displayedFlats.length === 1
+                  ? 'планировка'
+                  : displayedFlats.length > 1 && displayedFlats.length < 5
+                  ? 'планировки'
+                  : 'планировок'}
+              </strong>
+            </span>
 
             <label>
               <span className="sr-only">Сортировка</span>
@@ -416,40 +452,86 @@ export function Catalog({
                     <th>Планировка</th>
                     <th>Секция / этаж</th>
                     <th>Площадь</th>
+                    <th>Особенности</th>
                     <th>Стоимость</th>
-                    <th>Сохранить</th>
+                    <th>Действия</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayedFlats.map((p) => (
                     <tr key={p.id}>
                       <td>
-                        <a
-                          href={siteUrl(`/flat/${p.id}`)}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            navigateTo(`/flat/${p.id}`);
-                          }}
-                        >
-                          {p.rooms}-комнатная · {p.id.split('-')[1]}
-                        </a>
+                        <div className="flat-table-plan-cell">
+                          <a
+                            href={siteUrl(`/flat/${p.id}`)}
+                            className="flat-table-thumb"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigateTo(`/flat/${p.id}`);
+                            }}
+                            aria-label={`Открыть планировку ${p.id}`}
+                          >
+                            <img
+                              src={siteUrl(p.image)}
+                              alt={`${p.rooms}-комнатная, ${p.id}`}
+                              loading="lazy"
+                            />
+                          </a>
+                          <div>
+                            <a
+                              href={siteUrl(`/flat/${p.id}`)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigateTo(`/flat/${p.id}`);
+                              }}
+                            >
+                              <strong>{p.rooms}-комнатная</strong>
+                            </a>
+                            <small style={{ display: 'block', color: 'var(--muted)', fontSize: '10px' }}>
+                              Вариант {p.id.split('-')[1]}
+                            </small>
+                          </div>
+                        </div>
                       </td>
                       <td>
-                        {p.section} / {p.floor}
+                        Секция {p.section} · {p.floor} этаж
                       </td>
-                      <td>{areaLabel(p)}</td>
-                      <td>{p.price === null ? 'По запросу' : money(p.price)}</td>
                       <td>
-                        <button
-                          className="icon"
-                          aria-label={`Избранное ${p.id}`}
-                          onClick={() => toggleFavorite(p.id)}
-                        >
-                          <Heart
-                            size={18}
-                            fill={favorites.includes(p.id) ? 'currentColor' : 'none'}
-                          />
-                        </button>
+                        <strong>{areaLabel(p)}</strong>
+                      </td>
+                      <td>
+                        <span className="status-chip" style={{ fontSize: '9px', padding: '4px 8px' }}>
+                          {p.features?.join(', ') || 'Стандарт'}
+                        </span>
+                      </td>
+                      <td>
+                        <strong>{p.price === null ? 'По запросу' : money(p.price)}</strong>
+                      </td>
+                      <td>
+                        <div className="flat-table-actions">
+                          <a
+                            href={siteUrl(`/flat/${p.id}`)}
+                            className="button outline table-detail-btn"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigateTo(`/flat/${p.id}`);
+                            }}
+                          >
+                            Подробнее
+                          </a>
+                          <button
+                            className={`icon ${favorites.includes(p.id) ? 'saved' : ''}`}
+                            aria-label={`${
+                              favorites.includes(p.id) ? 'Удалить из избранного' : 'В избранное'
+                            }: ${p.id}`}
+                            onClick={() => toggleFavorite(p.id)}
+                          >
+                            <Heart
+                              size={18}
+                              fill={favorites.includes(p.id) ? 'currentColor' : 'none'}
+                            />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -1,1269 +1,204 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  ArrowDown,
-  ArrowUpRight,
-  ArrowRight,
-  ArrowLeft,
-  MapPin,
-  Phone,
-  Menu,
-  X,
-  Heart,
-  Expand,
-  Download,
-  Building2,
-  Trees,
-  ShieldCheck,
-  ScanFace,
-  LayoutGrid,
-  Monitor,
-  Globe,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  Info
-} from 'lucide-react';
-import { siteUrl, sitePath, navigateTo } from './lib/site';
-import data from './data/shattyq.json';
-import './styles/sensata.css';
-import './styles/experience.css';
-import { ExperienceRoutes, HomeExperiences, projectLinks } from './features/ExperienceRoutes';
-import { LeadForm } from './features/LeadForm';
-import { useExperience } from './lib/useExperience';
-import { ScrollToTopButton, CookieNotice } from './features/GlobalWidgets';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Building2, Check, Copy, Heart, MapPin, Printer, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
+import { safPlans as safData, safHero } from './lib/safMaterials';
+import { SafMaterials } from './features/SafMaterials';
+import { SafStockSnapshot } from './features/SafStockSnapshot';
+import { SafPlanEvidence } from './features/SafPlanEvidence';
+import { navigateTo, sitePath, siteUrl } from './lib/site';
+import './styles/saf-workspace.css';
+import './styles/sensata-home.css';
+import { SensataFooter } from './features/SensataFooter';
+import sensataLogo from './assets/sensata-logo.png';
+import safLogo from './assets/saf-logo.svg';
+import safGoldLogo from './assets/saf-logo-gold.svg';
+import { SafApartmentViewer } from './features/SafApartmentViewer';
+import { SafVisualJourney } from './features/SafVisualJourney';
+import { SafApartmentPage } from './features/SafApartmentPage';
+import { safApartmentById } from './lib/safInventory';
+import './styles/saf-journey.css';
+import { SafNavigation } from './features/SafNavigation';
+import './styles/saf-selection-shell.css';
+import { SafVisualSelector } from './features/SafVisualSelector';
+import { SafChessboard } from './features/SafChessboard';
+import { groupSafPlans, parseOptionalBound, SAF_BLOCKS, SAF_ROOMS, safLevelLabel } from './lib/safSelection';
 
-type Plan = typeof data.plans[number];
-type Gallery = 'Архитектура' | 'Благоустройство' | 'Холлы';
+type PublishedPlan = (typeof safData.plans)[number];
+type SortOrder = 'area-asc' | 'area-desc' | 'rooms';
+type ResultView = 'cards' | 'table';
 
-const galleries: Record<Gallery, string[]> = {
-  'Архитектура': ['/sensata/hero.jpg', '/sensata/architecture.jpg'],
-  'Благоустройство': Array.from({ length: 11 }, (_, i) => `/sensata/courtyard-${i + 1}.jpg`),
-  'Холлы': Array.from({ length: 13 }, (_, i) => `/sensata/lobby-${i + 1}.jpg`)
-};
+const heroImage = safHero;
+const projectAddress = 'Алматы, пр. Аль-Фараби — ул. Розыбакиева';
+const projects = [{
+  id: 'saf', href: '/saf', name: 'SAF Avenue', city: 'АЛМАТЫ',
+  address: projectAddress, image: heroImage, logo: safLogo,
+  note: 'Планировки загружены из публичного каталога SAF Avenue. Наличие и цены проверяются отдельно.',
+}];
+const savedKey = 'sensata-saf-saved-plans';
+const compareKey = 'sensata-saf-compare-plans';
+const compareLimit = 3;
+const pageSize = 18;
+const noticeDurationMs = 3200;
+const retiredPaths = new Set([
+  '/parametric-search', '/visual/free', '/favorite', '/audiogid', '/cloud-tour',
+  '/mortgage', '/how-to-buy', '/finishing', '/progress', '/documents', '/location',
+  '/contacts', '/privacy', '/policy', '/akcii', '/news'
+]);
+const retiredPrefixes = ['/visual/section/', '/flat-classic/', '/flat/', '/akcii/', '/news/'];
+const safCatalog = groupSafPlans(safData.plans);
 
-const address = 'Астана, район Есиль · Ә. Бөкейхана / Орынбор';
-const mapLink = 'https://2gis.kz/astana/search/' + encodeURIComponent('Shattyq жилой комплекс');
-
-function readFavorites(): string[] {
+function readCodes(key: string, max = Number.POSITIVE_INFINITY): string[] {
   try {
-    const stored = JSON.parse(localStorage.getItem('sensata-shattyq-favorites') || '[]');
-    return Array.isArray(stored)
-      ? stored.filter((id: unknown) => typeof id === 'string' && data.plans.some((p) => p.id === id))
-      : [];
-  } catch {
-    return [];
-  }
+    const value: unknown = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? [...new Set(value.filter((code): code is string => typeof code === 'string' && safCatalog.byCode.has(code)))].slice(0, max) : [];
+  } catch { return []; }
 }
 
-// Глобальный счетчик для безопасной блокировки скролла при вложенных модалках
-let modalOpenCount = 0;
-
-interface ModalProps {
-  children: React.ReactNode;
-  close: () => void;
-  label: string;
-  wide?: boolean;
+function formatArea(area: number): string {
+  return `${area.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} м²`;
 }
 
-function Modal({ children, close, label, wide = false }: ModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+function planHref(code: string): string { return `/saf/plan/${encodeURIComponent(code)}`; }
 
-  useEffect(() => {
-    dialogRef.current?.showModal();
-    modalOpenCount++;
-    if (modalOpenCount === 1) {
-      document.body.style.overflow = 'hidden';
+function AppLink({ to, children, className = '', label }: { to: string; children: React.ReactNode; className?: string; label?: string }) {
+  return <a className={className} href={siteUrl(to)} aria-label={label} onClick={(event) => {
+    if (event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+      event.preventDefault(); navigateTo(to);
     }
+  }}>{children}</a>;
+}
 
-    return () => {
-      modalOpenCount = Math.max(0, modalOpenCount - 1);
-      if (modalOpenCount === 0) {
-        document.body.style.overflow = '';
-      }
-    };
-  }, []);
-
-  return (
-    <dialog
-      ref={dialogRef}
-      className={`modal ${wide ? 'wide' : ''}`}
-      aria-label={label}
-      onCancel={close}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) close();
-      }}
-    >
-      <button className="icon modal-close" onClick={close} aria-label="Закрыть">
-        <X />
-      </button>
-      {children}
-    </dialog>
-  );
+function PlanCard({ plan, saved, compared, onSave, onCompare }: {
+  plan: PublishedPlan; saved: boolean; compared: boolean; onSave: () => void; onCompare: () => void;
+}) {
+  return <article className="saf-plan-card">
+    <div className="saf-plan-card-top"><span>{plan.rooms}-комнатная</span><button type="button" aria-label={`${saved ? 'Убрать из подборки' : 'Добавить в подборку'} ${plan.code}`} onClick={onSave}><Heart size={19} fill={saved ? 'currentColor' : 'none'} /></button></div>
+    <AppLink to={planHref(plan.code)} className="saf-plan-image" label={`Открыть планировку ${plan.code}`}><img src={plan.image} loading="lazy" alt={`Планировка ${plan.code}`} /></AppLink>
+    <div className="saf-plan-card-info"><small>{plan.code}</small><strong>{formatArea(plan.area)}</strong><span>Наличие уточняется</span></div>
+    <div className="saf-plan-card-actions"><button type="button" className={compared ? 'selected' : ''} onClick={onCompare}>{compared ? <Check size={16} /> : <span className="saf-plus">+</span>} Сравнить</button><AppLink to={planHref(plan.code)} label={`Подробнее о ${plan.code}`}><ArrowUpRight size={19} /></AppLink></div>
+  </article>;
 }
 
 export default function App() {
-  const [mode, setMode] = useState<'web' | 'kiosk'>(() => {
-    if (typeof location === 'undefined') return 'web';
-    return new URLSearchParams(location.search).get('mode') === 'kiosk' ? 'kiosk' : 'web';
-  });
+  const [path, setPath] = useState(() => sitePath());
+  const [saved, setSaved] = useState<string[]>(() => readCodes(savedKey));
+  const [compared, setCompared] = useState<string[]>(() => readCodes(compareKey, compareLimit));
+  const [rooms, setRooms] = useState<number[]>([]);
+  const [minArea, setMinArea] = useState('');
+  const [maxArea, setMaxArea] = useState('');
+  const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<SortOrder>('area-asc');
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const [advancedFilters, setAdvancedFilters] = useState(false);
+  const [resultView, setResultView] = useState<ResultView>('cards');
+  const [selectedBlocks, setSelectedBlocks] = useState<number[]>([]);
+  const [minFloor, setMinFloor] = useState('');
+  const [maxFloor, setMaxFloor] = useState('');
+  const [notice, setNotice] = useState('');
 
-  const [currentPath, setCurrentPath] = useState(() => sitePath());
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { config, inventory, warning } = useExperience();
-  const [contactTopic, setContactTopic] = useState('Консультация по Shattyq');
+  useEffect(() => { const onPopState = () => setPath(sitePath()); window.addEventListener('popstate', onPopState); return () => window.removeEventListener('popstate', onPopState); }, []);
+  useEffect(() => { try { localStorage.setItem(savedKey, JSON.stringify(saved)); } catch { /* Storage can be disabled. */ } }, [saved]);
+  useEffect(() => { try { localStorage.setItem(compareKey, JSON.stringify(compared)); } catch { /* Keep the current selection in memory. */ } }, [compared]);
+  useEffect(() => { if (!notice) return; const timeout = window.setTimeout(() => setNotice(''), noticeDurationMs); return () => window.clearTimeout(timeout); }, [notice]);
+  useEffect(() => { setVisibleCount(pageSize); }, [rooms, minArea, maxArea, query, sort, savedOnly, selectedBlocks, minFloor, maxFloor]);
+  useEffect(() => { if (showCompare && compared.length) document.getElementById('saf-compare')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [showCompare, compared.length]);
 
-  const isHome = currentPath === '/' || currentPath === '/index.html';
-
-  // Слушатель popstate для SPA навигации без полной перезагрузки
+  const normalizedPath = path.replace(/\/$/, '') || '/';
+  const isHome = normalizedPath === '/projects';
+  const isVisualEntry = normalizedPath === '/' || normalizedPath === '/index.html' || normalizedPath === '/visual';
+  let planCode = '';
+  if (normalizedPath.startsWith('/saf/plan/')) {
+    try { planCode = decodeURIComponent(normalizedPath.slice('/saf/plan/'.length)); } catch { planCode = ''; }
+  }
+  let apartmentId = '';
+  if (normalizedPath.startsWith('/saf/apartment/')) { try { apartmentId = decodeURIComponent(normalizedPath.slice('/saf/apartment/'.length)); } catch { /* Malformed link stays not found. */ } }
+  const selectedApartment = safApartmentById.get(apartmentId);
+  const selectedPlan = safCatalog.byCode.get(planCode)?.plan;
+  const selectedLocation = selectedPlan ? safCatalog.byCode.get(selectedPlan.code)?.place : null;
+  const detailSource = new URLSearchParams(location.search).get('from');
+  const returnQuery = new URLSearchParams(location.search);
+  const returnSection = returnQuery.get('section');
+  const returnFloor = returnQuery.get('floor');
+  const detailBack = detailSource === 'visual' && /^[1-7]$/.test(returnSection || '') && /^\d+$/.test(returnFloor || '') ? `/saf/visual/block/${returnSection}/floor/${returnFloor}` : detailSource === 'chessboard' ? '/saf/chessboard' : selectedLocation && detailSource === 'visual'
+    ? `/saf/visual/block/${selectedLocation.block}/level/${selectedLocation.level}` : '/saf';
+  const visualMatch = /^\/saf\/visual(?:\/block\/([1-7]))?(?:\/(?:level\/([ET]\d+)|floor\/(\d+)))?$/.exec(normalizedPath);
+  const isVisual = isVisualEntry || !!visualMatch;
+  const isChessboard = normalizedPath === '/saf/chessboard';
+  const isMaterials = normalizedPath === '/saf/materials';
+  const isStock = normalizedPath === '/saf/stock';
+  const visualBlock = visualMatch?.[1] ? Number(visualMatch[1]) : null;
+  const visualLevel = visualMatch?.[2] || null;
+  const isLegacy = retiredPaths.has(normalizedPath) || retiredPrefixes.some((prefix) => normalizedPath.startsWith(prefix));
+  const isTour = normalizedPath === '/tour';
+  const isNotFound = !isHome && normalizedPath !== '/saf' && !isVisual && !isChessboard && !isMaterials && !isStock && !selectedPlan && !selectedApartment && !isLegacy && !isTour;
+  const showChessboardFab = normalizedPath === '/saf' || isVisual || isStock || isMaterials;
   useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(sitePath());
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+    document.title = isHome ? 'Выбор объекта | Sensata' : isNotFound ? 'Страница не найдена | Sensata'
+      : selectedApartment ? `Квартира № ${selectedApartment.number} · SAF Avenue` : isMaterials ? 'Материалы проекта · SAF Avenue' : isStock ? 'Снимок помещений · SAF Avenue' : selectedPlan ? `${selectedPlan.code} · SAF Avenue | Sensata` : 'SAF Avenue · Конфигуратор планировок | Sensata';
+  }, [isHome, isNotFound, isMaterials, isStock, selectedPlan, selectedApartment]);
+  const filtered = useMemo(() => {
+    const lower = parseOptionalBound(minArea, 0);
+    const upper = parseOptionalBound(maxArea, Number.POSITIVE_INFINITY);
+    const firstFloor = parseOptionalBound(minFloor, 0);
+    const lastFloor = parseOptionalBound(maxFloor, Number.POSITIVE_INFINITY);
+    const text = query.trim().toLowerCase();
+    const savedCodes = new Set(saved);
+    const chosenRooms = new Set(rooms);
+    const chosenBlocks = new Set(selectedBlocks);
+    return safCatalog.entries.filter(({ plan, place }) => {
+      const floor = place.level.startsWith('E') ? Number(place.level.slice(1)) : null;
+      return (!rooms.length || chosenRooms.has(plan.rooms)) && plan.area >= lower && plan.area <= upper &&
+        (!text || plan.code.toLowerCase().includes(text)) && (!savedOnly || savedCodes.has(plan.code)) &&
+        (!selectedBlocks.length || chosenBlocks.has(place.block)) &&
+        ((!minFloor && !maxFloor) || (floor !== null && floor >= firstFloor && floor <= lastFloor));
+    }).map(({ plan }) => plan).sort((a, b) => sort === 'area-desc' ? b.area - a.area : sort === 'rooms' ? a.rooms - b.rooms || a.area - b.area : a.area - b.area);
+  }, [rooms, minArea, maxArea, query, sort, savedOnly, saved, selectedBlocks, minFloor, maxFloor]);
 
-  const openConsultModal = (topic: string) => {
-    setContactTopic(topic);
-    setIsContactOpen(true);
-  };
-
-  useEffect(() => {
-    if (!isHome) {
-      const activeLink = projectLinks.find(([url]) => url === currentPath);
-      document.title = 'Shattyq · ' + (activeLink?.[1] || 'Выбор квартиры') + ' | Sensata Group';
-    } else {
-      document.title = 'ЖК Shattyq в Астане | Официальная презентация Sensata Group';
-    }
-  }, [isHome, currentPath]);
-
-  const [roomFilter, setRoomFilter] = useState(0);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>(readFavorites);
-  const [onlyFavorites, setOnlyFavorites] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [isContactOpen, setIsContactOpen] = useState(false);
-  const [activeGallery, setActiveGallery] = useState<Gallery>('Архитектура');
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [kioskSection, setKioskSection] = useState('overview');
-  const [isPlanZoomed, setIsPlanZoomed] = useState(false);
-
-  const shownPlans = data.plans.filter(
-    (p) => (!roomFilter || p.rooms === roomFilter) && (!onlyFavorites || favorites.includes(p.id))
-  );
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('sensata-shattyq-favorites', JSON.stringify(favorites));
-    } catch {}
-  }, [favorites]);
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  };
-
-  const handleGalleryChange = (g: Gallery) => {
-    setActiveGallery(g);
-    setSlideIndex(0);
-  };
-
-  const handleNextSlide = (delta: number) => {
-    const list = galleries[activeGallery];
-    setSlideIndex((prev) => (prev + delta + list.length) % list.length);
-  };
-
-  const handleToggleMode = () => {
-    const nextMode = mode === 'web' ? 'kiosk' : 'web';
-    setMode(nextMode);
-    setIsMenuOpen(false);
-    const url = new URL(location.href);
-    url.searchParams.set('mode', nextMode);
-    history.replaceState(null, '', url);
-    window.scrollTo(0, 0);
-  };
-
-  const handleGoPlans = () => {
-    if (mode === 'web') {
-      navigateTo('/parametric-search');
+  const toggleSaved = (code: string) => setSaved((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code]);
+  const toggleCompared = (code: string) => {
+    if (!compared.includes(code) && compared.length >= compareLimit) {
+      setNotice('Можно сравнить не более трёх планировок.');
       return;
     }
-    setOnlyFavorites(false);
-    setRoomFilter(0);
-    if (mode === 'kiosk') {
-      setKioskSection('layouts');
-    } else {
-      document.getElementById('layouts')?.scrollIntoView({ behavior: 'smooth' });
-    }
+    setCompared((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code].slice(0, compareLimit));
+  };
+  const resetFilters = () => { setRooms([]); setMinArea(''); setMaxArea(''); setQuery(''); setSort('area-asc'); setSavedOnly(false); setSelectedBlocks([]); setMinFloor(''); setMaxFloor(''); };
+  const copyPlanLink = async (code: string) => {
+    try { await navigator.clipboard.writeText(new URL(siteUrl(planHref(code)), location.origin).href); setNotice('Ссылка на планировку скопирована.'); }
+    catch { setNotice('Скопируйте адрес страницы из браузера.'); }
   };
 
-  const handleShowFavorites = () => {
-    if (mode === 'web') {
-      navigateTo('/favorite');
-      return;
-    }
-    setOnlyFavorites(true);
-    setRoomFilter(0);
-    setIsExpanded(true);
-    if (mode === 'kiosk') {
-      setKioskSection('layouts');
-    } else {
-      document.getElementById('layouts')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  return <div className={`saf-app${isHome ? ' sensata-home-page' : ''}${isChessboard ? ' sensata-chessboard-page' : ''}${isVisual && !visualLevel ? ' saf-journey-page' : ''}`}>
+    {isHome ? <header className="sensata-header"><AppLink to="/" label="К выбору объектов"><img src={sensataLogo} alt="Sensata Group" /></AppLink><nav aria-label="Основная навигация"><a href="#projects" className="active">Наши проекты</a><a href="https://www.sensata.kz/contacts" target="_blank" rel="noopener noreferrer">Контакты</a></nav><a className="sensata-header-phone" href="tel:700"><strong>700</strong><span>Единый колл-центр<br />(отдел продаж)</span></a></header> : <header className="saf-header">
+      <AppLink to="/" className="saf-brand" label="На главную"><img className="saf-company-logo" src={sensataLogo} alt="Sensata Group" /></AppLink>
+      <SafNavigation path={normalizedPath} />
+      <AppLink to="/" className="saf-header-project" label="SAF Avenue"><img src={safGoldLogo} alt="SAF Avenue" /></AppLink>
+    </header>}
 
-  const galleryView = (
-    <>
-      <div className="gallery-controls">
-        <div className="tabs">
-          {(Object.keys(galleries) as Gallery[]).map((g) => (
-            <button
-              key={g}
-              className={activeGallery === g ? 'active' : ''}
-              aria-pressed={activeGallery === g}
-              onClick={() => handleGalleryChange(g)}
-            >
-              {g}
-            </button>
-          ))}
-        </div>
-        <div className="arrows">
-          <span>
-            {String(slideIndex + 1).padStart(2, '0')} / {String(galleries[activeGallery].length).padStart(2, '0')}
-          </span>
-          <button className="icon" aria-label="Предыдущее фото" onClick={() => handleNextSlide(-1)}>
-            <ChevronLeft />
-          </button>
-          <button className="icon" aria-label="Следующее фото" onClick={() => handleNextSlide(1)}>
-            <ChevronRight />
-          </button>
-        </div>
-      </div>
-
-      <button
-        className={`gallery-image ${activeGallery === 'Холлы' ? 'portrait' : ''}`}
-        onClick={() => setIsLightboxOpen(true)}
-        aria-label="Открыть фото на весь экран"
-      >
-        <img
-          src={siteUrl(galleries[activeGallery][slideIndex])}
-          alt={`Shattyq — ${activeGallery.toLowerCase()}, вид ${slideIndex + 1}`}
-        />
-        <span className="image-expand">
-          <Expand size={19} />
-        </span>
-        <span className="image-caption">SHATTYQ / {activeGallery}</span>
-      </button>
-    </>
-  );
-
-  const plansView = (
-    <>
-      <div className="plan-toolbar">
-        <div className="tabs" aria-label="Количество комнат">
-          {[0, 2, 3, 4].map((num) => (
-            <button
-              key={num}
-              className={roomFilter === num ? 'active' : ''}
-              aria-pressed={roomFilter === num}
-              onClick={() => {
-                setRoomFilter(num);
-                setIsExpanded(false);
-              }}
-            >
-              {num ? `${num}-комнатные` : 'Все планировки'}
-            </button>
-          ))}
-        </div>
-
-        <button
-          className={`favorite-filter ${onlyFavorites ? 'selected' : ''}`}
-          onClick={() => {
-            setOnlyFavorites((v) => !v);
-            setIsExpanded(true);
-          }}
-        >
-          <Heart size={17} fill={onlyFavorites ? 'currentColor' : 'none'} />
-          Избранное ({favorites.length})
-        </button>
-      </div>
-
-      <div className="results-line">
-        <span>
-          {shownPlans.length}{' '}
-          {shownPlans.length === 1
-            ? 'планировка'
-            : shownPlans.length > 1 && shownPlans.length < 5
-            ? 'планировки'
-            : 'планировок'}{' '}
-          · 1 очередь
-        </span>
-        <span>Стоимость и наличие — в отделе продаж</span>
-      </div>
-
-      <div className="plan-grid">
-        {(isExpanded ? shownPlans : shownPlans.slice(0, 6)).map((plan) => (
-          <article className="plan-card" key={plan.id}>
-            <div className="plan-top">
-              <span>{plan.rooms}-комнатная</span>
-              <button
-                className={`icon ${favorites.includes(plan.id) ? 'saved' : ''}`}
-                aria-label={`${
-                  favorites.includes(plan.id) ? 'Удалить из избранного' : 'В избранное'
-                }: планировка ${plan.id.split('-')[1]}`}
-                onClick={() => toggleFavorite(plan.id)}
-              >
-                <Heart size={20} fill={favorites.includes(plan.id) ? 'currentColor' : 'none'} />
-              </button>
-            </div>
-
-            <button
-              className="plan-image"
-              onClick={() => {
-                setSelectedPlan(plan);
-                setIsPlanZoomed(false);
-              }}
-              aria-label={`Открыть планировку ${plan.id.split('-')[1]}`}
-            >
-              <img
-                src={siteUrl(plan.image)}
-                loading="lazy"
-                alt={`${plan.rooms}-комнатная планировка Shattyq, вариант ${plan.id.split('-')[1]}`}
-              />
-            </button>
-
-            <div className="plan-bottom">
-              <div>
-                <small>Вариант {plan.id.split('-')[1]?.padStart(2, '0')}</small>
-                <strong>Цена по запросу</strong>
-              </div>
-              <button
-                className="icon"
-                onClick={() => {
-                  setSelectedPlan(plan);
-                  setIsPlanZoomed(false);
-                }}
-                aria-label={`Подробнее о планировке ${plan.id.split('-')[1]}`}
-              >
-                <ArrowUpRight />
-              </button>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {shownPlans.length === 0 && (
-        <div className="empty">
-          <Heart size={34} />
-          <h3>Здесь будут ваши планировки</h3>
-          <p>Нажмите на сердечко у понравившегося варианта.</p>
-          <button
-            className="button blue"
-            onClick={() => {
-              setOnlyFavorites(false);
-              setRoomFilter(0);
-            }}
-          >
-            Все планировки <ArrowRight size={18} />
-          </button>
-        </div>
-      )}
-
-      {!isExpanded && shownPlans.length > 6 && (
-        <button className="button outline more" onClick={() => setIsExpanded(true)}>
-          Показать все {shownPlans.length} планировок <ArrowDown size={17} />
-        </button>
-      )}
-    </>
-  );
-
-  const locationView = (
-    <div className="location-grid">
-      <div>
-        <span className="eyebrow">АСТАНА · ЕСИЛЬ</span>
-        <h2>
-          Ваш адрес.
-          <br />
-          Ваш ритм жизни.
-        </h2>
-        <p>Первая линия на пересечении улиц Ә. Бөкейхана и Орынбор. Городская инфраструктура рядом с домом.</p>
-        <a
-          className="button outline"
-          href={siteUrl('/location')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo('/location');
-          }}
-        >
-          Карта инфраструктуры <ArrowUpRight size={18} />
-        </a>
-        <a className="button blue" href={mapLink} target="_blank" rel="noreferrer">
-          Открыть в 2ГИС <ArrowUpRight size={18} />
-        </a>
-      </div>
-
-      <div className="location-visual">
-        <img src={siteUrl('/sensata/architecture.jpg')} alt="Фасад Shattyq со стороны улицы" loading="lazy" />
-        <div>
-          <MapPin />
-          <span>
-            Shattyq
-            <small>Ә. Бөкейхана / Орынбор</small>
-          </span>
-          <a href={mapLink} target="_blank" rel="noreferrer" aria-label="Показать Shattyq на карте">
-            <ArrowUpRight />
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className={`sensata ${mode === 'kiosk' ? 'terminal': ''}`}>
-      <header className="header">
-        <a
-          className="brand"
-          href={siteUrl('/')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo('/');
-          }}
-          aria-label="Sensata Group — главная"
-        >
-          <img src={siteUrl('/sensata/logo.png')} alt="Sensata Group" />
-        </a>
-
-        <nav className="desktop-nav">
-          {mode === 'web' ? (
-            <>
-              <details className="nav-dropdown">
-                <summary>Квартиры</summary>
-                <div>
-                  <a
-                    href={siteUrl('/visual')}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigateTo('/visual');
-                    }}
-                  >
-                    На 3D-плане
-                  </a>
-                  <a
-                    href={siteUrl('/parametric-search')}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigateTo('/parametric-search');
-                    }}
-                  >
-                    По параметрам
-                  </a>
-                  <a
-                    href={siteUrl('/favorite')}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigateTo('/favorite');
-                    }}
-                  >
-                    Избранное
-                  </a>
-                </div>
-              </details>
-
-              <details className="nav-dropdown">
-                <summary>О проекте</summary>
-                <div>
-                  {projectLinks.slice(0, 12).map(([url, title]) => (
-                    <a
-                      key={url}
-                      href={siteUrl(url)}
-                      onClick={(e) => {
-                        if (!url.startsWith('/#')) {
-                          e.preventDefault();
-                          navigateTo(url);
-                        }
-                      }}
-                    >
-                      {title}
-                    </a>
-                  ))}
-                </div>
-              </details>
-
-              <a
-                href={siteUrl('/audiogid')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo('/audiogid');
-                }}
-              >
-                Аудиоэкскурсия
-              </a>
-              <a
-                href={siteUrl('/tour')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo('/tour');
-                }}
-              >
-                3D-тур
-              </a>
-              <a
-                href={siteUrl('/cloud-tour')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo('/cloud-tour');
-                }}
-              >
-                Облачный 3D-тур
-              </a>
-            </>
-          ) : (
-            <span className="terminal-title">
-              SHATTYQ <span>Интерактивная презентация</span>
-            </span>
-          )}
-        </nav>
-
-        <div className="header-actions">
-          <a className="phone" href="tel:700">
-            <Phone size={17} />
-            <strong>700</strong>
-            <span>Отдел продаж</span>
-          </a>
-
-          <button
-            type="button"
-            className="header-callback-btn"
-            onClick={() => openConsultModal('Заказ обратного звонка')}
-            aria-label="Заказать звонок"
-          >
-            Мы вам перезвоним
-          </button>
-
-          <a
-            href={siteUrl('/documents/Shattyq-presentation.pdf')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="header-booklet-btn"
-            download="Shattyq-presentation.pdf"
-            aria-label="Скачать буклет"
-          >
-            <Download size={15} />
-            <span>Скачать буклет</span>
-          </a>
-
-          <button
-            type="button"
-            className="icon header-mobile-phone"
-            onClick={() => openConsultModal('Заказ обратного звонка')}
-            aria-label="Заказать звонок"
-          >
-            <Phone size={19} />
-          </button>
-
-          <button
-            className="icon header-heart"
-            onClick={handleShowFavorites}
-            aria-label="Открыть избранное"
-          >
-            <Heart size={21} />
-            {favorites.length > 0 && <b>{favorites.length}</b>}
-          </button>
-
-          <button
-            className="icon menu-button"
-            aria-label="Открыть меню"
-            onClick={() => setIsMenuOpen(true)}
-          >
-            <Menu />
-          </button>
-
-          <button className="button blue header-cta" onClick={handleGoPlans}>
-            Выбрать квартиру <ArrowUpRight size={17} />
-          </button>
-        </div>
-      </header>
-
-      {warning && (
-        <div className="config-warning" role="status">
-          {warning}
-        </div>
-      )}
-
-      {mode === 'web' ? (
-        !isHome ? (
-          <ExperienceRoutes
-            flats={inventory}
-            favorites={favorites}
-            toggleFavorite={toggleFavorite}
-            config={config}
-            onConsult={openConsultModal}
-          />
-        ) : (
-          <main id="top">
-            <section className="hero">
-              <img
-                className="hero-photo"
-                src={siteUrl('/sensata/hero.jpg')}
-                alt="Архитектура жилого комплекса Shattyq в Астане"
-              />
-              <div className="hero-shade" />
-              <div className="hero-top">
-                <span>ПРОЕКТ SENSATA GROUP</span>
-                <span className="hero-badge">ПРЕМИУМ-КЛАСС</span>
-              </div>
-              <div className="hero-content">
-                <span className="eyebrow">СЧАСТЬЕ БЫТЬ ДОМА</span>
-                <h1>
-                  Shattyq
-                  <span>Жизнь в гармонии с собой.</span>
-                </h1>
-                <div className="hero-bottom">
-                  <p>
-                    <MapPin size={18} />
-                    {address}
-                  </p>
-                  <button className="button white" onClick={handleGoPlans}>
-                    Найти свою квартиру <ArrowUpRight size={20} />
-                  </button>
-                </div>
-              </div>
-              <a className="hero-scroll" href="#about" aria-label="Подробнее о проекте">
-                <ArrowDown size={20} />
-              </a>
-            </section>
-
-            <div className="facts">
-              <div>
-                <strong>9</strong>
-                <span>этажей</span>
-              </div>
-              <div>
-                <strong>3–4</strong>
-                <span>квартиры на этаже</span>
-              </div>
-              <div>
-                <strong>2–4</strong>
-                <span>комнаты</span>
-              </div>
-              <div>
-                <strong>24/7</strong>
-                <span>видеонаблюдение</span>
-              </div>
-              <div className="fact-note">
-                <span>
-                  Камерный масштаб.
-                  <br />
-                  Большое внимание к деталям.
-                </span>
-                <ArrowUpRight />
-              </div>
-            </div>
-
-            <section id="about" className="section about">
-              <div className="section-heading">
-                <span className="eyebrow">01 / О ПРОЕКТЕ</span>
-                <h2>
-                  Больше, чем дом.
-                  <br />
-                  <span>Место для вашей жизни.</span>
-                </h2>
-              </div>
-              <div className="about-grid">
-                <div className="about-photo">
-                  <img src={siteUrl('/sensata/architecture.jpg')} alt="Детали фасада Shattyq" loading="lazy" />
-                  <span>SHATTYQ · АСТАНА</span>
-                </div>
-                <div className="about-copy">
-                  <span className="mini-label">ПРЕМИУМ В КАЖДОЙ ДЕТАЛИ</span>
-                  <h3>
-                    Личное пространство
-                    <br />в большом городе
-                  </h3>
-                  <p>
-                    Малоквартирный дом в районе Есиль: выразительная архитектура, свободные планировки и
-                    приватная территория для жизни и отдыха.
-                  </p>
-                  <div className="benefits">
-                    <div>
-                      <Building2 />
-                      <span>
-                        Монолитный
-                        <br />
-                        железобетонный каркас
-                      </span>
-                    </div>
-                    <div>
-                      <Trees />
-                      <span>
-                        Закрытый двор
-                        <br />
-                        без автомобилей
-                      </span>
-                    </div>
-                    <div>
-                      <ScanFace />
-                      <span>
-                        Доступ в дом
-                        <br />
-                        по Face ID
-                      </span>
-                    </div>
-                    <div>
-                      <ShieldCheck />
-                      <span>
-                        Сквозные подъезды
-                        <br />и видеонаблюдение
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    className="text-link"
-                    onClick={() => openConsultModal('Консультация по Shattyq')}
-                  >
-                    Познакомиться с проектом <ArrowUpRight size={18} />
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            <section id="gallery" className="section gallery-section">
-              <div className="section-heading">
-                <span className="eyebrow">02 / ПРОСТРАНСТВО</span>
-                <h2>
-                  Красота, которая
-                  <br />
-                  <span>окружает каждый день.</span>
-                </h2>
-              </div>
-              {galleryView}
-            </section>
-
-            <div id="flats" style={{ position: 'relative', top: '-80px', visibility: 'hidden' }} />
-            <section id="layouts" className="section layouts-section">
-              <div className="section-heading">
-                <span className="eyebrow">03 / ПЛАНИРОВКИ</span>
-                <h2>
-                  У каждого счастья
-                  <br />
-                  <span>своя планировка.</span>
-                </h2>
-                <p>
-                  Выберите пространство под свой образ жизни.
-                  <br />
-                  Оригинальные планы квартир Shattyq.
-                </p>
-              </div>
-              {plansView}
-            </section>
-
-            <section className="blue-band">
-              <span className="eyebrow">ПРОСТРАНСТВО ДЛЯ БЛИЗКИХ</span>
-              <h2>
-                Дома — спокойно.
-                <br />
-                Во дворе — счастливо.
-              </h2>
-              <p>
-                Зелёные прогулочные дорожки, места отдыха
-                <br />и закрытая территория без машин.
-              </p>
-              <button
-                className="button white"
-                onClick={() => {
-                  handleGalleryChange('Благоустройство');
-                  document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                Прогуляться по двору <ArrowUpRight size={18} />
-              </button>
-              <img
-                src={siteUrl('/sensata/courtyard-1.jpg')}
-                alt="Ландшафт и детская площадка Shattyq"
-                loading="lazy"
-              />
-            </section>
-
-            <div id="mesto" style={{ position: 'relative', top: '-80px', visibility: 'hidden' }} />
-            <section id="location" className="section">
-              <span className="eyebrow location-number">04 / ЛОКАЦИЯ</span>
-              {locationView}
-            </section>
-
-            <HomeExperiences />
-
-            <section className="contact-section" id="contacts">
-              <div>
-                <span className="eyebrow">СЛЕДУЮЩИЙ ШАГ — ВАШ</span>
-                <h2>
-                  Давайте найдём
-                  <br />
-                  вашу квартиру.
-                </h2>
-                <p>
-                  Стоимость, наличие и условия покупки
-                  <br />у команды Sensata Group.
-                </p>
-              </div>
-              <div className="contact-action">
-                <a href="tel:700">
-                  700 <ArrowUpRight />
-                </a>
-                <span>Единый колл-центр · Отдел продаж</span>
-                <button
-                  className="button blue"
-                  onClick={() => openConsultModal('Консультация по Shattyq')}
-                >
-                  Получить консультацию <ArrowUpRight size={18} />
-                </button>
-              </div>
-            </section>
-          </main>
-        )
-      ) : (
-        <main className="terminal-main">
-          <aside className="terminal-sidebar">
-            <span className="eyebrow">ЖИЛОЙ КОМПЛЕКС</span>
-            <h1>Shattyq</h1>
-            <span className="terminal-premium">Премиум-класс · Астана</span>
-
-            <nav>
-              {[
-                ['overview', 'Обзор проекта', Home],
-                ['gallery', 'Галерея', LayoutGrid],
-                ['layouts', 'Планировки', Building2],
-                ['location', 'Локация', MapPin],
-                ['developer', 'О застройщике', Info]
-              ].map(([id, title, Icon]) => {
-                const IconComponent = Icon as typeof Home;
-                return (
-                  <button
-                    key={id as string}
-                    className={kioskSection === id ? 'active' : ''}
-                    onClick={() => setKioskSection(id as string)}
-                  >
-                    <IconComponent size={20} />
-                    {title as string}
-                    <ArrowUpRight size={16} />
-                  </button>
-                );
-              })}
-            </nav>
-
-            <div className="terminal-extra-links">
-              <a
-                href={siteUrl('/visual')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo('/visual');
-                }}
-              >
-                Выбор на 3D-плане ↗
-              </a>
-              <a
-                href={siteUrl('/tour')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo('/tour');
-                }}
-              >
-                3D-тур ↗
-              </a>
-              <a
-                href={siteUrl('/cloud-tour')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo('/cloud-tour');
-                }}
-              >
-                Облачный 3D-тур ↗
-              </a>
-              <a
-                href={siteUrl('/audiogid')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo('/audiogid');
-                }}
-              >
-                Аудиоэкскурсия ↗
-              </a>
-              <a
-                href={siteUrl('/mortgage')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo('/mortgage');
-                }}
-              >
-                Калькулятор покупки ↗
-              </a>
-            </div>
-
-            <button
-              className="button blue"
-              onClick={() => openConsultModal('Консультация по Shattyq')}
-            >
-              Связаться с нами <Phone size={17} />
-            </button>
-          </aside>
-
-          <div className="terminal-content" key={kioskSection}>
-            {kioskSection === 'overview' && (
-              <>
-                <div className="terminal-hero">
-                  <img src={siteUrl('/sensata/hero.jpg')} alt="Жилой комплекс Shattyq" />
-                  <div>
-                    <span className="eyebrow">СЧАСТЬЕ БЫТЬ ДОМА</span>
-                    <h2>
-                      Ваша жизнь.
-                      <br />
-                      Ваш Shattyq.
-                    </h2>
-                    <button className="button white" onClick={handleGoPlans}>
-                      Выбрать планировку <ArrowUpRight size={18} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="terminal-facts">
-                  <span>
-                    <strong>9</strong> этажей
-                  </span>
-                  <span>
-                    <strong>3–4</strong> квартиры на этаже
-                  </span>
-                  <span>
-                    <strong>Face ID</strong> доступ в дом
-                  </span>
-                </div>
-
-                <p className="terminal-address">
-                  <MapPin size={18} />
-                  {address}
-                </p>
-              </>
-            )}
-
-            {kioskSection === 'gallery' && (
-              <>
-                <h2>Галерея проекта</h2>
-                {galleryView}
-              </>
-            )}
-
-            {kioskSection === 'layouts' && (
-              <>
-                <h2>Найдите свою планировку</h2>
-                {plansView}
-              </>
-            )}
-
-            {kioskSection === 'location' && locationView}
-
-            {kioskSection === 'developer' && (
-              <div className="developer">
-                <img src={siteUrl('/sensata/logo.png')} alt="Sensata Group" />
-                <h2>
-                  Дома, в которых
-                  <br />
-                  хочется жить.
-                </h2>
-                <p>
-                  Sensata Group — девелопер жилой недвижимости в Астане и Алматы. Shattyq — один из
-                  проектов компании в сегменте премиум.
-                </p>
-                <a
-                  className="button blue"
-                  href="https://sensata.kz/ru/about"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  О компании <ArrowUpRight size={18} />
-                </a>
-              </div>
-            )}
-          </div>
-        </main>
-      )}
-
-      <div className="prefooter-links">
-        <a href={siteUrl('/documents/Shattyq-presentation.pdf')} download>
-          <Download size={16} /> Скачать буклет
-        </a>
-        <a
-          href={siteUrl('/parametric-search')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo('/parametric-search');
-          }}
-        >
-          Квартиры
-        </a>
-        <a
-          href={siteUrl('/tour')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo('/tour');
-          }}
-        >
-          3D-тур
-        </a>
-        <a
-          href={siteUrl('/cloud-tour')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo('/cloud-tour');
-          }}
-        >
-          Облачный 3D-тур
-        </a>
-        <a
-          href={siteUrl('/audiogid')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo('/audiogid');
-          }}
-        >
-          Аудиоэкскурсия
-        </a>
-        <a
-          href={siteUrl('/contacts')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo('/contacts');
-          }}
-        >
-          Контакты
-        </a>
-        <a
-          href={siteUrl('/privacy')}
-          onClick={(e) => {
-            e.preventDefault();
-            navigateTo('/privacy');
-          }}
-        >
-          Конфиденциальность
-        </a>
-      </div>
-
-      <footer className="footer">
-        <img src={siteUrl('/sensata/logo-white.png')} alt="Sensata Group" />
-        <div>
-          <span>Shattyq · Астана</span>
-          <small>
-            Материалы проекта —{' '}
-            <a href={data.source} target="_blank" rel="noreferrer">
-              sensata.kz <ArrowUpRight size={12} />
-            </a>
-          </small>
-        </div>
-        <span className="footer-note">
-          Рендеры и планировки носят информационный характер.
-          <br />
-          Стоимость и наличие уточняйте в отделе продаж.
-        </span>
-        <button
-          className="mode-button"
-          onClick={() => {
-            if (!isHome) {
-              navigateTo('/?mode=kiosk');
-              return;
-            }
-            handleToggleMode();
-          }}
-        >
-          {mode === 'web' ? <Monitor size={17} /> : <Globe size={17} />}{' '}
-          {mode === 'web' ? 'Режим терминала' : 'Веб-версия'}
-        </button>
-      </footer>
-
-      {mode === 'web' && (
-        <>
-          <ScrollToTopButton />
-          <CookieNotice />
-        </>
-      )}
-
-      {isMenuOpen && (
-        <Modal close={() => setIsMenuOpen(false)} label="Навигация" wide>
-          <div className="project-menu">
-            <div>
-              <img src={siteUrl('/sensata/logo.png')} alt="Sensata Group" />
-              <span className="eyebrow">SHATTYQ · АСТАНА</span>
-              <h2>
-                Счастье
-                <br />
-                быть дома.
-              </h2>
-              <a
-                className="button blue"
-                href={siteUrl('/visual')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsMenuOpen(false);
-                  navigateTo('/visual');
-                }}
-              >
-                Выбрать квартиру на 3D-плане <ArrowUpRight size={17} />
-              </a>
-              <a
-                className="button outline"
-                href={siteUrl('/parametric-search')}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsMenuOpen(false);
-                  navigateTo('/parametric-search');
-                }}
-              >
-                Выбрать квартиру по параметрам
-              </a>
-              <a
-                className="text-link"
-                href={siteUrl('/documents/Shattyq-presentation.pdf')}
-                download
-              >
-                Скачать буклет <Download size={17} />
-              </a>
-            </div>
-
-            <nav>
-              {projectLinks.map(([url, title], i) => (
-                <a
-                  key={url}
-                  href={siteUrl(url)}
-                  onClick={(e) => {
-                    setIsMenuOpen(false);
-                    if (!url.startsWith('/#')) {
-                      e.preventDefault();
-                      navigateTo(url);
-                    }
-                  }}
-                >
-                  <span>{String(i + 1).padStart(2, '0')}</span>
-                  {title}
-                  <ArrowUpRight size={17} />
-                </a>
-              ))}
-            </nav>
-          </div>
-        </Modal>
-      )}
-
-      {isContactOpen && (
-        <Modal close={() => setIsContactOpen(false)} label="Консультация по Shattyq">
-          <LeadForm topic={contactTopic} endpoint={config.leadEndpoint} />
-        </Modal>
-      )}
-
-      {selectedPlan && (
-        <Modal
-          close={() => setSelectedPlan(null)}
-          label={`${selectedPlan.rooms}-комнатная планировка`}
-          wide
-        >
-          <div className="plan-detail">
-            <div className={`detail-image ${isPlanZoomed ? 'zoomed' : ''}`}>
-              <button
-                onClick={() => setIsPlanZoomed((v) => !v)}
-                aria-label={isPlanZoomed ? 'Уменьшить чертёж' : 'Увеличить чертёж'}
-              >
-                <img src={siteUrl(selectedPlan.image)} alt="Оригинальный чертёж планировки Shattyq" />
-              </button>
-            </div>
-
-            <div className="detail-copy">
-              <span className="eyebrow">SHATTYQ · 1 ОЧЕРЕДЬ</span>
-              <h2>
-                {selectedPlan.rooms}-комнатная
-                <br />
-                планировка
-              </h2>
-              <p>Вариант {selectedPlan.id.split('-')[1]?.padStart(2, '0')}</p>
-
-              <div className="price-info">
-                <strong>Цена по запросу</strong>
-                <span>Актуальную стоимость и наличие уточнит менеджер.</span>
-              </div>
-
-              <p className="detail-note">
-                Размеры помещений, секция и этаж указаны на оригинальном чертеже. Нажмите на план, чтобы
-                увеличить.
-              </p>
-
-              <button
-                className="button blue"
-                onClick={() => {
-                  openConsultModal(`Планировка ${selectedPlan.id}: ${selectedPlan.rooms} комнаты`);
-                  setSelectedPlan(null);
-                }}
-              >
-                Узнать стоимость <ArrowUpRight size={18} />
-              </button>
-
-              <button className="button outline" onClick={() => toggleFavorite(selectedPlan.id)}>
-                <Heart
-                  size={18}
-                  fill={favorites.includes(selectedPlan.id) ? 'currentColor' : 'none'}
-                />
-                {favorites.includes(selectedPlan.id) ? 'В избранном' : 'Сохранить планировку'}
-              </button>
-
-              <a
-                className="text-link"
-                href={siteUrl(`/flat/${selectedPlan.id}`)}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setSelectedPlan(null);
-                  navigateTo(`/flat/${selectedPlan.id}`);
-                }}
-              >
-                Полная информация о планировке <ArrowUpRight size={18} />
-              </a>
-
-              <a
-                className="text-link"
-                href={siteUrl(selectedPlan.image)}
-                download={`Shattyq-${selectedPlan.rooms}rooms-${selectedPlan.id}.jpg`}
-              >
-                Скачать чертёж <Download size={18} />
-              </a>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {isLightboxOpen && (
-        <Modal
-          close={() => setIsLightboxOpen(false)}
-          label={`Галерея: ${activeGallery}`}
-          wide
-        >
-          <div className="lightbox">
-            <img
-              src={siteUrl(galleries[activeGallery][slideIndex])}
-              alt={`${activeGallery} Shattyq — ${slideIndex + 1}`}
-            />
-            <div>
-              <button
-                className="icon"
-                aria-label="Предыдущее фото"
-                onClick={() => handleNextSlide(-1)}
-              >
-                <ArrowLeft />
-              </button>
-              <span>
-                {activeGallery} · {slideIndex + 1} / {galleries[activeGallery].length}
-              </span>
-              <button
-                className="icon"
-                aria-label="Следующее фото"
-                onClick={() => handleNextSlide(1)}
-              >
-                <ArrowRight />
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
+    {isHome ? <main className="saf-home" id="projects">
+      <div className="saf-home-intro"><span className="saf-kicker">НАШИ ПРОЕКТЫ</span><h1>Выберите объект<span>.</span></h1><p>Найдите пространство для своей жизни.<br />Выберите проект и познакомьтесь с его планировками.</p><div className="saf-home-count"><strong>{String(projects.length).padStart(2, '0')}</strong><span>{projects.length === 1 ? 'объект' : 'объектов'} в рабочем пространстве</span></div></div>
+      <div className={`saf-project-grid${projects.length > 1 ? ' multi' : ''}`}>{projects.map((project, index) => <div className="saf-project-entry" key={project.id}><AppLink to={project.href} className="saf-project-card"><div className="saf-project-photo" style={{ backgroundImage: `linear-gradient(90deg, rgba(13,24,27,.72), rgba(13,24,27,.06)), url(${project.image})` }} /><div className="saf-project-content"><span className="saf-project-index">{String(index + 1).padStart(2, '0')} / {project.city}</span><div><img className="saf-project-logo" src={project.logo} alt={project.name} /><h2>{project.name}</h2><p><MapPin size={17} /> {project.address}</p></div><span className="saf-project-open">Открыть конфигуратор <ArrowUpRight size={21} /></span></div></AppLink><p className="saf-home-footnote">{project.note}</p></div>)}</div>
+    </main> : selectedApartment ? <SafApartmentPage key={selectedApartment.id} unit={selectedApartment} /> : isVisual && !visualLevel ? <SafVisualJourney section={visualBlock ? String(visualBlock) : null} floor={visualMatch?.[3] ? Number(visualMatch[3]) : null} /> : isMaterials ? <SafMaterials /> : isStock ? <SafStockSnapshot /> : selectedPlan ? <main className="saf-detail">
+      <div className="saf-breadcrumbs"><AppLink to="/projects">Объекты</AppLink><span>/</span><AppLink to="/saf">SAF Avenue</AppLink><span>/</span><span>{selectedPlan.code}</span></div>
+      <div className="saf-detail-heading"><AppLink to={detailBack} className="saf-back"><ArrowLeft size={18} /> К планировкам</AppLink><span className="saf-kicker">SAF AVENUE / КАРТОЧКА ПЛАНИРОВКИ</span><h1>{selectedPlan.rooms}-комнатная планировка</h1><p>Код в публичном каталоге: {selectedPlan.code}</p>{selectedLocation && <div className="saf-detail-context"><AppLink to={`/saf/visual/block/${selectedLocation.block}/level/${selectedLocation.level}`}>На {safLevelLabel(selectedLocation.level).toLowerCase()} · блок {selectedLocation.block}</AppLink><AppLink to="/saf/visual">На 3D-схеме блоков</AppLink><AppLink to="/saf">По параметрам</AppLink></div>}</div>
+      <div className="saf-detail-grid"><SafApartmentViewer key={selectedPlan.code} code={selectedPlan.code} rooms={selectedPlan.rooms} image={selectedPlan.image} /><aside className="saf-detail-panel"><span className="saf-panel-kicker">ПАРАМЕТРЫ</span><div className="saf-detail-fact"><span>Комнат</span><strong>{selectedPlan.rooms}</strong></div><div className="saf-detail-fact"><span>Общая площадь</span><strong>{formatArea(selectedPlan.area)}</strong></div><div className="saf-detail-fact"><span>Код планировки</span><strong>{selectedPlan.code}</strong></div><div className="saf-detail-availability"><span className="saf-status-dot" /> Наличие и цена уточняются</div><p>Это планировка из публичного каталога. Карточка не подтверждает наличие конкретной квартиры.</p><div className="saf-detail-actions"><button type="button" onClick={() => toggleSaved(selectedPlan.code)}><Heart size={18} fill={saved.includes(selectedPlan.code) ? 'currentColor' : 'none'} />{saved.includes(selectedPlan.code) ? 'В подборке' : 'В подборку'}</button><button type="button" onClick={() => toggleCompared(selectedPlan.code)}><Check size={18} />{compared.includes(selectedPlan.code) ? 'Убрать из сравнения' : 'Сравнить'}</button><button type="button" onClick={() => copyPlanLink(selectedPlan.code)}><Copy size={18} />Скопировать ссылку</button><button type="button" onClick={() => window.print()}><Printer size={18} />Печать</button></div><a className="saf-source-link" href="https://saf.sensata.kz/quiz" target="_blank" rel="noopener noreferrer">Открыть официальный каталог <ArrowUpRight size={16} /></a></aside></div>
+      <SafPlanEvidence code={selectedPlan.code} />
+    </main> : isChessboard ? <SafChessboard plans={safData.plans} /> : isTour ? <main className="saf-detail"><div className="saf-breadcrumbs"><AppLink to="/saf">SAF Avenue · Все планировки</AppLink></div><h1>3D-просмотр квартиры</h1><p>Исследуйте интерьер и переключайте ракурсы. Для выбора планировки откройте конфигуратор.</p><SafApartmentViewer code="demo" rooms={2} image={safData.plans[0].image} /></main> : isLegacy ? <main className="saf-legacy"><span className="saf-kicker">SENSATA / РАБОЧЕЕ ПРОСТРАНСТВО</span><h1>Раздел обновлён.</h1><p>Перейдите к подбору планировок SAF Avenue.</p><AppLink to="/saf" className="saf-primary-link">Открыть конфигуратор <ArrowRight size={18} /></AppLink></main> : (normalizedPath === '/saf' || isVisual) ? <main className="saf-workspace">
+      <div className="saf-breadcrumbs"><AppLink to="/projects">Объекты</AppLink><span>/</span><span>SAF Avenue</span></div>
+      <div className="saf-selection-heading" id="saf-catalog"><div><span className="saf-kicker">SAF AVENUE / ВЫБОР КВАРТИРЫ</span><h1>{isVisual ? 'Квартиры на 3D-плане' : 'Поиск квартир по параметрам'}</h1></div><p>Актуальное наличие и цены уточняются</p></div>
+      <div className="saf-mode-switch" role="navigation" aria-label="Способ выбора планировки"><AppLink to="/saf/visual" className={isVisual ? 'active' : ''}>На 3D-плане</AppLink><AppLink to="/saf" className={!isVisual ? 'active' : ''}>По параметрам</AppLink></div>
+      {isVisual ? <SafVisualSelector plans={safData.plans} block={visualBlock} level={visualLevel} floor={visualMatch?.[3] ? Number(visualMatch[3]) : null} /> : <div className="saf-configurator"><aside className="saf-filters" aria-label="Фильтры планировок"><div className="saf-filter-heading"><span><SlidersHorizontal size={18} /> Параметры</span><button type="button" onClick={resetFilters}><RotateCcw size={15} /> Сбросить</button></div><div className="saf-filter-group"><strong>Комнат</strong><div className="saf-room-options">{[0, ...SAF_ROOMS].map((value) => <button type="button" key={value} className={value === 0 ? (rooms.length === 0 ? 'selected' : '') : (rooms.includes(value) ? 'selected' : '')} aria-pressed={value === 0 ? rooms.length === 0 : rooms.includes(value)} onClick={() => setRooms((current) => value === 0 ? [] : current.includes(value) ? current.filter((item) => item !== value) : [...current, value])}>{value || 'Все'}</button>)}</div></div><div className="saf-filter-group"><strong>Площадь, м²</strong><div className="saf-area-inputs"><label>От<input inputMode="decimal" type="number" min="0" value={minArea} onChange={(event) => setMinArea(event.target.value)} placeholder="0" /></label><label>До<input inputMode="decimal" type="number" min="0" value={maxArea} onChange={(event) => setMaxArea(event.target.value)} placeholder="∞" /></label></div></div><div className="saf-filter-group"><label className="saf-search-label" htmlFor="saf-code-search">Код планировки</label><div className="saf-search"><Search size={17} /><input id="saf-code-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Например, KV-P1" /></div></div><button type="button" className="saf-advanced-toggle" aria-expanded={advancedFilters} onClick={() => setAdvancedFilters((value) => !value)}>{advancedFilters ? 'Простой фильтр' : 'Расширенный фильтр'}</button>{advancedFilters && <div className="saf-advanced-fields"><strong>Блок</strong><div className="saf-block-filters">{SAF_BLOCKS.map((number) => <label key={number}><input type="checkbox" checked={selectedBlocks.includes(number)} onChange={() => setSelectedBlocks((current) => current.includes(number) ? current.filter((item) => item !== number) : [...current, number])} />{number}</label>)}</div><strong>Этаж (коды E)</strong><div className="saf-area-inputs"><label>От<input aria-label="Этаж от" type="number" min="1" value={minFloor} onChange={(event) => setMinFloor(event.target.value)} placeholder="—" /></label><label>До<input aria-label="Этаж до" type="number" min="1" value={maxFloor} onChange={(event) => setMaxFloor(event.target.value)} placeholder="—" /></label></div><p>Цена и особенности не фильтруются: проверенных данных SAF для них нет.</p></div>}<label className="saf-saved-filter"><input type="checkbox" checked={savedOnly} onChange={(event) => setSavedOnly(event.target.checked)} /><Heart size={17} /> Только подборка <span>{saved.length}</span></label><p className="saf-filter-note">Планы из открытого каталога не являются подтверждённым реестром квартир.</p></aside>
+        <section className="saf-results" aria-label="Результаты подбора">
+          <div className="saf-results-head"><div><span className="saf-kicker">ПОДБОР</span><h2>Планировки <span>{filtered.length}</span></h2></div><div className="saf-results-tools"><label>Сортировка<select value={sort} onChange={(event) => setSort(event.target.value as SortOrder)}><option value="area-asc">Площадь: по возрастанию</option><option value="area-desc">Площадь: по убыванию</option><option value="rooms">Комнатность</option></select></label><div className="saf-result-view" role="group" aria-label="Вид результатов"><button type="button" aria-pressed={resultView === 'table'} onClick={() => setResultView('table')}>Таблица</button><button type="button" aria-pressed={resultView === 'cards'} onClick={() => setResultView('cards')}>Карточки</button></div></div></div>
+          {filtered.length ? <>{resultView === 'cards' ? <div className="saf-plan-grid">{filtered.slice(0, visibleCount).map((plan) => <PlanCard key={plan.code} plan={plan} saved={saved.includes(plan.code)} compared={compared.includes(plan.code)} onSave={() => toggleSaved(plan.code)} onCompare={() => toggleCompared(plan.code)} />)}</div> : <div className="saf-plan-table-wrap"><table className="saf-plan-table"><thead><tr><th>Планировка</th><th>Блок</th><th>Уровень</th><th>Комнат</th><th>Площадь</th><th>Наличие</th><th>Действия</th></tr></thead><tbody>{filtered.slice(0, visibleCount).map((plan) => { const codeLocation = safCatalog.byCode.get(plan.code)?.place; return <tr key={plan.code}><td><AppLink to={planHref(plan.code)}><img src={plan.image} alt="" loading="lazy" /><span>{plan.code}</span></AppLink></td><td>{codeLocation ? `P${codeLocation.block}` : '—'}</td><td>{codeLocation ? safLevelLabel(codeLocation.level) : '—'}</td><td>{plan.rooms}</td><td>{formatArea(plan.area)}</td><td>Уточняется</td><td><button type="button" aria-label={`${saved.includes(plan.code) ? 'Убрать из подборки' : 'Добавить в подборку'} ${plan.code}`} onClick={() => toggleSaved(plan.code)}><Heart size={17} fill={saved.includes(plan.code) ? 'currentColor' : 'none'} /></button><button type="button" aria-label={`${compared.includes(plan.code) ? 'Убрать из сравнения' : 'Сравнить'} ${plan.code}`} onClick={() => toggleCompared(plan.code)}>{compared.includes(plan.code) ? <Check size={17} /> : '+'}</button></td></tr>; })}</tbody></table></div>}{visibleCount < filtered.length && <button type="button" className="saf-load-more" onClick={() => setVisibleCount((count) => count + pageSize)}>Показать ещё <span>{Math.min(visibleCount, filtered.length)} из {filtered.length}</span><ArrowRight size={17} /></button>}</> : <div className="saf-empty"><h3>Планировки не найдены</h3><p>Измените параметры или сбросьте фильтры.</p><button type="button" onClick={resetFilters}>Сбросить фильтры</button></div>}
+        </section>
+      </div>}
+      {compared.length > 0 && <div className="saf-compare-bar"><div><strong>Сравнение</strong><span>{compared.length} из {compareLimit} планировок</span></div><div className="saf-compare-codes">{compared.map((code) => <span key={code}>{code}<button type="button" onClick={() => toggleCompared(code)} aria-label={`Убрать ${code} из сравнения`}><X size={14} /></button></span>)}</div><button type="button" onClick={() => setShowCompare(true)}>Смотреть сравнение <ArrowRight size={17} /></button></div>}
+      {showCompare && compared.length > 0 && <section className="saf-compare" id="saf-compare" aria-label="Сравнение планировок"><div className="saf-compare-heading"><div><span className="saf-kicker">ДЛЯ КЛИЕНТА</span><h2>Сравнение планировок</h2></div><button type="button" onClick={() => setShowCompare(false)} aria-label="Закрыть сравнение"><X size={20} /></button></div><div className="saf-compare-grid">{compared.map((code) => { const plan = safCatalog.byCode.get(code)!.plan; return <article key={code}><img src={plan.image} alt={`Планировка ${code}`} /><small>{code}</small><strong>{plan.rooms}-комнатная</strong><span>{formatArea(plan.area)}</span><AppLink to={planHref(code)}>Открыть <ArrowUpRight size={15} /></AppLink></article>; })}</div></section>}
+    </main> : <main className="saf-legacy"><span className="saf-kicker">SENSATA / РАБОЧЕЕ ПРОСТРАНСТВО</span><h1>Страница не найдена.</h1><p>Проверьте адрес или откройте каталог планировок SAF Avenue.</p><AppLink to="/saf" className="saf-primary-link">Открыть конфигуратор <ArrowRight size={18} /></AppLink></main>}
+    {showChessboardFab && <AppLink to="/saf/chessboard" className="saf-chessboard-fab" label="Шахматка, выбрать квартиру или нежилое помещение"><Building2 size={26} /><span>Шахматка, выбрать квартиру/НП</span></AppLink>}
+    {isHome ? <SensataFooter /> : <footer className="saf-footer"><span>© Sensata · SAF Avenue</span><span>Планировочные материалы: <a href="https://saf.sensata.kz/quiz" target="_blank" rel="noopener noreferrer">официальный каталог SAF Avenue</a></span></footer>}
+    {notice && <div className="saf-toast" role="status">{notice}</div>}
+  </div>;
 }

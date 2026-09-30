@@ -1,0 +1,47 @@
+/* The two apartment journeys start immediately below the shared project navigation. */
+.saf-app .saf-header{overflow:visible}
+.saf-app .saf-header .saf-project-nav{overflow:visible;gap:12px}
+.saf-nav-group{position:relative;display:flex;align-items:center;height:100%}
+.saf-nav-group>button{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 15px;border:0;background:transparent;color:#2f363c;font-size:14px}
+.saf-nav-group>button[aria-expanded=true]{color:#bc702f}
+.saf-nav-group>button[aria-expanded=true] svg{transform:rotate(180deg)}
+.saf-nav-dropdown{position:absolute;top:100%;left:0;width:280px;padding:12px 8px;background:white;border:1px solid #ede9e3;border-radius:7px;box-shadow:0 12px 36px #1e273c26;z-index:40}
+.saf-nav-dropdown[hidden]{display:none}
+.saf-app .saf-header .saf-nav-dropdown a{display:flex;min-height:48px;height:auto;padding:12px 16px;font-size:15px;font-weight:400;white-space:normal;border:0;border-radius:4px;text-align:left}
+.saf-app .saf-header .saf-nav-dropdown a:hover,.saf-app .saf-header .saf-nav-dropdown a:focus-visible,.saf-app .saf-header .saf-nav-dropdown a[aria-current=page]{color:#a76b36;background:#f7f3ec}
+.saf-selection-heading{width:calc(100% - max(8vw,56px));max-width:1328px;margin:32px auto 0;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.saf-selection-heading h1{font-size:clamp(26px,3vw,40px);font-weight:400;margin:10px 0}
+.saf-selection-heading p{font-size:12px;color:#727779;max-width:220px;line-height:1.5}
+.saf-workspace .saf-mode-switch{margin-top:16px}
+.saf-workspace .saf-configurator{padding-top:26px}
+.saf-visual .saf-visual-subhead{flex-wrap:wrap}
+.saf-visual .saf-visual-heading h2{font-size:23px;margin:0 0 4px}
+.saf-visual .saf-visual-heading .saf-kicker{display:none}
+.saf-visual .saf-visual-heading p{margin:0}
+.saf-visual .saf-visual-heading{margin-bottom:16px}
+.saf-visual{padding-top:18px}
+.saf-scene-render{display:block;width:100%;height:100%;object-fit:cover}
+.saf-visual .saf-visual-scene{position:relative;padding:0;overflow:hidden;height:clamp(360px,58svh,680px);background:#d9e0e3}
+.saf-visual-scene-caption{position:absolute;left:24px;bottom:24px;padding:12px 18px;background:#ffffffed;max-width:calc(100% - 48px);font-size:12px;line-height:1.5}
+.saf-visual .saf-visual-scene-inner{position:absolute;top:20px;left:20px;right:20px;min-width:0;min-height:0;padding:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.saf-visual .saf-block{width:auto;height:auto;min-height:48px;display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid #dedbd7;background:#fffffff2;color:#2f363c;isolation:auto}
+.saf-visual .saf-block strong{font-size:14px;font-weight:500}.saf-visual .saf-block small{font-size:11px;color:#6c7277}
+.saf-visual .saf-block:hover,.saf-visual .saf-block.selected{background:#b88d61;color:white;border-color:#b88d61}.saf-visual .saf-block.selected small,.saf-visual .saf-block:hover small{color:white}
+.saf-visual .saf-visual-scene.angle-1 .saf-visual-scene-inner{flex-direction:row}
+.saf-visual.is-block .saf-visual-scene{height:auto;min-height:76px;background:#f3f1ee;overflow:visible}
+.saf-visual.is-block .saf-scene-render,.saf-visual.is-block .saf-visual-scene-caption,.saf-visual.is-block .saf-visual-angle{display:none}
+.saf-visual.is-block .saf-visual-scene-inner{position:static;padding:12px;justify-content:flex-start}
+.saf-visual-floor-sheet{display:block;background:#f3f1ee;border:1px solid #e0d9cf;padding:14px;margin:18px 0}
+.saf-visual-floor-sheet img{display:block;max-height:620px;width:100%;object-fit:contain}
+.saf-visual-floor-sheet span{display:block;font-size:13px;margin-top:10px}
+.saf-floor-units{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}
+.saf-floor-unit{padding:16px;border:1px solid #dfdbd6;display:flex;flex-direction:column;gap:9px;min-width:0}
+.saf-floor-unit img{width:100%;height:170px;object-fit:contain}.saf-floor-unit small{color:#697078;line-height:1.5}.saf-floor-unit a{text-decoration:underline;font-size:13px}
+.saf-floor-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:18px;align-items:start}
+.saf-floor-layout .saf-floor-units{grid-template-columns:1fr;max-height:690px;overflow:auto;padding:2px}
+.saf-floor-layout .saf-visual-floor-sheet{min-width:0}
+@media(max-width:1100px){.saf-floor-layout{grid-template-columns:1fr}.saf-floor-layout .saf-floor-units{grid-template-columns:repeat(2,minmax(0,1fr));max-height:none;overflow:visible}}
+@media(max-width:760px){.saf-floor-layout .saf-floor-units{grid-template-columns:1fr}}
+@media(max-width:1100px){.saf-app .saf-header .saf-project-nav{gap:0}.saf-nav-group>button{padding:0 10px}}
+@media(max-width:760px){.saf-app .saf-header .saf-project-nav{justify-content:space-between;height:46px}.saf-nav-group{height:46px}.saf-nav-group>button{font-size:13px;padding:0 7px;gap:6px}.saf-nav-dropdown{width:250px}.saf-nav-group:nth-child(2) .saf-nav-dropdown{left:-85px}.saf-selection-heading{width:calc(100% - 36px);margin-top:22px;display:block}.saf-selection-heading p{max-width:none;margin:8px 0}.saf-visual .saf-visual-heading{align-items:start}.saf-visual .saf-visual-heading h2{font-size:24px}.saf-visual .saf-visual-scene{height:460px}.saf-visual .saf-visual-scene-inner{top:12px;left:12px;right:12px;gap:6px;justify-content:start}.saf-visual .saf-block{padding:10px;gap:5px}.saf-visual .saf-block small{display:none}.saf-visual-scene-caption{left:12px;bottom:12px;max-width:calc(100% - 24px);padding:10px}.saf-floor-units{grid-template-columns:1fr}}
+.saf-visual.is-block .saf-visual-scene{height:auto}

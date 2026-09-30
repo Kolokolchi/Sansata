@@ -1,0 +1,6 @@
+export type TourView='panorama'|'top'|'spin'|'dollhouse';
+export const tourViews: [TourView,string][]=[['panorama','Панорамный тур'],['top','3D вид сверху'],['spin','Вращение 360°'],['dollhouse','Объёмный вид']];
+export type Furniture={id:string;kind:'sofa'|'table'|'bed'|'chair'|'plant';x:number;z:number;rotation:number};
+export interface InteriorDesign{wall:string;floor:string;furniture:Furniture[]}
+export const defaultDesign:InteriorDesign={wall:'#eee8df',floor:'#c5ad8d',furniture:[{id:'sofa',kind:'sofa',x:-3,z:1,rotation:0},{id:'coffee',kind:'table',x:-3,z:-1,rotation:0},{id:'bed',kind:'bed',x:3,z:-2,rotation:0},{id:'dining',kind:'table',x:-4,z:-3.3,rotation:90},{id:'plant',kind:'plant',x:-5.4,z:3.5,rotation:0}]};
+export function readDesign(value:unknown):InteriorDesign|null{if(!value||typeof value!=='object')return null;const d=value as InteriorDesign;if(!/^#[0-9a-f]{6}$/i.test(d.wall)||!/^#[0-9a-f]{6}$/i.test(d.floor)||!Array.isArray(d.furniture)||d.furniture.length>30)return null;const ids=new Set();for(const f of d.furniture){if(!f||typeof f.id!=='string'||ids.has(f.id)||!['sofa','table','bed','chair','plant'].includes(f.kind)||![f.x,f.z,f.rotation].every(Number.isFinite)||Math.abs(f.x)>5.5||Math.abs(f.z)>4.5)return null;ids.add(f.id);}return d;}

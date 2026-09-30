@@ -1,0 +1,116 @@
+import { expect, test } from '@playwright/test';
+
+test('apartments dropdown has two independent journeys and works with keyboard and touch', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('response', response => { if (response.status() >= 400) errors.push(`${response.status()} ${new URL(response.url()).pathname}`); });
+  await page.goto('/tour?view=plan&point=0');
+  const toggle = page.getByRole('button', { name: 'Квартиры', exact: true });
+  const menu = page.locator('#saf-nav-apartments');
+  if (await page.evaluate(() => matchMedia('(pointer: coarse)').matches)) await toggle.tap();
+  else await toggle.hover();
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole('link')).toHaveCount(2);
+  await menu.getByRole('link', { name: 'На 3D-плане', exact: true }).click();
+  await expect(page).toHaveURL(/\/saf\/visual$/);
+  await expect(page.locator('.saf-journey-render')).toBeVisible();
+  await expect(page.locator('main canvas')).toHaveCount(0);
+  await toggle.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(menu.getByRole('link').first()).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+  await expect(toggle).toBeFocused();
+  await page.keyboard.press('Enter');
+  await menu.getByRole('link', { name: 'По параметрам', exact: true }).click();
+  await expect(page).toHaveURL(/\/saf$/);
+  await expect(page.locator('.saf-workspace-hero')).toHaveCount(0);
+  await expect(page.locator('.saf-filters')).toBeVisible();
+  await toggle.click();
+  await page.locator('h1').click();
+  await expect(menu).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
+test('actual floors, missing plan links and legacy catalog deep links remain truthful', async ({ page }) => {
+  await page.goto('/saf/visual/block/5');
+  await expect(page.getByRole('group', { name: 'Этажи секции 5' }).getByRole('link')).toHaveCount(8);
+  await page.getByRole('link', { name: '9', exact: true }).click();
+  await expect(page).toHaveURL(/\/block\/5\/floor\/9$/);
+  await expect(page.getByRole('region', { name: 'Интерактивный план этажа' })).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.saf-unit-choice')).not.toHaveCount(0);
+  await page.goto('/saf/visual/block/5/floor/99');
+  await expect(page.getByRole('heading', { name: 'Этаж отсутствует в снимке' })).toBeVisible();
+  await expect(page.locator('.saf-unit-choice')).toHaveCount(0);
+  await page.goto('/saf/visual/block/1/level/E2');
+  await expect(page.locator('.saf-visual-plan')).toHaveCount(5);
+});
+
+test('visual block, level and layout path keeps deep links and history', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/saf/visual');
+  await page.getByRole('button', { name: 'Визуализация', exact: true }).click();
+  await expect(page.locator('.saf-journey-render')).toBeVisible();
+  await page.getByRole('button', { name: 'Генплан · выбор секций' }).click();
+  const block = page.getByRole('button', { name: 'Секция 1, 54 квартир в снимке', exact: true });
+  if (await page.evaluate(() => matchMedia('(pointer: coarse)').matches)) await block.tap();
+  else await block.click();
+  await expect(page).toHaveURL(/\/saf\/visual\/block\/1$/);
+  await page.getByRole('link', { name: '2', exact: true }).click();
+  await expect(page).toHaveURL(/\/saf\/visual\/block\/1\/floor\/2$/);
+  await expect(page.locator('.saf-unit-choice')).toHaveCount(5);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2)).toBe(true);
+  await expect(page.locator('.saf-unit-choice').first()).toContainText('№ 1');
+  await expect(page.locator('.saf-unit-choice').first()).toContainText('на 28.09.2026');
+  await page.reload();
+  await expect(page.locator('.saf-unit-choice')).toHaveCount(5);
+  await page.locator('.saf-unit-choice').first().click();
+  await expect(page).toHaveURL(/\/saf\/apartment\/saf-observation-1-2-property-1$/);
+  await expect(page.getByRole('heading', { name: '2-комнатная № 1' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'На этаже' })).toBeVisible();
+  await page.getByRole('link', { name: 'К квартирам этажа' }).click();
+  await expect(page).toHaveURL(/\/saf\/visual\/block\/1\/floor\/2$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/saf\/apartment\/saf-observation-1-2-property-1$/);
+  expect(errors).toEqual([]);
+});
+
+test('parameter mode filters by block and floor and switches result layout', async ({ page }) => {
+  await page.goto('/saf');
+  await page.getByRole('button', { name: 'Расширенный фильтр' }).click();
+  await page.locator('.saf-block-filters label').first().click();
+  await page.getByLabel('Этаж от').fill('3');
+  await page.getByRole('button', { name: 'Таблица' }).click();
+  await expect(page.locator('.saf-plan-table tbody tr').first()).toContainText('KV-P1-E3');
+  await page.getByRole('button', { name: 'Карточки' }).click();
+  await expect(page.locator('.saf-plan-card').first()).toContainText('KV-P1-E3');
+  await page.getByRole('button', { name: 'Сбросить' }).click();
+  await expect(page.getByRole('heading', { name: /Планировки/ }).last()).toContainText('150');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2)).toBe(true);
+});
+
+test('home opens the visual complex immediately and the removed menu stays absent', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('response', response => { if (response.status() >= 400) errors.push(`${response.status()} ${new URL(response.url()).pathname}`); });
+  await page.goto('/');
+  await expect(page.locator('.saf-complex-entry .saf-journey-render')).toBeVisible();
+  const nav = page.getByRole('navigation', { name: 'Основная навигация' });
+  await expect(nav.getByText('О проекте', { exact: true })).toHaveCount(0);
+  await expect(nav.getByText('Шахматка', { exact: true })).toHaveCount(0);
+  await expect(page.locator('.saf-chessboard-fab')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Выберите объект.' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Генплан · выбор секций' }).click();
+  await page.getByRole('button', { name: 'Секция 1, 54 квартир в снимке', exact: true }).click();
+  await expect(page).toHaveURL(/\/saf\/visual\/block\/1$/);
+  await page.getByRole('link', { name: '2', exact: true }).click();
+  await expect(page).toHaveURL(/\/floor\/2$/);
+  await page.getByRole('link', { name: 'На главную', exact: true }).click();
+  await expect(page.locator('.saf-complex-entry')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.saf-complex-entry .saf-journey-render')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2)).toBe(true);
+  expect(errors).toEqual([]);
+});

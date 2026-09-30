@@ -5,13 +5,58 @@ import { BitrixAdapter } from './bitrixAdapter.mjs';
 import { StatusCache } from './statusCache.mjs';
 import { RateLimiter } from './rateLimiter.mjs';
 import { getClientIp, validateLead, validateBooking } from './leads.mjs';
+import { API_CONFIG, API_PATHS, HTTP_STATUS } from './apiConfig.mjs';
+
+const JSON_RESPONSE_HEADERS = Object.freeze({
+  'Content-Type': 'application/json; charset=utf-8',
+  'Cache-Control': 'no-store',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY'
+});
+const REQUEST_BASE_URL = 'http://localhost';
+const LOCAL_ORIGIN_HOSTS = new Set(['localhost', '127.0.0.1']);
+const JSON_MEDIA_TYPE = 'application/json';
+const FORBIDDEN_JSON_KEYS = Object.freeze(['__proto__', 'constructor', 'prototype']);
+const ALLOWED_METHODS = 'GET, POST, OPTIONS';
+const ALLOWED_HEADERS = 'Content-Type, X-Request-ID';
+const METHOD = Object.freeze({ get: 'GET', post: 'POST', options: 'OPTIONS' });
+const ALLOW = Object.freeze({ status: 'GET, OPTIONS', submission: 'POST, OPTIONS' });
+const SUCCESS_MODE = Object.freeze({ crm: 'crm', local: 'local' });
+const REQUEST_KIND = Object.freeze({ lead: 'lead', booking: 'booking' });
+const SOLD_STATUS = 'sold';
+const FINGERPRINT_ALGORITHM = 'sha256';
+const TEXT_ENCODING = 'utf8';
+const MESSAGES = Object.freeze({
+  invalidOrigin: 'Недопустимый источник запроса (CORS).',
+  invalidMethod: 'Метод не поддерживается.',
+  invalidContentType: 'Требуется Content-Type: application/json.',
+  invalidJson: 'Некорректный JSON запрос.',
+  oversizedBody: `Запрос превышает ${API_CONFIG.bodyLimitKib} КБ.`,
+  duplicateId: 'Идентификатор запроса уже использован для другой заявки.',
+  statusRateLimit: 'Слишком много запросов статусов.',
+  leadRateLimit: `Слишком много запросов. Лимит: ${API_CONFIG.leadRequestsPerWindow} заявки за ${API_CONFIG.submissionWindowMinutes} минут.`,
+  bookingRateLimit: 'Слишком много запросов на бронирование. Попробуйте позднее.',
+  soldApartment: 'Данная квартира уже продана.',
+  leadAccepted: 'Заявка принята.',
+  bookingAccepted: 'Бронь принята.',
+  leadCreated: 'Заявка успешно зарегистрирована.',
+  leadStored: 'Заявка сохранена на локальном сервере.',
+  bookingCreated: 'Запрос на консультацию зарегистрирован.',
+  leadFailed: 'Не удалось зарегистрировать заявку.',
+  bookingFailed: 'Не удалось зарегистрировать запрос.',
+  leadStoreFailed: 'Не удалось сохранить заявку. Попробуйте позже.',
+  bookingStoreFailed: 'Не удалось сохранить запрос. Попробуйте позже.'
+});
+const INTERNAL_ERRORS = Object.freeze({
+  emptyPayload: 'Empty payload',
+  invalidPayload: 'Invalid JSON payload',
+  prototypePollution: 'Prototype pollution attempt',
+  oversizedPayload: 'Payload Too Large'
+});
 
 function replyJson(res, code, body, extraHeaders = {}) {
   res.statusCode = code;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  for (const [name, value] of Object.entries(JSON_RESPONSE_HEADERS)) res.setHeader(name, value);
 
   for (const [k, v] of Object.entries(extraHeaders)) {
     if (v) res.setHeader(k, v);
@@ -20,67 +65,57 @@ function replyJson(res, code, body, extraHeaders = {}) {
   res.end(JSON.stringify(body));
 }
 
-async function readJsonBody(req, limitBytes = 8192) {
+function invalidPayload(message, code = HTTP_STATUS.badRequest) {
+  return Object.assign(new Error(message), { code });
+}
+
+/** Pure JSON shape validation, separate from stream I/O. */
+function parseJsonObject(raw) {
+  if (!raw.trim()) throw invalidPayload(INTERNAL_ERRORS.emptyPayload);
+  const parsed = JSON.parse(raw);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw invalidPayload(INTERNAL_ERRORS.invalidPayload);
+  }
+  if (FORBIDDEN_JSON_KEYS.some((key) => Object.hasOwn(parsed, key))) {
+    throw invalidPayload(INTERNAL_ERRORS.prototypePollution);
+  }
+  return parsed;
+}
+
+async function readJsonBody(req, limitBytes = API_CONFIG.bodyLimitBytes) {
   const chunks = [];
   let totalBytes = 0;
 
   for await (const chunk of req) {
     totalBytes += chunk.length;
     if (totalBytes > limitBytes) {
-      const err = new Error('Payload Too Large');
-      err.code = 413;
-      throw err;
+      throw invalidPayload(INTERNAL_ERRORS.oversizedPayload, HTTP_STATUS.payloadTooLarge);
     }
     chunks.push(chunk);
   }
 
-  const raw = Buffer.concat(chunks).toString('utf8');
-  if (!raw.trim()) {
-    const err = new Error('Empty payload');
-    err.code = 400;
-    throw err;
-  }
-
-  const parsed = JSON.parse(raw);
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    const err = new Error('Invalid JSON payload');
-    err.code = 400;
-    throw err;
-  }
-
-  // Защита от прототипного загрязнения
-  if (Object.prototype.hasOwnProperty.call(parsed, '__proto__') ||
-      Object.prototype.hasOwnProperty.call(parsed, 'constructor') ||
-      Object.prototype.hasOwnProperty.call(parsed, 'prototype')) {
-    const err = new Error('Prototype pollution attempt');
-    err.code = 400;
-    throw err;
-  }
-
-  return parsed;
+  return parseJsonObject(Buffer.concat(chunks).toString(TEXT_ENCODING));
 }
 
 /**
  * Проверяет происхождение запроса (CORS / CSRF)
  */
-function checkOrigin(req) {
-  const origin = req.headers.origin;
+function checkOrigin(origin, reqHost, allowedOrigin) {
   if (!origin) return true;
 
-  const allowedOrigin = process.env.ALLOWED_ORIGIN;
   if (allowedOrigin && origin === allowedOrigin) return true;
 
   try {
-    const originHost = new URL(origin).host;
-    const reqHost = req.headers.host;
+    const parsedOrigin = new URL(origin);
+    const originHost = parsedOrigin.host;
     if (originHost === reqHost) return true;
 
     // Локальное окружение / тесты: localhost и 127.0.0.1
-    const originHostname = new URL(origin).hostname;
+    const originHostname = parsedOrigin.hostname;
     const reqHostname = reqHost?.split(':')[0];
     if (
-      (originHostname === 'localhost' || originHostname === '127.0.0.1') &&
-      (reqHostname === 'localhost' || reqHostname === '127.0.0.1')
+      LOCAL_ORIGIN_HOSTS.has(originHostname) &&
+      LOCAL_ORIGIN_HOSTS.has(reqHostname)
     ) {
       return true;
     }
@@ -91,7 +126,80 @@ function checkOrigin(req) {
   }
 }
 
-export const MAX_RECEIVED_REQUESTS = 10000;
+function applyCorsHeaders(res, origin) {
+  if (!origin) return;
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', ALLOWED_METHODS);
+  res.setHeader('Access-Control-Allow-Headers', ALLOWED_HEADERS);
+  res.setHeader('Access-Control-Max-Age', String(API_CONFIG.corsMaxAgeSeconds));
+  res.setHeader('Vary', 'Origin');
+}
+
+function rejectMethod(res, allowed) {
+  res.setHeader('Allow', allowed);
+  return replyJson(res, HTTP_STATUS.methodNotAllowed, { error: MESSAGES.invalidMethod });
+}
+
+function rejectRateLimit(res, limiter, ip, message) {
+  return replyJson(res, HTTP_STATUS.tooManyRequests, { error: message }, {
+    'Retry-After': String(limiter.getRetryAfter(ip))
+  });
+}
+
+function isSold(statuses, apartmentId) {
+  return !!apartmentId && statuses?.[apartmentId.toLowerCase()] === SOLD_STATUS;
+}
+
+/** Pure request identity helpers. Both routes share the same validation result shape. */
+function requestFingerprint(value) {
+  const { createdAt, ...identity } = value;
+  return createHash(FINGERPRINT_ALGORITHM).update(JSON.stringify(identity)).digest('hex');
+}
+
+function requestCacheKey(kind, ip, requestId) {
+  if (!requestId) return '';
+  return kind === REQUEST_KIND.booking ? `booking:${ip}:${requestId}` : `${ip}:${requestId}`;
+}
+
+function isJsonRequest(req) {
+  const contentType = req.headers['content-type'] || '';
+  return !contentType || contentType.includes(JSON_MEDIA_TYPE);
+}
+
+function honeypotReceipt(kind, id) {
+  return kind === REQUEST_KIND.lead
+    ? { success: true, ok: true, id, mode: SUCCESS_MODE.local, message: MESSAGES.leadAccepted }
+    : { success: true, ok: true, bookingId: id, mode: SUCCESS_MODE.local, message: MESSAGES.bookingAccepted };
+}
+
+function publicReceipt(kind, id, mode) {
+  return kind === REQUEST_KIND.lead
+    ? { success: true, id, leadId: id, mode, message: mode === SUCCESS_MODE.crm ? MESSAGES.leadCreated : MESSAGES.leadStored }
+    : { success: true, bookingId: id, id, mode, message: MESSAGES.bookingCreated };
+}
+
+function localRecord(kind, id, data) {
+  return kind === REQUEST_KIND.lead
+    ? { id, name: data.name, phone: data.phone, topic: data.topic, apartmentId: data.apartmentId, consent: true, createdAt: data.createdAt }
+    : { bookingId: id, name: data.name, phone: data.phone, apartmentId: data.apartmentId, apartmentNumber: data.apartmentNumber, consent: true, createdAt: data.createdAt };
+}
+
+function adapterInput(kind, data) {
+  return kind === REQUEST_KIND.lead
+    ? { name: data.name, phone: data.phone, topic: data.topic, apartmentId: data.apartmentId }
+    : { name: data.name, phone: data.phone, apartmentId: data.apartmentId, apartmentNumber: data.apartmentNumber };
+}
+
+function localFile(kind) {
+  return resolve(kind === REQUEST_KIND.lead ? API_CONFIG.localLeadFile : API_CONFIG.localBookingFile);
+}
+
+async function appendLocalRecord(file, record) {
+  await mkdir(dirname(file), { recursive: true });
+  await appendFile(file, `${JSON.stringify(record)}\n`, { encoding: TEXT_ENCODING, mode: API_CONFIG.localFileMode });
+}
+
+export const MAX_RECEIVED_REQUESTS = API_CONFIG.maxReceivedRequests;
 
 /**
  * Единый защищенный маршрутизатор API (BFF)
@@ -99,325 +207,174 @@ export const MAX_RECEIVED_REQUESTS = 10000;
 export function createApiRouter({
   adapter = new BitrixAdapter(),
   statusCache = new StatusCache(),
-  leadLimiter = new RateLimiter(3, 10 * 60 * 1000),
-  bookingLimiter = new RateLimiter(3, 10 * 60 * 1000),
-  statusLimiter = new RateLimiter(60, 60 * 1000),
+  leadLimiter = new RateLimiter(API_CONFIG.leadRequestsPerWindow, API_CONFIG.submissionWindowMs),
+  bookingLimiter = new RateLimiter(API_CONFIG.bookingRequestsPerWindow, API_CONFIG.submissionWindowMs),
+  statusLimiter = new RateLimiter(API_CONFIG.statusRequestsPerWindow, API_CONFIG.statusWindowMs),
   maxReceivedRequests = MAX_RECEIVED_REQUESTS
 } = {}) {
-  // Кэш дедупликации и идемпотентности по requestId (хранение до 1 часа, максимум 10000 записей)
+  // Normal insertions are time ordered. Map keeps O(1) average key lookup and
+  // FIFO capacity eviction without a second queue or heap.
   const receivedRequests = new Map();
+  const submissionPolicies = {
+    [REQUEST_KIND.lead]: {
+      limiter: leadLimiter,
+      validate: validateLead,
+      rateMessage: MESSAGES.leadRateLimit
+    },
+    [REQUEST_KIND.booking]: {
+      limiter: bookingLimiter,
+      validate: validateBooking,
+      rateMessage: MESSAGES.bookingRateLimit
+    }
+  };
 
   function cleanReceivedRequests() {
-    const now = Date.now();
+    const expiryBoundary = Date.now() - API_CONFIG.receivedRequestTtlMs;
     for (const [key, item] of receivedRequests) {
-      if (now - item.time > 3600000) {
-        receivedRequests.delete(key);
-      }
+      if (item.time < expiryBoundary) receivedRequests.delete(key);
+    }
+  }
+
+  function pruneOldestReceivedRequests() {
+    const expiryBoundary = Date.now() - API_CONFIG.receivedRequestTtlMs;
+    for (const [key, item] of receivedRequests) {
+      if (item.time >= expiryBoundary) break;
+      receivedRequests.delete(key);
     }
   }
 
   function saveReceivedRequest(key, item) {
     if (!key) return;
-    cleanReceivedRequests();
     if (receivedRequests.size >= maxReceivedRequests) {
       const oldestKey = receivedRequests.keys().next().value;
-      receivedRequests.delete(oldestKey);
+      if (oldestKey !== undefined) receivedRequests.delete(oldestKey);
     }
     receivedRequests.set(key, item);
   }
 
-  if (typeof setInterval !== 'undefined') {
-    const timer = setInterval(() => cleanReceivedRequests(), 60000);
-    timer?.unref?.();
+  async function executeSubmission(kind, data) {
+    const failureMessage = kind === REQUEST_KIND.lead ? MESSAGES.leadFailed : MESSAGES.bookingFailed;
+    let result;
+    try {
+      const input = adapterInput(kind, data);
+      result = kind === REQUEST_KIND.lead
+        ? await adapter.createLead(input)
+        : await adapter.createBooking(input);
+    } catch {
+      return { success: false, message: failureMessage };
+    }
+    if (!result?.success) return { success: false, message: failureMessage };
+
+    // Adapter identifiers may be internal CRM IDs; only expose a new public UUID.
+    const id = randomUUID();
+    const mode = adapter.isConfigured() ? SUCCESS_MODE.crm : SUCCESS_MODE.local;
+    const receipt = publicReceipt(kind, id, mode);
+    if (mode === SUCCESS_MODE.local) {
+      try {
+        await appendLocalRecord(localFile(kind), localRecord(kind, id, data));
+      } catch {
+        const message = kind === REQUEST_KIND.lead ? MESSAGES.leadStoreFailed : MESSAGES.bookingStoreFailed;
+        return { success: false, message };
+      }
+    }
+    return receipt;
+  }
+
+  async function processIdempotentSubmission(kind, ip, requestId, data) {
+    const key = requestCacheKey(kind, ip, requestId);
+    const fingerprint = key ? requestFingerprint(data) : '';
+    pruneOldestReceivedRequests();
+
+    let existing = key ? receivedRequests.get(key) : undefined;
+    if (existing && Date.now() - existing.time > API_CONFIG.receivedRequestTtlMs) {
+      receivedRequests.delete(key);
+      existing = undefined;
+    }
+    if (existing) {
+      if (existing.fingerprint !== fingerprint) {
+        return { status: HTTP_STATUS.conflict, body: { error: MESSAGES.duplicateId } };
+      }
+      const body = await existing.result;
+      return { status: body.success ? HTTP_STATUS.ok : HTTP_STATUS.badGateway, body };
+    }
+
+    const resultPromise = executeSubmission(kind, data);
+    if (key) saveReceivedRequest(key, { time: Date.now(), fingerprint, result: resultPromise });
+    const body = await resultPromise;
+    if (!body.success && key) receivedRequests.delete(key);
+    return { status: body.success ? HTTP_STATUS.created : HTTP_STATUS.badGateway, body };
+  }
+
+  async function handleStatus(req, res) {
+    if (req.method !== METHOD.get) return rejectMethod(res, ALLOW.status);
+    const ip = getClientIp(req);
+    if (!statusLimiter.isAllowed(ip)) {
+      return rejectRateLimit(res, statusLimiter, ip, MESSAGES.statusRateLimit);
+    }
+    return replyJson(res, HTTP_STATUS.ok, await statusCache.getStatuses(adapter));
+  }
+
+  async function handleSubmission(req, res, kind) {
+    if (req.method !== METHOD.post) return rejectMethod(res, ALLOW.submission);
+    const policy = submissionPolicies[kind];
+    const ip = getClientIp(req);
+    if (!policy.limiter.isAllowed(ip)) {
+      return rejectRateLimit(res, policy.limiter, ip, policy.rateMessage);
+    }
+
+    try {
+      if (!isJsonRequest(req)) {
+        return replyJson(res, HTTP_STATUS.unsupportedMediaType, { error: MESSAGES.invalidContentType });
+      }
+      const body = await readJsonBody(req);
+      if (body.website) return replyJson(res, HTTP_STATUS.ok, honeypotReceipt(kind, randomUUID()));
+
+      const validation = policy.validate(body);
+      if (validation.error) return replyJson(res, HTTP_STATUS.badRequest, { error: validation.error });
+      const data = validation.value;
+
+      if (kind === REQUEST_KIND.booking && data.apartmentId) {
+        const statuses = await statusCache.getStatuses(adapter);
+        if (isSold(statuses.statuses, data.apartmentId)) {
+          return replyJson(res, HTTP_STATUS.conflict, { error: MESSAGES.soldApartment });
+        }
+      }
+
+      const outcome = await processIdempotentSubmission(kind, ip, body.requestId, data);
+      return replyJson(res, outcome.status, outcome.body);
+    } catch (error) {
+      if (error?.code === HTTP_STATUS.payloadTooLarge) {
+        return replyJson(res, HTTP_STATUS.payloadTooLarge, { error: MESSAGES.oversizedBody });
+      }
+      if (error?.code === HTTP_STATUS.unsupportedMediaType) {
+        return replyJson(res, HTTP_STATUS.unsupportedMediaType, { error: MESSAGES.invalidContentType });
+      }
+      return replyJson(res, HTTP_STATUS.badRequest, { error: MESSAGES.invalidJson });
+    }
   }
 
   const apiRouter = async function apiRouter(req, res, next) {
-    const url = new URL(req.url || '/', 'http://localhost');
-    const path = url.pathname;
-
-    // Проверка CORS / Origin
+    const path = new URL(req.url || '/', REQUEST_BASE_URL).pathname;
     const origin = req.headers.origin;
-    if (!checkOrigin(req)) {
-      return replyJson(res, 403, { error: 'Недопустимый источник запроса (CORS).' });
+    if (!checkOrigin(origin, req.headers.host, process.env.ALLOWED_ORIGIN)) {
+      return replyJson(res, HTTP_STATUS.forbidden, { error: MESSAGES.invalidOrigin });
     }
-
-    // CORS preflight и заголовки для разрешенного Origin
-    if (origin) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Request-ID');
-      res.setHeader('Access-Control-Max-Age', '86400');
-      res.setHeader('Vary', 'Origin');
-    }
-
-    if (req.method === 'OPTIONS') {
-      res.statusCode = 204;
+    applyCorsHeaders(res, origin);
+    if (req.method === METHOD.options) {
+      res.statusCode = HTTP_STATUS.noContent;
       return res.end();
     }
 
-    // Маршрут: GET /api/apartments/status
-    if (path === '/api/apartments/status') {
-      if (req.method !== 'GET') {
-        res.setHeader('Allow', 'GET, OPTIONS');
-        return replyJson(res, 405, { error: 'Метод не поддерживается.' });
-      }
-
-      const ip = getClientIp(req);
-      if (!statusLimiter.isAllowed(ip)) {
-        const retryAfter = statusLimiter.getRetryAfter(ip);
-        return replyJson(res, 429, { error: 'Слишком много запросов статусов.' }, { 'Retry-After': String(retryAfter) });
-      }
-
-      const data = await statusCache.getStatuses(adapter);
-      return replyJson(res, 200, data);
+    if (path === API_PATHS.statuses) return handleStatus(req, res);
+    if (path === API_PATHS.leads) {
+      return handleSubmission(req, res, REQUEST_KIND.lead);
     }
-
-    // Маршрут: POST /api/leads (канонический) и POST /api/lead (обратная совместимость)
-    if (path === '/api/leads' || path === '/api/lead') {
-      if (req.method !== 'POST') {
-        res.setHeader('Allow', 'POST, OPTIONS');
-        return replyJson(res, 405, { error: 'Метод не поддерживается.' });
-      }
-
-      const ip = getClientIp(req);
-      if (!leadLimiter.isAllowed(ip)) {
-        const retryAfter = leadLimiter.getRetryAfter(ip);
-        return replyJson(
-          res,
-          429,
-          { error: 'Слишком много запросов. Лимит: 3 заявки за 10 минут.' },
-          { 'Retry-After': String(retryAfter) }
-        );
-      }
-
-      try {
-        const contentType = req.headers['content-type'] || '';
-        if (contentType && !contentType.includes('application/json')) {
-          return replyJson(res, 415, { error: 'Требуется Content-Type: application/json.' });
-        }
-
-        const body = await readJsonBody(req);
-
-        // Honeypot: скрытое поле заполнено ботом (тихий сброс без сохранения)
-        if (body.website) {
-          return replyJson(res, 200, {
-            success: true,
-            ok: true,
-            id: randomUUID(),
-            mode: 'local',
-            message: 'Заявка принята.'
-          });
-        }
-
-        const validation = validateLead(body);
-        if (validation.error) {
-          return replyJson(res, 400, { error: validation.error });
-        }
-
-        const leadData = validation.value;
-        const key = body.requestId ? `${ip}:${body.requestId}` : '';
-        const { createdAt, ...identity } = leadData;
-        const fingerprint = createHash('sha256').update(JSON.stringify(identity)).digest('hex');
-
-        // Идемпотентность по requestId
-        cleanReceivedRequests();
-        if (key && receivedRequests.has(key)) {
-          const existing = receivedRequests.get(key);
-          if (existing.fingerprint !== fingerprint) {
-            return replyJson(res, 409, { error: 'Идентификатор запроса уже использован для другой заявки.' });
-          }
-          return replyJson(res, 200, await existing.result);
-        }
-
-        const executeLead = async () => {
-          const result = await adapter.createLead({
-            name: leadData.name,
-            phone: leadData.phone,
-            topic: leadData.topic,
-            apartmentId: leadData.apartmentId
-          });
-
-          const id = result.id || result.leadId || randomUUID();
-          const responseDto = {
-            success: Boolean(result.success),
-            id,
-            leadId: id,
-            mode: result.mode || (adapter.isConfigured() ? 'crm' : 'local'),
-            message: result.message || 'Заявка успешно зарегистрирована.'
-          };
-
-          // В локальном режиме сохраняем в .local/leads.ndjson
-          if (result.success && responseDto.mode === 'local') {
-            try {
-              const localFile = resolve('.local/leads.ndjson');
-              await mkdir(dirname(localFile), { recursive: true });
-              await appendFile(
-                localFile,
-                JSON.stringify({
-                  id,
-                  name: leadData.name,
-                  phone: leadData.phone,
-                  topic: leadData.topic,
-                  apartmentId: leadData.apartmentId,
-                  consent: true,
-                  createdAt: leadData.createdAt
-                }) + '\n',
-                { encoding: 'utf8', mode: 0o600 }
-              );
-            } catch {
-              // Local disk fallback
-            }
-          }
-
-          return responseDto;
-        };
-
-        const resultPromise = executeLead();
-        if (key) {
-          saveReceivedRequest(key, { time: Date.now(), fingerprint, result: resultPromise });
-        }
-
-        const responseDto = await resultPromise;
-        return replyJson(res, responseDto.success ? 201 : 502, responseDto);
-      } catch (err) {
-        if (err.code === 413) return replyJson(res, 413, { error: 'Запрос превышает 8 КБ.' });
-        if (err.code === 415) return replyJson(res, 415, { error: 'Требуется Content-Type: application/json.' });
-        return replyJson(res, 400, { error: 'Некорректный JSON запрос.' });
-      }
-    }
-
-    // Маршрут: POST /api/booking
-    if (path === '/api/booking') {
-      if (req.method !== 'POST') {
-        res.setHeader('Allow', 'POST, OPTIONS');
-        return replyJson(res, 405, { error: 'Метод не поддерживается.' });
-      }
-
-      const ip = getClientIp(req);
-      if (!bookingLimiter.isAllowed(ip)) {
-        const retryAfter = bookingLimiter.getRetryAfter(ip);
-        return replyJson(
-          res,
-          429,
-          { error: 'Слишком много запросов на бронирование. Попробуйте позднее.' },
-          { 'Retry-After': String(retryAfter) }
-        );
-      }
-
-      try {
-        const contentType = req.headers['content-type'] || '';
-        if (contentType && !contentType.includes('application/json')) {
-          return replyJson(res, 415, { error: 'Требуется Content-Type: application/json.' });
-        }
-
-        const body = await readJsonBody(req);
-
-        // Honeypot: скрытое поле заполнено ботом (тихий сброс)
-        if (body.website) {
-          return replyJson(res, 200, {
-            success: true,
-            ok: true,
-            bookingId: randomUUID(),
-            mode: 'local',
-            message: 'Бронь принята.'
-          });
-        }
-
-        const validation = validateBooking(body);
-        if (validation.error) {
-          return replyJson(res, 400, { error: validation.error });
-        }
-
-        const bookingData = validation.value;
-
-        // BOLA / Availability check: проверка, не продана ли квартира
-        if (bookingData.apartmentId) {
-          const currentStatuses = await statusCache.getStatuses(adapter);
-          const status = currentStatuses.statuses?.[bookingData.apartmentId.toLowerCase()];
-          if (status === 'sold') {
-            return replyJson(res, 409, { error: 'Данная квартира уже продана.' });
-          }
-        }
-
-        const key = body.requestId ? `${ip}:${body.requestId}` : '';
-        const { createdAt, ...identity } = bookingData;
-        const fingerprint = createHash('sha256').update(JSON.stringify(identity)).digest('hex');
-
-        // Идемпотентность по requestId
-        cleanReceivedRequests();
-        if (key && receivedRequests.has(key)) {
-          const existing = receivedRequests.get(key);
-          if (existing.fingerprint !== fingerprint) {
-            return replyJson(res, 409, { error: 'Идентификатор запроса уже использован для другой заявки.' });
-          }
-          return replyJson(res, 200, await existing.result);
-        }
-
-        const executeBooking = async () => {
-          const result = await adapter.createBooking({
-            name: bookingData.name,
-            phone: bookingData.phone,
-            apartmentId: bookingData.apartmentId,
-            apartmentNumber: bookingData.apartmentNumber
-          });
-
-          const bookingId = result.bookingId || randomUUID();
-          const responseDto = {
-            success: Boolean(result.success),
-            bookingId,
-            id: bookingId,
-            mode: result.mode || (adapter.isConfigured() ? 'crm' : 'local'),
-            message: result.message || 'Квартира успешно забронирована на предварительную консультацию.'
-          };
-
-          // В локальном режиме сохраняем бронь в .local/bookings.ndjson, чтобы данные не терялись
-          if (result.success && responseDto.mode === 'local') {
-            try {
-              const localBookings = resolve('.local/bookings.ndjson');
-              await mkdir(dirname(localBookings), { recursive: true });
-              await appendFile(
-                localBookings,
-                JSON.stringify({
-                  bookingId,
-                  name: bookingData.name,
-                  phone: bookingData.phone,
-                  apartmentId: bookingData.apartmentId,
-                  apartmentNumber: bookingData.apartmentNumber,
-                  consent: true,
-                  createdAt: bookingData.createdAt
-                }) + '\n',
-                { encoding: 'utf8', mode: 0o600 }
-              );
-            } catch {
-              // Local disk fallback
-            }
-          }
-
-          return responseDto;
-        };
-
-        const resultPromise = executeBooking();
-        if (key) {
-          saveReceivedRequest(key, { time: Date.now(), fingerprint, result: resultPromise });
-        }
-
-        const responseDto = await resultPromise;
-        return replyJson(res, responseDto.success ? 201 : 502, responseDto);
-      } catch (err) {
-        if (err.code === 413) return replyJson(res, 413, { error: 'Запрос превышает 8 КБ.' });
-        if (err.code === 415) return replyJson(res, 415, { error: 'Требуется Content-Type: application/json.' });
-        return replyJson(res, 400, { error: 'Некорректный JSON запрос.' });
-      }
-    }
-
+    if (path === API_PATHS.booking) return handleSubmission(req, res, REQUEST_KIND.booking);
     return next?.();
   };
 
   apiRouter.receivedRequests = receivedRequests;
   apiRouter.maxReceivedRequests = maxReceivedRequests;
   apiRouter.cleanReceivedRequests = cleanReceivedRequests;
-
   return apiRouter;
 }
-
-

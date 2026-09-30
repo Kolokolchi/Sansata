@@ -1,0 +1,907 @@
+{
+  "source": "https://saf.sensata.kz/quiz",
+  "capturedAt": "2026-09-25",
+  "note": "Public plan snapshot; no availability, price, apartment ID or unit number is asserted.",
+  "plans": [
+    {
+      "code": "KV-P1-E2-S1",
+      "rooms": 2,
+      "area": 80.58,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342535dc2.png"
+    },
+    {
+      "code": "KV-P1-E2-S2",
+      "rooms": 3,
+      "area": 118.87,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63425f4067.png"
+    },
+    {
+      "code": "KV-P1-E2-S3",
+      "rooms": 4,
+      "area": 156.59,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634269db55.png"
+    },
+    {
+      "code": "KV-P1-E2-S4",
+      "rooms": 2,
+      "area": 82.45,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342728934.png"
+    },
+    {
+      "code": "KV-P1-E2-S5",
+      "rooms": 2,
+      "area": 61.84,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63427ab3c1.png"
+    },
+    {
+      "code": "KV-P1-E3-S1",
+      "rooms": 2,
+      "area": 80.21,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634281c43a.png"
+    },
+    {
+      "code": "KV-P1-E3-S2",
+      "rooms": 3,
+      "area": 118.46,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342885d5c.png"
+    },
+    {
+      "code": "KV-P1-E3-S3",
+      "rooms": 4,
+      "area": 156.45,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342907e43.png"
+    },
+    {
+      "code": "KV-P1-E3-S4",
+      "rooms": 2,
+      "area": 82.03,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63429754b5.png"
+    },
+    {
+      "code": "KV-P1-E3-S5",
+      "rooms": 2,
+      "area": 60.86,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63429e9e83.png"
+    },
+    {
+      "code": "KV-P1-E4-S1",
+      "rooms": 2,
+      "area": 80.25,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342a613b2.png"
+    },
+    {
+      "code": "KV-P1-E4-S2",
+      "rooms": 3,
+      "area": 118.79,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342acbccd.png"
+    },
+    {
+      "code": "KV-P1-E4-S3",
+      "rooms": 4,
+      "area": 156.35,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342b50901.png"
+    },
+    {
+      "code": "KV-P1-E4-S5",
+      "rooms": 2,
+      "area": 61.24,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342c29add.png"
+    },
+    {
+      "code": "KV-P1-T1-S1",
+      "rooms": 2,
+      "area": 80.74,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342ebc564.png"
+    },
+    {
+      "code": "KV-P1-T1-S2",
+      "rooms": 3,
+      "area": 119.28,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342f2f5bc.png"
+    },
+    {
+      "code": "KV-P1-T1-S3",
+      "rooms": 4,
+      "area": 157.08,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6342f997bd.png"
+    },
+    {
+      "code": "KV-P1-T1-S5",
+      "rooms": 2,
+      "area": 60.95,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343089ae4.png"
+    },
+    {
+      "code": "KV-P2-E2-S1",
+      "rooms": 4,
+      "area": 114.77,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63430eeb80.png"
+    },
+    {
+      "code": "KV-P2-E2-S2",
+      "rooms": 4,
+      "area": 154.8,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634317623c.png"
+    },
+    {
+      "code": "KV-P2-E2-S3",
+      "rooms": 2,
+      "area": 80.24,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63431d831b.png"
+    },
+    {
+      "code": "KV-P2-E2-S4",
+      "rooms": 2,
+      "area": 78.28,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634324d5bd.png"
+    },
+    {
+      "code": "KV-P2-E3-S1",
+      "rooms": 2,
+      "area": 60.19,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63433018fb.png"
+    },
+    {
+      "code": "KV-P2-E3-S2",
+      "rooms": 3,
+      "area": 120.0,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343370a98.png"
+    },
+    {
+      "code": "KV-P2-E3-S3",
+      "rooms": 4,
+      "area": 155.56,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63433e6d1d.png"
+    },
+    {
+      "code": "KV-P2-E3-S4",
+      "rooms": 2,
+      "area": 79.75,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343473155.png"
+    },
+    {
+      "code": "KV-P2-E3-S5",
+      "rooms": 2,
+      "area": 81.16,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63434e4fd8.png"
+    },
+    {
+      "code": "KV-P2-E4-S2",
+      "rooms": 3,
+      "area": 120.84,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63435c3497.png"
+    },
+    {
+      "code": "KV-P2-E4-S3",
+      "rooms": 4,
+      "area": 156.44,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343634399.png"
+    },
+    {
+      "code": "KV-P2-E4-S4",
+      "rooms": 2,
+      "area": 80.26,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63436aa0ac.png"
+    },
+    {
+      "code": "KV-P2-E4-S5",
+      "rooms": 2,
+      "area": 81.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63437346e7.png"
+    },
+    {
+      "code": "KV-P2-E12-S1",
+      "rooms": 5,
+      "area": 168.27,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63437a2b9b.png"
+    },
+    {
+      "code": "KV-P2-T1-S1",
+      "rooms": 2,
+      "area": 60.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63439905db.png"
+    },
+    {
+      "code": "KV-P2-T1-S2",
+      "rooms": 3,
+      "area": 121.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343a2069a.png"
+    },
+    {
+      "code": "KV-P2-T1-S3",
+      "rooms": 4,
+      "area": 157.16,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343a97c02.png"
+    },
+    {
+      "code": "KV-P2-T1-S4",
+      "rooms": 2,
+      "area": 80.86,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343b1ec84.png"
+    },
+    {
+      "code": "KV-P2-T1-S5",
+      "rooms": 2,
+      "area": 82.27,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343b8e88a.png"
+    },
+    {
+      "code": "KV-P3-E2-S1",
+      "rooms": 4,
+      "area": 114.77,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343c3f625.png"
+    },
+    {
+      "code": "KV-P3-E2-S3",
+      "rooms": 2,
+      "area": 76.92,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343d2fb8a.png"
+    },
+    {
+      "code": "KV-P3-E2-S4",
+      "rooms": 2,
+      "area": 78.28,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343d9ca1e.png"
+    },
+    {
+      "code": "KV-P3-E3-S1",
+      "rooms": 2,
+      "area": 60.19,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343e0d97a.png"
+    },
+    {
+      "code": "KV-P3-E3-S2",
+      "rooms": 3,
+      "area": 120.0,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343e82b55.png"
+    },
+    {
+      "code": "KV-P3-E3-S3",
+      "rooms": 4,
+      "area": 155.56,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343f2b110.png"
+    },
+    {
+      "code": "KV-P3-E3-S4",
+      "rooms": 2,
+      "area": 79.75,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6343fd9c52.png"
+    },
+    {
+      "code": "KV-P3-E3-S5",
+      "rooms": 2,
+      "area": 81.16,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344059c65.png"
+    },
+    {
+      "code": "KV-P3-E4-S1",
+      "rooms": 2,
+      "area": 60.57,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63440c5b15.png"
+    },
+    {
+      "code": "KV-P3-E4-S2",
+      "rooms": 3,
+      "area": 120.84,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344150877.png"
+    },
+    {
+      "code": "KV-P3-E4-S3",
+      "rooms": 4,
+      "area": 156.44,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63441befba.png"
+    },
+    {
+      "code": "KV-P3-E4-S4",
+      "rooms": 2,
+      "area": 80.26,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634423c090.png"
+    },
+    {
+      "code": "KV-P3-E4-S5",
+      "rooms": 2,
+      "area": 81.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63442aec44.png"
+    },
+    {
+      "code": "KV-P3-T1-S1",
+      "rooms": 2,
+      "area": 60.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63445671e1.png"
+    },
+    {
+      "code": "KV-P3-T1-S2",
+      "rooms": 3,
+      "area": 121.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63445e33e6.png"
+    },
+    {
+      "code": "KV-P3-T1-S3",
+      "rooms": 4,
+      "area": 157.16,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344660998.png"
+    },
+    {
+      "code": "KV-P3-T1-S4",
+      "rooms": 2,
+      "area": 80.86,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63446c0511.png"
+    },
+    {
+      "code": "KV-P3-T1-S5",
+      "rooms": 2,
+      "area": 82.27,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634473e87e.png"
+    },
+    {
+      "code": "KV-P4-E2-S1",
+      "rooms": 4,
+      "area": 114.77,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63447b5e6b.png"
+    },
+    {
+      "code": "KV-P4-E3-S1",
+      "rooms": 2,
+      "area": 60.19,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63449c5a48.png"
+    },
+    {
+      "code": "KV-P4-E3-S2",
+      "rooms": 3,
+      "area": 120.0,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344a9fa34.png"
+    },
+    {
+      "code": "KV-P4-E3-S3",
+      "rooms": 4,
+      "area": 155.56,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344b39831.png"
+    },
+    {
+      "code": "KV-P4-E3-S4",
+      "rooms": 2,
+      "area": 79.75,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344bad196.png"
+    },
+    {
+      "code": "KV-P4-E3-S5",
+      "rooms": 2,
+      "area": 81.16,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344c4fb17.png"
+    },
+    {
+      "code": "KV-P4-E4-S1",
+      "rooms": 2,
+      "area": 60.57,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344cd4619.png"
+    },
+    {
+      "code": "KV-P4-E4-S3",
+      "rooms": 4,
+      "area": 156.44,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344de4a84.png"
+    },
+    {
+      "code": "KV-P4-E4-S4",
+      "rooms": 2,
+      "area": 80.26,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6344e718dc.png"
+    },
+    {
+      "code": "KV-P4-T1-S1",
+      "rooms": 2,
+      "area": 60.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63451f3c07.png"
+    },
+    {
+      "code": "KV-P4-T1-S2",
+      "rooms": 3,
+      "area": 121.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634529577b.png"
+    },
+    {
+      "code": "KV-P4-T1-S3",
+      "rooms": 4,
+      "area": 157.16,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63453343c5.png"
+    },
+    {
+      "code": "KV-P4-T1-S4",
+      "rooms": 2,
+      "area": 80.86,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63453c7cab.png"
+    },
+    {
+      "code": "KV-P7-E3-S1",
+      "rooms": 1,
+      "area": 53.89,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63473b3c30.png"
+    },
+    {
+      "code": "KV-P7-E3-S2",
+      "rooms": 2,
+      "area": 66.79,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63474cc35f.png"
+    },
+    {
+      "code": "KV-P7-E3-S3",
+      "rooms": 1,
+      "area": 49.52,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634757d45d.png"
+    },
+    {
+      "code": "KV-P7-E3-S4",
+      "rooms": 1,
+      "area": 51.82,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347642047.png"
+    },
+    {
+      "code": "KV-P7-E3-S5",
+      "rooms": 4,
+      "area": 143.99,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63476dfb41.png"
+    },
+    {
+      "code": "KV-P7-E4-S1",
+      "rooms": 1,
+      "area": 53.31,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63477881d4.png"
+    },
+    {
+      "code": "KV-P7-E4-S2",
+      "rooms": 2,
+      "area": 66.78,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634786092e.png"
+    },
+    {
+      "code": "KV-P7-E4-S3",
+      "rooms": 1,
+      "area": 48.86,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347906fd4.png"
+    },
+    {
+      "code": "KV-P7-E4-S5",
+      "rooms": 4,
+      "area": 143.94,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347a70140.png"
+    },
+    {
+      "code": "KV-P7-E5-S1",
+      "rooms": 1,
+      "area": 53.67,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347b45bf8.png"
+    },
+    {
+      "code": "KV-P7-E5-S2",
+      "rooms": 2,
+      "area": 67.14,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347c29e56.png"
+    },
+    {
+      "code": "KV-P7-E5-S3",
+      "rooms": 1,
+      "area": 49.12,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347cea36a.png"
+    },
+    {
+      "code": "KV-P7-E5-S4",
+      "rooms": 1,
+      "area": 51.62,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347d9aae9.png"
+    },
+    {
+      "code": "KV-P7-E5-S5",
+      "rooms": 4,
+      "area": 145.13,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347e72cb8.png"
+    },
+    {
+      "code": "KV-P7-E6-S1",
+      "rooms": 1,
+      "area": 53.8,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347f48b74.png"
+    },
+    {
+      "code": "KV-P7-E6-S2",
+      "rooms": 2,
+      "area": 67.95,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6347fe030f.png"
+    },
+    {
+      "code": "KV-P7-E6-S3",
+      "rooms": 1,
+      "area": 49.12,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634809e2aa.png"
+    },
+    {
+      "code": "KV-P7-E6-S4",
+      "rooms": 1,
+      "area": 51.5,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63481dd34b.png"
+    },
+    {
+      "code": "KV-P7-E6-S5",
+      "rooms": 4,
+      "area": 145.83,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348295ac4.png"
+    },
+    {
+      "code": "KV-P7-E7-S1",
+      "rooms": 1,
+      "area": 54.03,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634833cca5.png"
+    },
+    {
+      "code": "KV-P7-E7-S2",
+      "rooms": 2,
+      "area": 68.31,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63483d73bc.png"
+    },
+    {
+      "code": "KV-P7-E7-S3",
+      "rooms": 1,
+      "area": 49.39,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63484bc38e.png"
+    },
+    {
+      "code": "KV-P7-E7-S4",
+      "rooms": 1,
+      "area": 51.84,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348582cce.png"
+    },
+    {
+      "code": "KV-P7-E7-S5",
+      "rooms": 4,
+      "area": 146.86,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634862532f.png"
+    },
+    {
+      "code": "KV-P7-E13-S2",
+      "rooms": 2,
+      "area": 64.73,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348784eaf.png"
+    },
+    {
+      "code": "KV-P7-E13-S3",
+      "rooms": 1,
+      "area": 49.39,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d634884ad68.png"
+    },
+    {
+      "code": "KV-P7-E13-S5",
+      "rooms": 4,
+      "area": 136.18,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63489aaa7b.png"
+    },
+    {
+      "code": "KV-P7-T1-S1",
+      "rooms": 1,
+      "area": 54.03,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348a5eb6f.png"
+    },
+    {
+      "code": "KV-P7-T1-S2",
+      "rooms": 2,
+      "area": 69.13,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348b82bb4.png"
+    },
+    {
+      "code": "KV-P7-T1-S3",
+      "rooms": 1,
+      "area": 49.39,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348c268d5.png"
+    },
+    {
+      "code": "KV-P7-T1-S4",
+      "rooms": 1,
+      "area": 51.84,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348cf07f6.png"
+    },
+    {
+      "code": "KV-P7-T1-S5",
+      "rooms": 4,
+      "area": 147.13,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348db0e59.png"
+    },
+    {
+      "code": "KV-P7-T2-S1",
+      "rooms": 1,
+      "area": 54.03,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348e9d6c0.png"
+    },
+    {
+      "code": "KV-P7-T2-S2",
+      "rooms": 2,
+      "area": 69.13,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d6348fc70e1.png"
+    },
+    {
+      "code": "KV-P7-T2-S3",
+      "rooms": 1,
+      "area": 49.39,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63490affa7.png"
+    },
+    {
+      "code": "KV-P7-T2-S4",
+      "rooms": 1,
+      "area": 51.84,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63491714b5.png"
+    },
+    {
+      "code": "KV-P7-T2-S5",
+      "rooms": 4,
+      "area": 147.29,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d63492240b7.png"
+    },
+    {
+      "code": "KV-P5-E2-S1",
+      "rooms": 3,
+      "area": 100.94,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f686e793c.png"
+    },
+    {
+      "code": "KV-P5-E2-S2",
+      "rooms": 2,
+      "area": 86.11,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f688848a4.png"
+    },
+    {
+      "code": "KV-P5-E2-S3",
+      "rooms": 2,
+      "area": 58.14,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f689e51e6.png"
+    },
+    {
+      "code": "KV-P5-E2-S4",
+      "rooms": 3,
+      "area": 122.94,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f68b4e702.png"
+    },
+    {
+      "code": "KV-P5-E3-S1",
+      "rooms": 3,
+      "area": 100.82,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f68c8de05.png"
+    },
+    {
+      "code": "KV-P5-E3-S2",
+      "rooms": 2,
+      "area": 85.21,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f68dd3e9b.png"
+    },
+    {
+      "code": "KV-P5-E3-S3",
+      "rooms": 2,
+      "area": 57.3,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f68f2b3b1.png"
+    },
+    {
+      "code": "KV-P5-E3-S4",
+      "rooms": 3,
+      "area": 123.9,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6909ebe9.png"
+    },
+    {
+      "code": "KV-P5-E4-S1",
+      "rooms": 3,
+      "area": 101.4,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f69212cd8.png"
+    },
+    {
+      "code": "KV-P5-E4-S2",
+      "rooms": 2,
+      "area": 85.8,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6935c534.png"
+    },
+    {
+      "code": "KV-P5-E4-S3",
+      "rooms": 2,
+      "area": 57.7,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6948fa46.png"
+    },
+    {
+      "code": "KV-P5-E9-S1",
+      "rooms": 3,
+      "area": 98.0,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6978f4be.png"
+    },
+    {
+      "code": "KV-P5-E9-S2",
+      "rooms": 2,
+      "area": 81.39,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f69908dd9.png"
+    },
+    {
+      "code": "KV-P5-T1-S1",
+      "rooms": 3,
+      "area": 102.22,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f69d52b55.png"
+    },
+    {
+      "code": "KV-P5-T1-S2",
+      "rooms": 2,
+      "area": 85.8,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f69eb9149.png"
+    },
+    {
+      "code": "KV-P5-T1-S3",
+      "rooms": 2,
+      "area": 57.7,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6a007a4d.png"
+    },
+    {
+      "code": "KV-P5-T1-S4",
+      "rooms": 3,
+      "area": 125.36,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6a16664e.png"
+    },
+    {
+      "code": "KV-P5-T2-S1",
+      "rooms": 3,
+      "area": 102.22,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6a2a9f43.png"
+    },
+    {
+      "code": "KV-P5-T2-S2",
+      "rooms": 2,
+      "area": 85.8,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6a4071b8.png"
+    },
+    {
+      "code": "KV-P5-T2-S3",
+      "rooms": 2,
+      "area": 57.7,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6a584a9b.png"
+    },
+    {
+      "code": "KV-P5-T2-S4",
+      "rooms": 3,
+      "area": 125.36,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6a7065a0.png"
+    },
+    {
+      "code": "KV-P6-E2-S1",
+      "rooms": 3,
+      "area": 88.09,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6a86144b.png"
+    },
+    {
+      "code": "KV-P6-E2-S2",
+      "rooms": 3,
+      "area": 97.8,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6aa2d39a.png"
+    },
+    {
+      "code": "KV-P6-E2-S3",
+      "rooms": 2,
+      "area": 86.2,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6abf215d.png"
+    },
+    {
+      "code": "KV-P6-E2-S4",
+      "rooms": 3,
+      "area": 100.52,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6ad6f24a.png"
+    },
+    {
+      "code": "KV-P6-E3-S1",
+      "rooms": 3,
+      "area": 87.82,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6aedadfc.png"
+    },
+    {
+      "code": "KV-P6-E3-S2",
+      "rooms": 3,
+      "area": 97.47,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6b0e1c0b.png"
+    },
+    {
+      "code": "KV-P6-E3-S3",
+      "rooms": 2,
+      "area": 85.41,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6b3d456e.png"
+    },
+    {
+      "code": "KV-P6-E3-S4",
+      "rooms": 3,
+      "area": 100.57,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6b5612c5.png"
+    },
+    {
+      "code": "KV-P6-E4-S1",
+      "rooms": 3,
+      "area": 88.37,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6b6a2732.png"
+    },
+    {
+      "code": "KV-P6-E4-S2",
+      "rooms": 3,
+      "area": 98.01,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6b82e77d.png"
+    },
+    {
+      "code": "KV-P6-E4-S3",
+      "rooms": 2,
+      "area": 86.0,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6b9933e8.png"
+    },
+    {
+      "code": "KV-P6-E4-S4",
+      "rooms": 3,
+      "area": 101.14,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6bb02054.png"
+    },
+    {
+      "code": "KV-P6-E12-S1",
+      "rooms": 3,
+      "area": 84.52,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6bc6bdfa.png"
+    },
+    {
+      "code": "KV-P6-E12-S2",
+      "rooms": 3,
+      "area": 94.15,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6bdc23d6.png"
+    },
+    {
+      "code": "KV-P6-E12-S3",
+      "rooms": 2,
+      "area": 81.59,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6bf21648.png"
+    },
+    {
+      "code": "KV-P6-E12-S4",
+      "rooms": 3,
+      "area": 97.65,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6c079db6.png"
+    },
+    {
+      "code": "KV-P6-T1-S1",
+      "rooms": 3,
+      "area": 88.75,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6c22b463.png"
+    },
+    {
+      "code": "KV-P6-T1-S2",
+      "rooms": 3,
+      "area": 98.5,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6c3db6b2.png"
+    },
+    {
+      "code": "KV-P6-T1-S3",
+      "rooms": 2,
+      "area": 86.0,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6c600bd5.png"
+    },
+    {
+      "code": "KV-P6-T1-S4",
+      "rooms": 3,
+      "area": 101.94,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f6c783cc9.png"
+    },
+    {
+      "code": "KV-P4-E2-S2",
+      "rooms": 4,
+      "area": 150.87,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69d8f8657eeea.png"
+    },
+    {
+      "code": "KV-P7-E2-S1",
+      "rooms": 4,
+      "area": 143.24,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69ddd008b6e44.png"
+    },
+    {
+      "code": "KV-P7-E2-S2",
+      "rooms": 1,
+      "area": 53.54,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/69ddd00a90416.png"
+    },
+    {
+      "code": "KV-P3-E2-S2",
+      "rooms": 4,
+      "area": 150.87,
+      "image": "https://pb4678.profitbase.ru/uploads/preset/4678/6a69f726783e1.png"
+    }
+  ]
+}

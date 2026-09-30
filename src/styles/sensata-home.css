@@ -1,0 +1,45 @@
+@font-face{font-family:SensataOpenSans;src:url('../assets/fonts/sensata-open-sans.woff') format('woff');font-style:normal;font-weight:400;font-display:swap}
+/* Corporate styles are scoped to the object-selection page, never the project pages. */
+.sensata-home-page{font-family:SensataOpenSans,Arial,sans-serif;color:#222;background:#fff}
+.sensata-home-page :focus-visible{outline-color:#3548e0}
+.sensata-header{display:flex;align-items:center;gap:40px;min-height:100px;padding:20px max(4vw,28px);border-bottom:1px solid #ededf4;background:white}
+.sensata-header>a:first-child{display:flex;align-items:center}
+.sensata-header img{width:190px;height:55px;object-fit:contain}
+.sensata-header nav{display:flex;gap:32px;margin:auto;font-size:14px}
+.sensata-header nav a{padding:12px 0;border-bottom:2px solid transparent}
+.sensata-header nav a:hover,.sensata-header nav a.active{color:#222288;border-color:#222288}
+.sensata-header-phone{display:flex;align-items:center;gap:14px;color:#222288}
+.sensata-header-phone strong{font-size:32px;font-weight:400}
+.sensata-header-phone span{font-size:11px;line-height:1.5}
+.sensata-home-page .saf-home{padding-top:46px;padding-bottom:42px;scroll-margin-top:20px}
+.sensata-home-page .saf-home-intro{padding-bottom:30px}
+.sensata-home-page .saf-home-intro .saf-kicker{font-family:inherit;letter-spacing:.08em;color:#222288;font-size:12px}
+.sensata-home-page .saf-home-intro h1{font-family:inherit;font-size:clamp(30px,3.2vw,46px);line-height:1.25;margin:12px 0 14px;color:#222;font-weight:400}
+.sensata-home-page .saf-home-intro h1 span{color:#222288}
+.sensata-home-page .saf-home-intro p{font-family:inherit;color:#707070;font-size:14px;line-height:1.7}
+.sensata-home-page .saf-home-count strong{font-family:inherit;color:#222288}
+.sensata-home-page .saf-home-count span{color:#707070}
+.sensata-home-page .saf-project-card{font-family:SAF,Arial,sans-serif}
+.sensata-home-page .saf-home-footnote{font-family:inherit;color:#777;font-size:11px;line-height:1.6}
+.saf-project-grid.multi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px}
+.saf-project-grid.multi .saf-project-card{height:470px;min-height:0}
+.saf-project-grid.multi .saf-project-content h2{font-size:36px}
+.sensata-footer{background:#222288;color:white;margin-top:auto;font-family:SensataOpenSans,Arial,sans-serif}
+
+
+
+
+.sensata-footer a:hover{text-decoration:underline;text-underline-offset:4px}
+
+
+
+
+.sensata-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:30px;padding:15px max(4vw,28px);min-height:84px}
+.sensata-footer-bottom>span{font-size:13px;color:#bdbde0}
+.sensata-socials{display:flex;align-items:center;gap:8px}
+.sensata-socials a{display:flex;min-width:44px;min-height:54px;flex-direction:column;align-items:center;gap:7px;font-size:9px;color:white}
+.sensata-socials img{width:30px;height:30px;transition:transform .15s}
+.sensata-socials a:hover img{transform:translateY(-3px)}
+@media(max-width:1000px){.sensata-header{gap:20px}.sensata-header nav{gap:20px}.sensata-header img{width:155px}.sensata-footer-bottom{flex-wrap:wrap;gap:20px}}
+@media(max-width:600px){.sensata-header{padding:16px 18px;flex-wrap:wrap;gap:12px;justify-content:space-between}.sensata-header img{width:150px;height:45px}.sensata-header nav{order:3;width:100%;justify-content:center;gap:40px;margin:0;font-size:13px}.sensata-header-phone strong{font-size:28px}.sensata-header-phone span{font-size:9px;max-width:90px}.sensata-header-phone{gap:8px}.sensata-home-page .saf-home{padding-top:28px}.sensata-home-page .saf-home-count{margin-top:18px}.sensata-footer-bottom{padding:20px 18px;gap:20px}.sensata-footer-bottom>span{font-size:11px}.sensata-socials{width:100%;justify-content:space-between;gap:0;flex-wrap:wrap}.sensata-socials a{min-width:40px}}
+@media(max-width:760px){.saf-project-grid.multi{grid-template-columns:1fr}}

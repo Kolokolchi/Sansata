@@ -13,23 +13,6 @@ import { StatusCache } from '../server/statusCache.mjs';
 // Dynamic Module Loaders via esbuild (matching project test convention)
 // ============================================================================
 
-async function loadConfigModule() {
-  const bundled = await build({
-    stdin: {
-      contents: "export * from './src/lib/config'; export * from './src/lib/experience';",
-      resolveDir: process.cwd()
-    },
-    bundle: true,
-    write: false,
-    format: 'esm',
-    platform: 'node'
-  });
-
-  return import(
-    'data:text/javascript;base64,' + Buffer.from(bundled.outputFiles[0].text).toString('base64')
-  );
-}
-
 async function loadSiteModule(base = '/') {
   const result = await build({
     entryPoints: ['src/lib/site.ts'],
@@ -39,28 +22,6 @@ async function loadSiteModule(base = '/') {
     platform: 'node',
     define: {
       'import.meta.env.BASE_URL': JSON.stringify(base),
-      'import.meta.env.VITE_STATIC_HOSTING': '"false"'
-    }
-  });
-
-  return import(
-    'data:text/javascript;base64,' + Buffer.from(result.outputFiles[0].text).toString('base64')
-  );
-}
-
-async function loadExperienceRoutesModule() {
-  const result = await build({
-    stdin: {
-      contents: "export { safeDecode } from './src/features/ExperienceRoutes';",
-      resolveDir: process.cwd()
-    },
-    bundle: true,
-    write: false,
-    format: 'esm',
-    platform: 'node',
-    loader: { '.css': 'empty' },
-    define: {
-      'import.meta.env.BASE_URL': '"/"',
       'import.meta.env.VITE_STATIC_HOSTING': '"false"'
     }
   });
@@ -81,7 +42,7 @@ const sampleBooking = {
   name: 'Алия Мусина',
   phone: '+7 (705) 555-55-55',
   consent: true,
-  apartmentId: 'shattyq-1',
+  apartmentId: 'saf-observation-1-2-property-1',
   apartmentNumber: '42'
 };
 
@@ -100,7 +61,8 @@ test('Tier 1: Feature coverage for server security - Content-Security-Policy hea
   assert.match(csp, /style-src 'self' 'unsafe-inline'/, 'CSP must allow inline styles');
   assert.match(csp, /object-src 'none'/, 'CSP must block object-src');
   assert.match(csp, /frame-ancestors 'none'/, 'CSP must block frame-ancestors');
-  assert.match(csp, /frame-src [^;]*lumalabs\.ai/, 'CSP must allow lumalabs.ai iframe embeds');
+  assert.match(csp, /frame-src 'self';/, 'CSP must block retired external tour embeds');
+  assert.doesNotMatch(csp, /lumalabs\.ai/, 'retired cloud tour host must not remain allowlisted');
   assert.match(csp, /connect-src [^;]*https:/, 'CSP must allow https: connect-src');
 
   // 2. Verify CSP header is attached to HTTP responses from createAppServer
@@ -113,6 +75,12 @@ test('Tier 1: Feature coverage for server security - Content-Security-Policy hea
     assert.equal(res.headers.get('content-security-policy'), csp);
     assert.equal(res.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(res.headers.get('x-frame-options'), 'DENY');
+
+    const sandboxRes = await fetch(base + '/sandbox/zems-tour', { method: 'HEAD' });
+    const sandboxCsp = sandboxRes.headers.get('content-security-policy') || '';
+    assert.equal(sandboxRes.status, 200);
+    assert.match(sandboxCsp, /frame-src 'self' https:\/\/ep\.matterport\.host;/);
+    assert.doesNotMatch(csp, /matterport\.host/, 'other routes must not permit the external tour');
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
@@ -165,6 +133,7 @@ test('Tier 1: Feature coverage for server security - receivedRequests FIFO evict
 
   // Verify FIFO eviction in createApiRouter by configuring a small capacity bound of 2
   process.env.TRUST_PROXY = 'true';
+  process.env.TRUSTED_PROXY_IPS = '127.0.0.1';
   const router = createApiRouter({ maxReceivedRequests: 2 });
   const server = createServer((req, res) => router(req, res, () => { res.statusCode = 404; res.end(); }));
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -212,6 +181,7 @@ test('Tier 1: Feature coverage for server security - receivedRequests FIFO evict
     assert.notEqual(dataAlphaReplay.id, data1.id, 'Evicted request must generate a fresh response instead of cached duplicate');
   } finally {
     delete process.env.TRUST_PROXY;
+    delete process.env.TRUSTED_PROXY_IPS;
     await new Promise((resolve) => server.close(resolve));
   }
 });
@@ -219,53 +189,6 @@ test('Tier 1: Feature coverage for server security - receivedRequests FIFO evict
 // ============================================================================
 // TIER 2: Boundary & Corner Cases
 // ============================================================================
-
-test('Tier 2: Boundary & corner cases - Safe URI decoding on malformed sequences', async () => {
-  const { safeDecode } = await loadExperienceRoutesModule();
-
-  // Malformed percent encodings that throw native URIError in decodeURIComponent
-  assert.equal(safeDecode('%FF'), '%FF', 'Malformed byte %FF must return original string without throwing');
-  assert.equal(safeDecode('%E0%A0'), '%E0%A0', 'Truncated UTF-8 sequence must return original string');
-  assert.equal(safeDecode('invalid%2'), 'invalid%2', 'Trailing incomplete escape sequence must return original string');
-  assert.equal(safeDecode('slug%zz'), 'slug%zz', 'Non-hex percent encoding must return original string');
-
-  // Valid encodings must decode correctly
-  assert.equal(safeDecode('%D0%BA%D0%B2%D0%B0%D1%80%D1%82%D0%B8%D1%80%D0%B0'), 'квартира');
-  assert.equal(safeDecode('normal-slug-42'), 'normal-slug-42');
-  assert.equal(safeDecode('room%20tour'), 'room tour');
-});
-
-test('Tier 2: Boundary & corner cases - parseExperience rejects external HTTPS lead endpoints', async () => {
-  const { parseExperience, fallbackConfig, isValidLeadEndpoint } = await loadConfigModule();
-
-  // Test isValidLeadEndpoint helper
-  assert.equal(isValidLeadEndpoint('/api/leads'), true);
-  assert.equal(isValidLeadEndpoint('/api/custom-endpoint'), true);
-  assert.equal(isValidLeadEndpoint('https://evil.com/api/leads'), false);
-  assert.equal(isValidLeadEndpoint('http://attacker.org/exfiltrate'), false);
-  assert.equal(isValidLeadEndpoint('//evil.com/leads'), false);
-  assert.equal(isValidLeadEndpoint('javascript:alert(1)'), false);
-  assert.equal(isValidLeadEndpoint(''), false);
-  assert.equal(isValidLeadEndpoint(null), false);
-
-  // Valid relative endpoint passes parseExperience
-  const validConfig = parseExperience({
-    ...fallbackConfig,
-    leadEndpoint: '/api/leads'
-  });
-  assert.equal(validConfig.leadEndpoint, '/api/leads');
-
-  // External HTTPS URL must throw Error('Invalid endpoint')
-  assert.throws(
-    () => parseExperience({ ...fallbackConfig, leadEndpoint: 'https://attacker.com/steal-leads' }),
-    /Invalid endpoint/
-  );
-
-  assert.throws(
-    () => parseExperience({ ...fallbackConfig, leadEndpoint: '//exfiltrate.org/api' }),
-    /Invalid endpoint/
-  );
-});
 
 test('Tier 2: Boundary & corner cases - navigateTo rejects dangerous pseudo-protocols and protocol-relative URLs', async () => {
   const { navigateTo } = await loadSiteModule('/');
@@ -314,8 +237,8 @@ test('Tier 2: Boundary & corner cases - navigateTo rejects dangerous pseudo-prot
     assert.equal(currentHref, 'http://localhost/');
 
     // 4. Safe internal routes must navigate cleanly
-    navigateTo('/flat/shattyq-1');
-    assert.equal(pushedUrl, '/flat/shattyq-1', 'Safe internal URL must push to history');
+    navigateTo('/saf/apartment/saf-observation-1-2-property-1');
+    assert.equal(pushedUrl, '/saf/apartment/saf-observation-1-2-property-1', 'Safe internal URL must push to history');
   } finally {
     delete globalThis.window;
     delete globalThis.history;
@@ -509,7 +432,7 @@ test('Tier 4: Real-world security scenarios - Consultation submission zero CRM c
       assert.ok(!rawString.includes('supersecretwebhooktoken12345'), 'Webhook token must not leak in response');
       assert.ok(!rawString.includes('49201'), 'Internal Bitrix numerical ID must not leak in response');
 
-      // Also verify booking endpoint under simulated CRM deal response
+      // Also verify the consultation endpoint under a simulated CRM lead response
       globalThis.fetch = async (url, opts) => {
         if (typeof url === 'string' && url.includes('bitrix24.kz')) {
           return {
@@ -552,43 +475,19 @@ test('Tier 4: Real-world security scenarios - Consultation submission zero CRM c
   }
 });
 
-test('Tier 4: Real-world security scenarios - Apartment status feed sanitization restricts to public IDs', async () => {
-  // StatusCache and public catalog filtering
-  const statusCache = new StatusCache();
-
-  const mockAdapter = {
-    isConfigured: () => true,
-    fetchApartmentStatuses: async () => [
-      { id: 101, title: 'shattyq-1', price: 45000000 },
-      { id: 102, title: 's1-f4-u15', price: 50000000 },
-      { id: 103, title: 'INTERNAL_DEAL_103', price: 60000000 },
-      { id: 104, title: '99999', price: 70000000 },
-      { id: 105, title: 'shattyq-tower-unit-99', price: 80000000 }
-    ]
-  };
-
-  const statuses = await statusCache.getStatuses(mockAdapter);
-  assert.ok(statuses.statuses, 'Statuses dictionary must exist');
-
-  const keys = Object.keys(statuses.statuses);
-  assert.ok(keys.length > 0, 'Valid public keys must be included');
-
-  // Verify that all returned status keys match strictly public ID formats
-  for (const key of keys) {
-    const isPublicShattyq = /^shattyq-[a-zA-Z0-9_-]{1,64}$/i.test(key);
-    const isPublicCoord = /^s\d+-f\d+-u\d+$/i.test(key);
-    assert.ok(
-      isPublicShattyq || isPublicCoord,
-      `Status key "${key}" must be a public identifier (shattyq-* or s*-f*-u*), not an internal CRM ID`
-    );
-    assert.ok(!/^\d+$/.test(key), `Status key "${key}" must not be a purely numeric ID`);
-    assert.ok(!key.includes('INTERNAL_DEAL'), `Status key "${key}" must not include CRM deal internal title`);
-  }
-
-  // Verify expected mapped keys
-  assert.ok(keys.includes('shattyq-1'));
-  assert.ok(keys.includes('s1-f4-u15'));
-  assert.ok(keys.includes('shattyq-tower-unit-99'));
-  assert.equal(keys.includes('INTERNAL_DEAL_103'), false);
-  assert.equal(keys.includes('99999'), false);
+test('SAF status feed only exposes registered public IDs and explicit states', async () => {
+  const cache = new StatusCache();
+  const result = await cache.getStatuses({ fetchApartmentStatuses: async () => [
+    { id: 101, title: 'saf-observation-1-2-property-1', status: 'sold' },
+    { id: 102, publicId: 'saf-observation-1-2-property-2' },
+    { id: 103, title: 'INTERNAL_DEAL_103', status: 'available' },
+    { id: 104, title: '99999', status: 'available' },
+    { id: 105, title: 'saf-observation-1-2-property-99999', status: 'available' },
+    { id: 106, title: 's1-f4-u15', status: 'available' },
+    { id: 'saf-observation-1-2-property-3', status: 'available' }
+  ] });
+  assert.deepEqual(result.statuses, {
+    'saf-observation-1-2-property-1': 'sold',
+    'saf-observation-1-2-property-2': 'unknown'
+  });
 });

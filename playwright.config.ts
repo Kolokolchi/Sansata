@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright E2E Configuration for Sansata Shattyq Real-Estate Visualizer.
+ * Playwright E2E configuration for the Sensata SAF Avenue workspace.
  * Supports Desktop Chrome (1920x1080), Desktop Smaller (1366x768), Tablet (768x1024), and Mobile (393x851).
  */
 export default defineConfig({

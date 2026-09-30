@@ -38,15 +38,15 @@ test('BFF API Router security, validation, ratelimit and safe DTO', async () => 
     assert.ok(statusData.updatedAt);
 
     // 2. CORS rejection
-    const corsRes = await post('/api/lead', validLead, { Origin: 'https://malicious-site.com' });
+    const corsRes = await post('/api/leads', validLead, { Origin: 'https://malicious-site.com' });
     assert.equal(corsRes.status, 403);
 
     // 3. Validation errors
-    assert.equal((await post('/api/lead', { ...validLead, phone: 'invalid' })).status, 400);
-    assert.equal((await post('/api/lead', { ...validLead, consent: false })).status, 400);
+    assert.equal((await post('/api/leads', { ...validLead, phone: 'invalid' })).status, 400);
+    assert.equal((await post('/api/leads', { ...validLead, consent: false })).status, 400);
 
     // 4. Honeypot check
-    const honeypotRes = await post('/api/lead', { ...validLead, website: 'spambot.com' });
+    const honeypotRes = await post('/api/leads', { ...validLead, website: 'spambot.com' });
     assert.equal(honeypotRes.status, 200);
     const honeypotData = await honeypotRes.json();
     assert.equal(honeypotData.success, true);
@@ -73,6 +73,7 @@ test('BFF API Router security, validation, ratelimit and safe DTO', async () => 
 
     // 7. Canonical POST /api/leads from a fresh IP under TRUST_PROXY succeeds with 201
     process.env.TRUST_PROXY = 'true';
+    process.env.TRUSTED_PROXY_IPS = '127.0.0.1';
     try {
       const freshLeadRes = await post('/api/leads', validLead, {
         'x-forwarded-for': '198.51.100.42'
@@ -84,6 +85,7 @@ test('BFF API Router security, validation, ratelimit and safe DTO', async () => 
       assert.equal(freshLeadData.mode, 'local');
     } finally {
       delete process.env.TRUST_PROXY;
+      delete process.env.TRUSTED_PROXY_IPS;
     }
 
     // 8. Status cache keys sanitization: ensure no purely numeric Bitrix item.id exists
@@ -122,7 +124,7 @@ test('OWASP API1 & API3: BOLA, Mass Assignment and Prototype Pollution defense',
       name: 'Клиент',
       phone: '+77019998877',
       consent: true,
-      apartmentId: 'shattyq-1',
+      apartmentId: 'saf-observation-1-2-property-1',
       priceOverride: 0
     });
     assert.equal(massAssignBooking.status, 400);
@@ -140,7 +142,7 @@ test('OWASP API1 & API3: BOLA, Mass Assignment and Prototype Pollution defense',
       name: 'Клиент',
       phone: '+77019998877',
       consent: true,
-      apartmentId: 'shattyq-1; DROP TABLE apartments;'
+      apartmentId: 'saf-observation-1-2-property-1; DROP TABLE apartments;'
     });
     assert.equal(badApartmentIdRes.status, 400);
   } finally {
@@ -266,6 +268,7 @@ test('OWASP API7: Server Side Request Forgery (SSRF) in webhook configuration', 
   const { BitrixAdapter } = await import('../server/bitrixAdapter.mjs');
 
   const origEnv = process.env.BITRIX_WEBHOOK_URL;
+  const origAllowedHosts = process.env.BITRIX_ALLOWED_WEBHOOK_HOSTS;
   try {
     // 1. Cloud metadata IP must be rejected
     process.env.BITRIX_WEBHOOK_URL = 'http://169.254.169.254/latest/meta-data/';
@@ -282,8 +285,22 @@ test('OWASP API7: Server Side Request Forgery (SSRF) in webhook configuration', 
     const adapterFtp = new BitrixAdapter();
     assert.equal(adapterFtp.isConfigured(), false);
 
+    // HTTPS alone is insufficient: private services and unrelated hosts must be rejected.
+    process.env.BITRIX_WEBHOOK_URL = 'https://127.0.0.1/rest/1/token';
+    assert.equal(new BitrixAdapter().isConfigured(), false);
+    process.env.BITRIX_WEBHOOK_URL = 'https://attacker.example/rest/1/token';
+    assert.equal(new BitrixAdapter().isConfigured(), false);
+    process.env.BITRIX_WEBHOOK_URL = 'https://example.bitrix24.kz.evil.example/rest/1/token';
+    assert.equal(new BitrixAdapter().isConfigured(), false);
+
+    process.env.BITRIX_ALLOWED_WEBHOOK_HOSTS = 'portal.example.com';
+    process.env.BITRIX_WEBHOOK_URL = 'https://portal.example.com/rest/1/token';
+    assert.equal(new BitrixAdapter().isConfigured(), true);
+    process.env.BITRIX_WEBHOOK_URL = 'https://portal.example.com.evil.example/rest/1/token';
+    assert.equal(new BitrixAdapter().isConfigured(), false);
+
     // 4. Valid HTTPS webhook URL must be accepted
-    process.env.BITRIX_WEBHOOK_URL = 'https://shattyq.bitrix24.kz/rest/1/valid_token_123';
+    process.env.BITRIX_WEBHOOK_URL = 'https://example.bitrix24.kz/rest/1/valid_token_123';
     const adapterValid = new BitrixAdapter();
     assert.equal(adapterValid.isConfigured(), true);
   } finally {
@@ -292,6 +309,31 @@ test('OWASP API7: Server Side Request Forgery (SSRF) in webhook configuration', 
     } else {
       delete process.env.BITRIX_WEBHOOK_URL;
     }
+    if (origAllowedHosts === undefined) delete process.env.BITRIX_ALLOWED_WEBHOOK_HOSTS;
+    else process.env.BITRIX_ALLOWED_WEBHOOK_HOSTS = origAllowedHosts;
+  }
+});
+
+test('Bitrix outbound requests never follow redirects', async () => {
+  const { BitrixAdapter } = await import('../server/bitrixAdapter.mjs');
+  const originalFetch = globalThis.fetch;
+  const originalWebhook = process.env.BITRIX_WEBHOOK_URL;
+  const options = [];
+  try {
+    process.env.BITRIX_WEBHOOK_URL = 'https://example.bitrix24.kz/rest/1/placeholder';
+    globalThis.fetch = async (_url, init) => {
+      options.push(init);
+      return { ok: false };
+    };
+    const adapter = new BitrixAdapter();
+    await adapter.createLead({ name: 'Test', phone: '+77000000000' });
+    await adapter.fetchApartmentStatuses();
+    assert.equal(options.length, 2);
+    assert.ok(options.every((init) => init.redirect === 'error'));
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalWebhook === undefined) delete process.env.BITRIX_WEBHOOK_URL;
+    else process.env.BITRIX_WEBHOOK_URL = originalWebhook;
   }
 });
 
@@ -360,4 +402,3 @@ test('OWASP API5 & API8: Static server security, dotfiles blocking, URI error ha
     await new Promise((resolve) => server.close(resolve));
   }
 });
-

@@ -1,0 +1,41 @@
+{
+  "note": "User-supplied temporary visual material; section and floor placement is approximate.",
+  "scenes": [
+    {
+      "id": "cam-5",
+      "title": "Общий вид",
+      "source": "cam_5 копия_fin.jpg",
+      "sourceSize": [
+        15000,
+        7500
+      ],
+      "sha256": "7d3754b835edbca798a935ad833cbb9ba9365815ce007080adc76239da69e584",
+      "initialYaw": -109.80000000000001,
+      "initialPitch": -32
+    },
+    {
+      "id": "cam-6",
+      "title": "Со стороны двора",
+      "source": "cam_6 копия.jpg",
+      "sourceSize": [
+        15000,
+        7500
+      ],
+      "sha256": "f9830a1c4c3b05c408096c7b408c82bb0f539e3ea2c48d86c0cd75059aa92fc7",
+      "initialYaw": -115.19999999999999,
+      "initialPitch": -20
+    },
+    {
+      "id": "aerial",
+      "title": "Высотная панорама",
+      "source": "pano_250.jpg",
+      "sourceSize": [
+        15000,
+        7500
+      ],
+      "sha256": "2fe362d12f614234ab25625d0c6da09395bfdee045fc4e7b58d2b739d0521d47",
+      "initialYaw": 172.8,
+      "initialPitch": -26
+    }
+  ]
+}

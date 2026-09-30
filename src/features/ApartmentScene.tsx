@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { InteriorDesign, TourView } from '../lib/journey';
+import { InteriorDesign, TourView } from '../lib/interior';
 import { siteUrl } from '../lib/site';
 
 export const roomNames = ['Гостиная', 'Спальня', 'Кухня', 'Прихожая'];
@@ -14,6 +14,7 @@ interface ApartmentSceneProps {
   rooms: number;
   modelUrl?: string;
   captureToken?: number;
+  background?: string;
 }
 
 const box = (
@@ -83,7 +84,8 @@ export function ApartmentScene({
   design,
   rooms,
   modelUrl,
-  captureToken = 0
+  captureToken = 0,
+  background = '#f5f4f1'
 }: ApartmentSceneProps) {
   const host = useRef<HTMLDivElement>(null);
   const api = useRef<{
@@ -131,7 +133,7 @@ export function ApartmentScene({
     setLoading(false);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#f5f4f1');
+    scene.background = new THREE.Color(background);
 
     const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 300);
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -277,6 +279,7 @@ export function ApartmentScene({
       if (!el.clientWidth || !el.clientHeight) return;
       renderer.setSize(el.clientWidth, el.clientHeight);
       camera.aspect = el.clientWidth / el.clientHeight;
+      camera.fov = modeRef.current === 'panorama' ? 75 : THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(20)) / Math.min(1, camera.aspect)));
       camera.updateProjectionMatrix();
     };
 
@@ -386,14 +389,14 @@ export function ApartmentScene({
     const a = api.current;
     if (!a) return;
     const { camera, controls, radius } = a;
-    controls.enableRotate = true;
+    controls.enableRotate = mode !== 'spin';
     controls.enableZoom = true;
     controls.enablePan = false;
     controls.minDistance = 5;
     controls.maxDistance = radius * 3;
     controls.minPolarAngle = 0;
     controls.maxPolarAngle = Math.PI * 0.49;
-    camera.fov = 40;
+    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(20)) / Math.min(1, camera.aspect)));
 
     if (mode === 'panorama') {
       const points = [
@@ -416,7 +419,9 @@ export function ApartmentScene({
       controls.target.set(0, 0, 0);
       controls.enableRotate = false;
     } else {
-      camera.position.set(radius * 0.76, radius * 0.8, radius);
+      const angle = Math.atan2(.76, 1) + point * Math.PI / 2;
+      const distance = radius * Math.hypot(.76, 1);
+      camera.position.set(Math.sin(angle) * distance, radius * 0.8, Math.cos(angle) * distance);
       controls.target.set(0, 0, 0);
     }
     camera.updateProjectionMatrix();
@@ -430,7 +435,7 @@ export function ApartmentScene({
     renderer.render(scene, camera);
     const a = document.createElement('a');
     a.href = renderer.domElement.toDataURL('image/png');
-    a.download = 'Shattyq-interior.png';
+    a.download = 'Sensata-interior.png';
     a.click();
   }, [captureToken]);
 

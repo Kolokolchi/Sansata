@@ -1,0 +1,16 @@
+{
+  "sourceFile": "af1114399be238d7.jpeg",
+  "width": 1680,
+  "height": 1680,
+  "viewBox": "170 650 1240 900",
+  "provenance": "Manually traced visible numbered building footprints on the original SAF site plan. UI hit areas, not official CAD geometry; no facade/floor/unit polygons inferred.",
+  "regions": [
+    { "id": "1", "points": [[246,1225],[336,1252],[309,1342],[219,1315]] },
+    { "id": "2", "points": [[229,1015],[323,1015],[323,1108],[229,1108]] },
+    { "id": "3", "points": [[413,1018],[504,1018],[504,1108],[413,1108]] },
+    { "id": "4", "points": [[590,1015],[685,1015],[685,1108],[590,1108]] },
+    { "id": "5", "points": [[734,909],[798,909],[798,1015],[734,1015]] },
+    { "id": "6", "points": [[734,800],[798,800],[798,905],[734,905]] },
+    { "id": "7", "points": [[734,690],[798,690],[798,796],[734,796]] }
+  ]
+}

@@ -1,23 +1,4 @@
-/**
- * Типы данных проекта ЖК «Shattyq» (Sensata Group).
- */
-import original from '../data/shattyq.json';
-
-export type PlanData = typeof original.plans[number];
-
-export type FlatStatus = 'unknown' | 'available' | 'reserved' | 'sold';
-export type AreaKind = 'calculated' | 'official';
-
-export interface Flat extends PlanData {
-  section: number;
-  floor: number;
-  area: number | null;
-  price: number | null;
-  status: FlatStatus;
-  areaKind: AreaKind;
-  features: string[];
-}
-
+/** Shared media and public SAF Avenue DTO contracts. */
 export interface PanoramaLink {
   target: string;
   yaw: number;
@@ -34,91 +15,12 @@ export interface Panorama {
   initialPitch?: number;
 }
 
-export interface MediaAlbum {
-  id: string;
-  title: string;
-  date: string;
-  images: string[];
-}
-
-export interface ProjectDocument {
-  id: string;
-  title: string;
-  url: string;
-  category: string;
-  date?: string;
-}
-
-export interface CameraStream {
-  id: string;
-  title: string;
-  url: string;
-}
-
-export interface LumaTourScene {
-  id: string;
-  label: string;
-  captureId: string;
-  title: string;
-  note: string;
-}
-
-export interface ExperienceConfig {
-  lumaTour?: {
-    captureId: string;
-    title: string;
-    note: string;
-  };
-  lumaScenes?: LumaTourScene[];
-  selectionMedia?: {
-    masterplan?: SelectionImage;
-    facades?: Record<string, SelectionImage>;
-    floorPlans?: Record<string, SelectionImage>;
-  };
-  apartmentTours?: Record<string, { modelUrl?: string; panoramas?: Panorama[] }>;
-  version: number;
-  model: {
-    url: string | null;
-    label: string;
-    scale: number;
-  };
-  panoramas: Panorama[];
-  constructionAlbums: MediaAlbum[];
-  cameras: CameraStream[];
-  documents: ProjectDocument[];
-  inventory: Partial<Flat>[];
-  leadEndpoint: string;
-  source: string;
-}
-
 /** Coordinates use the original image's pixel dimensions; keys identify sections, floors or plan IDs. */
 export interface SelectionImage {
   image: string;
   width: number;
   height: number;
   regions: { id: string; points: [number, number][] }[];
-}
-
-export interface MortgageCalculationResult {
-  principal: number;
-  payment: number;
-  interest: number;
-  total: number;
-}
-
-export interface LeadSubmission {
-  name: string;
-  phone: string;
-  consent: boolean;
-  topic: string;
-  website?: string;
-  requestId?: string;
-}
-
-export interface LeadReceipt {
-  id: string;
-  mode: 'local' | 'crm';
-  message: string;
 }
 
 /**

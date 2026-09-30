@@ -1,0 +1,16 @@
+[
+  {
+    "id": "residential",
+    "title": "Жилой комплекс",
+    "source": "https://repos.masnaget.digital/sg/pres/saf_avenue.pdf",
+    "file": "c2f507530239ebe7.pdf",
+    "pages": 35
+  },
+  {
+    "id": "commercial",
+    "title": "Коммерческие помещения",
+    "source": "https://repos.masnaget.digital/sg/pres/safcomm.pdf",
+    "file": "ee4e70255367198c.pdf",
+    "pages": 31
+  }
+]

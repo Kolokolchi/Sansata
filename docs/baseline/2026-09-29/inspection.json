@@ -1,0 +1,1078 @@
+[
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/",
+    "file": "desktop-home.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/projects",
+    "file": "desktop-projects.jpg",
+    "title": "Выбор объекта | Sensata",
+    "headings": [
+      "Выберите объект.",
+      "SAF Avenue"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf",
+    "file": "desktop-parameters.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Поиск квартир по параметрам",
+      "Планировки 150"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual/block/1",
+    "file": "desktop-section.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Секция 1"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "file": "desktop-floor.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Квартиры · 5"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual/block/1/level/E2",
+    "file": "desktop-level.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1",
+    "file": "desktop-apartment-tour.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "headings": [
+      "2-комнатная № 1",
+      "Как купить",
+      "Похожие квартиры",
+      "SAF Avenue · 2-комнатная квартира № 1"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": [
+      "[.WebGL-0x1efc02abcc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1efc02abcc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1efc02abcc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1efc02abcc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ]
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "file": "desktop-apartment-plan.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "headings": [
+      "2-комнатная № 1",
+      "Как купить",
+      "Похожие квартиры",
+      "SAF Avenue · 2-комнатная квартира № 1"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/plan/KV-P7-E3-S1",
+    "file": "desktop-published-plan.jpg",
+    "title": "KV-P7-E3-S1 · SAF Avenue | Sensata",
+    "headings": [
+      "1-комнатная планировка",
+      "Связанные квартиры в снимке"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/chessboard",
+    "file": "desktop-chessboard.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Шахматка планировок.",
+      "Выбор по уровням 150"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/stock",
+    "file": "desktop-stock.jpg",
+    "title": "Снимок помещений · SAF Avenue",
+    "headings": [
+      "Помещения по этажам."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/materials",
+    "file": "desktop-materials.jpg",
+    "title": "Материалы проекта · SAF Avenue",
+    "headings": [
+      "Всё о пространствевашей жизни.",
+      "SAF Avenue в деталях",
+      "Все визуалы с лендинга"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/?view=360&point=cam-5",
+    "file": "desktop-complex-tour.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/tour",
+    "file": "desktop-interior-demo.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "3D-просмотр квартиры"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/sandbox/greybox-tour",
+    "file": "desktop-greybox.jpg",
+    "title": "Greybox HDRI-тур · Песочница",
+    "headings": [],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/sandbox/zems-tour",
+    "file": "desktop-zems.jpg",
+    "title": "Тестовый 3D-тур Земсдизайн",
+    "headings": [],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": [
+      "Scripts \"build/three.js\" and \"build/three.min.js\" are deprecated with r150+, and will be removed with r160. Please use ES Modules or alternatives: https://threejs.org/docs/index.html#manual/en/introduction/Installation"
+    ]
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/visual/free",
+    "file": "desktop-retired.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Раздел обновлён."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/baseline-missing-page",
+    "file": "desktop-not-found.jpg",
+    "title": "Страница не найдена | Sensata",
+    "headings": [
+      "Страница не найдена."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/",
+    "file": "tablet-home.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/projects",
+    "file": "tablet-projects.jpg",
+    "title": "Выбор объекта | Sensata",
+    "headings": [
+      "Выберите объект.",
+      "SAF Avenue"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf",
+    "file": "tablet-parameters.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Поиск квартир по параметрам",
+      "Планировки 150"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual/block/1",
+    "file": "tablet-section.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Секция 1"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "file": "tablet-floor.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Квартиры · 5"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual/block/1/level/E2",
+    "file": "tablet-level.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1",
+    "file": "tablet-apartment-tour.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "headings": [
+      "2-комнатная № 1",
+      "Как купить",
+      "Похожие квартиры",
+      "SAF Avenue · 2-комнатная квартира № 1"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "file": "tablet-apartment-plan.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "headings": [
+      "2-комнатная № 1",
+      "Как купить",
+      "Похожие квартиры",
+      "SAF Avenue · 2-комнатная квартира № 1"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/plan/KV-P7-E3-S1",
+    "file": "tablet-published-plan.jpg",
+    "title": "KV-P7-E3-S1 · SAF Avenue | Sensata",
+    "headings": [
+      "1-комнатная планировка",
+      "Связанные квартиры в снимке"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/chessboard",
+    "file": "tablet-chessboard.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Шахматка планировок.",
+      "Выбор по уровням 150"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/stock",
+    "file": "tablet-stock.jpg",
+    "title": "Снимок помещений · SAF Avenue",
+    "headings": [
+      "Помещения по этажам."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/materials",
+    "file": "tablet-materials.jpg",
+    "title": "Материалы проекта · SAF Avenue",
+    "headings": [
+      "Всё о пространствевашей жизни.",
+      "SAF Avenue в деталях",
+      "Все визуалы с лендинга"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/?view=360&point=cam-5",
+    "file": "tablet-complex-tour.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/tour",
+    "file": "tablet-interior-demo.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "3D-просмотр квартиры"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/sandbox/greybox-tour",
+    "file": "tablet-greybox.jpg",
+    "title": "Greybox HDRI-тур · Песочница",
+    "headings": [],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/sandbox/zems-tour",
+    "file": "tablet-zems.jpg",
+    "title": "Тестовый 3D-тур Земсдизайн",
+    "headings": [],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": [
+      "Scripts \"build/three.js\" and \"build/three.min.js\" are deprecated with r150+, and will be removed with r160. Please use ES Modules or alternatives: https://threejs.org/docs/index.html#manual/en/introduction/Installation"
+    ]
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/visual/free",
+    "file": "tablet-retired.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Раздел обновлён."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/baseline-missing-page",
+    "file": "tablet-not-found.jpg",
+    "title": "Страница не найдена | Sensata",
+    "headings": [
+      "Страница не найдена."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/",
+    "file": "mobile-home.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/projects",
+    "file": "mobile-projects.jpg",
+    "title": "Выбор объекта | Sensata",
+    "headings": [
+      "Выберите объект.",
+      "SAF Avenue"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf",
+    "file": "mobile-parameters.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Поиск квартир по параметрам",
+      "Планировки 150"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual/block/1",
+    "file": "mobile-section.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Секция 1"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "file": "mobile-floor.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Квартиры · 5"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual/block/1/level/E2",
+    "file": "mobile-level.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1",
+    "file": "mobile-apartment-tour.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "headings": [
+      "2-комнатная № 1",
+      "Как купить",
+      "Похожие квартиры",
+      "SAF Avenue · 2-комнатная квартира № 1"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "file": "mobile-apartment-plan.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "headings": [
+      "2-комнатная № 1",
+      "Как купить",
+      "Похожие квартиры",
+      "SAF Avenue · 2-комнатная квартира № 1"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/plan/KV-P7-E3-S1",
+    "file": "mobile-published-plan.jpg",
+    "title": "KV-P7-E3-S1 · SAF Avenue | Sensata",
+    "headings": [
+      "1-комнатная планировка",
+      "Связанные квартиры в снимке"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/chessboard",
+    "file": "mobile-chessboard.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Шахматка планировок.",
+      "Выбор по уровням 150"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/stock",
+    "file": "mobile-stock.jpg",
+    "title": "Снимок помещений · SAF Avenue",
+    "headings": [
+      "Помещения по этажам."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/materials",
+    "file": "mobile-materials.jpg",
+    "title": "Материалы проекта · SAF Avenue",
+    "headings": [
+      "Всё о пространствевашей жизни.",
+      "SAF Avenue в деталях",
+      "Все визуалы с лендинга"
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/?view=360&point=cam-5",
+    "file": "mobile-complex-tour.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Квартиры на 3D-плане",
+      "Выберите секцию"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/tour",
+    "file": "mobile-interior-demo.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "3D-просмотр квартиры"
+    ],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/sandbox/greybox-tour",
+    "file": "mobile-greybox.jpg",
+    "title": "Greybox HDRI-тур · Песочница",
+    "headings": [],
+    "overflow": false,
+    "canvases": 1,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/sandbox/zems-tour",
+    "file": "mobile-zems.jpg",
+    "title": "Тестовый 3D-тур Земсдизайн",
+    "headings": [],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": [
+      "Scripts \"build/three.js\" and \"build/three.min.js\" are deprecated with r150+, and will be removed with r160. Please use ES Modules or alternatives: https://threejs.org/docs/index.html#manual/en/introduction/Installation"
+    ]
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/visual/free",
+    "file": "mobile-retired.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "headings": [
+      "Раздел обновлён."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/baseline-missing-page",
+    "file": "mobile-not-found.jpg",
+    "title": "Страница не найдена | Sensata",
+    "headings": [
+      "Страница не найдена."
+    ],
+    "overflow": false,
+    "canvases": 0,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  }
+]

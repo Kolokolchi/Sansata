@@ -1,6 +1,4 @@
-import { appendFile, mkdir } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { randomUUID, createHash } from 'node:crypto';
+import { isIP } from 'node:net';
 
 /**
  * Проверка отсутствия прототипного загрязнения.
@@ -116,145 +114,22 @@ export function validateBooking(value) {
 
 /**
  * Direct local server: forwarded headers are untrusted client input.
- * Default strictly to req.socket.remoteAddress. Only evaluate X-Forwarded-For
- * when process.env.TRUST_PROXY === 'true'.
- * Validates IP string format to prevent header injection attacks.
+ * Default strictly to req.socket.remoteAddress. Evaluate X-Forwarded-For
+ * only when the socket peer is an explicitly trusted proxy. Walk the
+ * forwarded chain from the right so client-supplied leftmost entries cannot
+ * bypass rate limiting when a proxy appends to an existing header.
  */
 export function getClientIp(req) {
-  if (process.env.TRUST_PROXY === 'true') {
-    const forwarded = req.headers?.['x-forwarded-for'];
-    if (forwarded && typeof forwarded === 'string') {
-      const firstIp = forwarded.split(',')[0].trim();
-      if (firstIp && /^[0-9a-fA-F:.]+$/.test(firstIp) && firstIp.length <= 45) {
-        return firstIp;
-      }
-    }
+  const peer = req.socket?.remoteAddress || 'local';
+  const trusted = new Set((process.env.TRUSTED_PROXY_IPS || '').split(',').map(ip => ip.trim()).filter(ip => isIP(ip)));
+  if (process.env.TRUST_PROXY !== 'true' || !trusted.has(peer)) return peer;
+
+  const forwarded = req.headers?.['x-forwarded-for'];
+  if (typeof forwarded !== 'string') return peer;
+  const chain = forwarded.split(',').map(ip => ip.trim());
+  if (chain.length > 20 || chain.some(ip => !isIP(ip))) return peer;
+  for (let i = chain.length - 1; i >= 0; i--) {
+    if (!trusted.has(chain[i])) return chain[i];
   }
-  return req.socket?.remoteAddress || 'local';
-}
-
-
-/**
- * Express / Node HTTP Middleware для приема заявок.
- */
-export function leadMiddleware({ file = resolve('.local/leads.ndjson'), rateLimit = 3, windowMs = 600000 } = {}) {
-  const limits = new Map();
-  const received = new Map();
-
-  return async function (req, res, next) {
-    if (req.url?.split('?')[0] !== '/api/leads') {
-      return next?.();
-    }
-
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store');
-
-    const reply = (code, body) => {
-      res.statusCode = code;
-      res.end(JSON.stringify(body));
-    };
-
-    if (req.method !== 'POST') {
-      return reply(405, { error: 'Используйте POST.' });
-    }
-
-    // Защита от межсайтовой подделки запросов (CSRF)
-    if (req.headers.origin) {
-      try {
-        if (new URL(req.headers.origin).host !== req.headers.host) {
-          return reply(403, { error: 'Недопустимый источник запроса.' });
-        }
-      } catch {
-        return reply(403, { error: 'Недопустимый источник запроса.' });
-      }
-    }
-
-    if (!req.headers['content-type']?.includes('application/json')) {
-      return reply(415, { error: 'Требуется JSON.' });
-    }
-
-    // Bound transient local state. Public deployments need shared durable storage.
-    const now = Date.now();
-    for (const [k, v] of limits) {
-      if (now - v.start >= windowMs) limits.delete(k);
-    }
-    for (const [k, v] of received) {
-      if (now - v.time > 3600000) received.delete(k);
-    }
-
-    const ip = getClientIp(req);
-    const chunks = [];
-    let bytes = 0;
-    try {
-      for await (const chunk of req) {
-        bytes += chunk.length;
-        if (bytes > 8192) {
-          return reply(413, { error: 'Запрос слишком большой.' });
-        }
-        chunks.push(chunk);
-      }
-
-      const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-      if (!body || typeof body !== 'object' || Array.isArray(body)) {
-        return reply(400, { error: 'Некорректная заявка.' });
-      }
-
-      if (body.website) {
-        return reply(200, {
-          ok: true,
-          success: true,
-          id: randomUUID(),
-          mode: 'local',
-          message: 'Заявка принята.'
-        });
-      }
-
-      const parsed = validateLead(body);
-      if (parsed.error) {
-        return reply(400, { error: parsed.error });
-      }
-
-      const key = body.requestId ? `${ip}:${body.requestId}` : '';
-      const { createdAt, ...identity } = parsed.value;
-      const fingerprint = createHash('sha256').update(JSON.stringify({ ...identity, website: body.website || '' })).digest('hex');
-
-      // Идемпотентность: возврат сохраненного ответа при повторе
-      if (key && received.has(key)) {
-        const existing = received.get(key);
-        if (existing.fingerprint !== fingerprint) return reply(409, { error: 'Идентификатор уже использован для другой заявки.' });
-        return reply(200, await existing.result);
-      }
-
-      // Reserve the slot synchronously BEFORE filesystem awaits to resist parallel requests.
-      const currentTime = Date.now();
-      const stored = limits.get(ip);
-      const limit = stored && currentTime - stored.start < windowMs ? stored : { start: currentTime, count: 0 };
-      if (limit.count >= rateLimit) {
-        res.setHeader('Retry-After', String(Math.max(1, Math.ceil((limit.start + windowMs - currentTime) / 1000))));
-        return reply(429, { error: 'Слишком много запросов. Попробуйте позднее.' });
-      }
-      if (limits.size >= 10000 || received.size >= 10000) return reply(503, { error: 'Сервис временно занят.' });
-      limits.set(ip, { ...limit, count: limit.count + 1 });
-
-      const save = async () => {
-        const lead = { id: randomUUID(), ...parsed.value };
-        // Match the normal receipt, but never store a honeypot submission.
-        if (!body.website) {
-          await mkdir(dirname(file), { recursive: true });
-          await appendFile(file, JSON.stringify(lead) + '\n', { encoding: 'utf8', mode: 0o600 });
-        }
-        return { id: lead.id, mode: 'local', message: 'Заявка сохранена на локальном сервере. В отдел продаж Sensata она не отправлена.' };
-      };
-      const result = save();
-      if (key) received.set(key, { time: currentTime, fingerprint, result });
-
-      try { return reply(201, await result); }
-      catch (error) { if (key) received.delete(key); throw error; }
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        return reply(400, { error: 'Некорректный JSON.' });
-      }
-      return reply(500, { error: 'Не удалось сохранить заявку. Попробуйте позже или позвоните 700.' });
-    }
-  };
+  return peer;
 }

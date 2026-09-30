@@ -9,11 +9,8 @@ export class RateLimiter {
     this.maxEntries = maxEntries;
     this.buckets = new Map();
 
-    // Proactive background cleanup every 60s, unref'd so it doesn't hold event loop open
-    if (typeof setInterval !== 'undefined') {
-      const timer = setInterval(() => this.cleanup(Date.now()), 60000);
-      timer?.unref?.();
-    }
+    // Expired buckets are reclaimed on demand when capacity is reached.
+    // A permanent interval would retain short-lived limiter instances.
   }
 
   /**
@@ -65,4 +62,3 @@ export class RateLimiter {
     }
   }
 }
-

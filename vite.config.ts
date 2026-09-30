@@ -4,13 +4,14 @@ import react from '@vitejs/plugin-react';
 import { createApiRouter } from './server/apiRouter.mjs';
 
 export default defineConfig(({ mode }) => ({
+  publicDir: false,
   define: {
     'import.meta.env.VITE_STATIC_HOSTING': JSON.stringify(mode === 'pages' ? 'true' : 'false')
   },
   plugins: [
     react(),
     {
-      name: 'shattyq-api-router',
+      name: 'sensata-api-router',
       configureServer(server) {
         server.middlewares.use(createApiRouter());
       }

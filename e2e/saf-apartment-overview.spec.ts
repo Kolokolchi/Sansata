@@ -1,0 +1,25 @@
+import {test,expect} from '@playwright/test';
+test('requested apartment opens directly in dollhouse with bottom view controls',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/saf/apartment/saf-observation-5-8-property-239?tab=tour');
+ const viewer=page.locator('.saf-viewer-immersive');
+ await expect(viewer.locator('canvas')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Объёмный вид',exact:true})).toHaveAttribute('aria-pressed','true');
+ await expect(page.getByRole('button',{name:'Начать демо-тур'})).toHaveCount(0);
+ await page.getByRole('button',{name:'Следующий ракурс'}).click();
+ await expect(page).toHaveURL(/view=dollhouse&point=1/);
+ await page.getByRole('button',{name:'3D вид сверху',exact:true}).click();
+ await expect(page.getByRole('button',{name:'3D вид сверху',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('button',{name:'Вращение 360°',exact:true}).click();
+ await page.reload();
+ await expect(page.getByRole('button',{name:'Вращение 360°',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('button',{name:'Меню обзора'}).click();
+ await page.getByRole('button',{name:'Спальня',exact:true}).click();
+ await expect(page).toHaveURL(/view=panorama&point=1/);
+ await page.getByRole('button',{name:'Интерьер',exact:true}).click();
+ await expect(page.locator('.interior-editor')).toBeVisible();
+ await page.getByRole('tab',{name:'Планировка',exact:true}).click();
+ await expect(viewer).toHaveCount(0);
+ expect(errors).toEqual([]);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});

@@ -19,7 +19,7 @@ const sampleBooking = {
   name: 'Динара Сатпаева',
   phone: '+7 (702) 111-22-33',
   consent: true,
-  apartmentId: 'shattyq-1',
+  apartmentId: 'saf-observation-1-2-property-1',
   apartmentNumber: '101'
 };
 

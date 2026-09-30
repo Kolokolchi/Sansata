@@ -4,7 +4,9 @@ import { createServer } from 'node:http';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { leadMiddleware, validateLead, getClientIp } from '../server/leads.mjs';
+import { validateLead, getClientIp } from '../server/leads.mjs';
+import { createApiRouter } from '../server/apiRouter.mjs';
+import { RateLimiter } from '../server/rateLimiter.mjs';
 
 const validLead = {
   name: 'Тестовый клиент',
@@ -26,8 +28,9 @@ test('lead validation requires name, KZ phone and consent', () => {
   }
 });
 
-test('getClientIp parses socket address by default and x-forwarded-for only when TRUST_PROXY is enabled', () => {
+test('getClientIp trusts only configured socket peers and the rightmost untrusted forwarded hop', () => {
   delete process.env.TRUST_PROXY;
+  delete process.env.TRUSTED_PROXY_IPS;
   assert.equal(
     getClientIp({ headers: { 'x-forwarded-for': '203.0.113.195, 70.41.3.18' }, socket: { remoteAddress: '192.168.1.1' } }),
     '192.168.1.1'
@@ -41,19 +44,30 @@ test('getClientIp parses socket address by default and x-forwarded-for only when
   process.env.TRUST_PROXY = 'true';
   try {
     assert.equal(
+      getClientIp({ headers: { 'x-forwarded-for': '203.0.113.195' }, socket: { remoteAddress: '192.168.1.1' } }),
+      '192.168.1.1'
+    );
+    process.env.TRUSTED_PROXY_IPS = '192.168.1.1';
+    assert.equal(
       getClientIp({ headers: { 'x-forwarded-for': '203.0.113.195, 70.41.3.18' }, socket: { remoteAddress: '192.168.1.1' } }),
-      '203.0.113.195'
+      '70.41.3.18'
     );
   } finally {
     delete process.env.TRUST_PROXY;
+    delete process.env.TRUSTED_PROXY_IPS;
   }
 });
 
 test('HTTP saves once, rejects malformed and cross-origin requests', async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'shattyq-test-'));
-  const file = join(dir, 'leads.ndjson');
+  const dir = await mkdtemp(join(tmpdir(), 'saf-test-'));
+  const file = join(dir, '.local', 'leads.ndjson');
+  const originalCwd = process.cwd();
+  process.chdir(dir);
 
-  const middleware = leadMiddleware({ file, rateLimit: 2 });
+  const middleware = createApiRouter({
+    adapter: { isConfigured: () => false, createLead: async () => ({ success: true }), fetchApartmentStatuses: async () => [] },
+    leadLimiter: new RateLimiter(6, 600000)
+  });
   const server = createServer((req, res) =>
     middleware(req, res, () => {
       res.statusCode = 404;
@@ -80,7 +94,7 @@ test('HTTP saves once, rejects malformed and cross-origin requests', async () =>
     );
     assert.equal((await post({ ...validLead, consent: false })).status, 400);
 
-    // Honeypot silently returns 200 OK without persisting
+    // Honeypot silently returns 200 OK without persisting, but consumes quota.
     const botRes = await post({ ...validLead, website: 'bot' });
     assert.equal(botRes.status, 200);
     const botData = await botRes.json();
@@ -97,13 +111,15 @@ test('HTTP saves once, rejects malformed and cross-origin requests', async () =>
 
     assert.equal((await readFile(file, 'utf8')).trim().split('\n').length, 1);
 
-    // Rate limit testing
-    assert.equal((await post(validLead)).status, 201);
+    // The current router counts malformed bodies, invalid data, bots and retries.
+    // Six same-origin requests above have exhausted this test's quota.
     assert.equal((await post(validLead)).status, 429);
 
     assert.equal((await fetch(base + '/api/leads')).status, 405);
+    assert.equal((await fetch(base + '/api/lead', { method: 'POST' })).status, 404);
   } finally {
     await new Promise((resolve) => server.close(resolve));
+    process.chdir(originalCwd);
     await rm(dir, { recursive: true, force: true });
   }
 });

@@ -1,0 +1,18 @@
+html, body, #root { min-width: 0; min-height: 100%; margin: 0; }
+body { background: #000; }
+.zems-sandbox { min-height: 100dvh; font-family: Arial, sans-serif; }
+.zems-tour { position: fixed; inset: 0; width: 100%; height: 100dvh; background: #000; }
+.zems-tour__frame { display: block; width: 100%; height: 100%; border: 0; }
+.zems-tour__close { position: absolute; z-index: 1; top: 12px; right: 16px; display: grid; place-items: center; width: 52px; height: 52px; padding: 0; border: 0; border-radius: 3px; background: #fff; cursor: pointer; }
+.zems-tour__close span { position: relative; display: block; width: 27px; height: 27px; }
+.zems-tour__close span::before, .zems-tour__close span::after { content: ''; position: absolute; top: 13px; left: 0; width: 27px; height: 1.5px; background: #888; transform: rotate(45deg); }
+.zems-tour__close span::after { transform: rotate(-45deg); }
+.zems-tour__close:hover { background: #f1f1f1; }
+.zems-tour__close:focus-visible, .zems-sandbox__closed :focus-visible { outline: 3px solid #78b9ff; outline-offset: 3px; }
+.zems-sandbox__closed { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 20px; max-width: 580px; margin: 0 auto; padding: 32px; color: #fff; }
+.zems-sandbox__closed > span { color: #aaa; font-size: 12px; letter-spacing: .15em; }
+.zems-sandbox__closed h1 { margin: 0; font-size: clamp(28px, 5vw, 44px); line-height: 1.1; }
+.zems-sandbox__closed p { margin: 0; color: #ccc; line-height: 1.5; }
+.zems-sandbox__closed button { padding: 14px 20px; border: 0; border-radius: 3px; background: #fff; color: #111; font: inherit; cursor: pointer; }
+.zems-sandbox__closed a { color: #ccc; }
+@media (max-width: 600px) { .zems-tour__close { top: 4px; right: 4px; width: 40px; height: 40px; } .zems-tour__close span { width: 24px; height: 24px; } .zems-tour__close span::before, .zems-tour__close span::after { top: 12px; width: 24px; } }

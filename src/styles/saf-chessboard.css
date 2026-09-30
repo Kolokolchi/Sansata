@@ -1,0 +1,82 @@
+.saf-chessboard{width:min(100%,1540px);margin:0 auto;padding:0 max(4vw,28px) 90px;flex:1}
+.saf-chessboard-heading{display:flex;justify-content:space-between;align-items:end;gap:30px;padding:22px 0 30px}
+.saf-chessboard-heading h1{font:600 clamp(34px,4vw,58px)/1.1 SAF,Arial,sans-serif;margin:13px 0}
+.saf-chessboard-heading p{max-width:730px;color:#687078;line-height:1.6;margin:0}
+.saf-chessboard-heading>a,.saf-chessboard-unavailable>a{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 18px;background:#2f363c;color:white;font-size:13px;font-weight:700;white-space:nowrap}
+.saf-chessboard-heading>a:hover,.saf-chessboard-unavailable>a:hover{background:#46515a}
+.saf-chessboard-note{display:flex;gap:18px;align-items:center;padding:15px 19px;background:#edeae4;font-size:12px;line-height:1.5}
+.saf-chessboard-note strong{white-space:nowrap}.saf-chessboard-note span{color:#687078}
+.saf-chessboard-toolbar{padding:28px 0 20px}.saf-chessboard-blocks,.saf-chessboard-levels{display:flex;flex-wrap:wrap;gap:8px}
+.saf-chessboard-levels{margin-top:13px}.saf-chessboard-blocks button,.saf-chessboard-levels button{border:1px solid #dedbd7;background:#fff;color:#2f363c;padding:10px 14px;font-size:12px;font-weight:700;min-height:40px}
+.saf-chessboard-blocks button.active,.saf-chessboard-levels button.active,.saf-chessboard-blocks button:hover,.saf-chessboard-levels button:hover{background:#2f363c;color:#fff;border-color:#2f363c}
+.saf-chessboard-tabs{display:flex;gap:25px;overflow-x:auto;border-bottom:1px solid #dedbd7}
+.saf-chessboard-tabs button{flex:none;background:none;border:0;border-bottom:3px solid transparent;padding:12px 2px 15px;color:#687078;font-size:14px;font-weight:700;white-space:nowrap}
+.saf-chessboard-tabs button[aria-selected=true]{color:#2f363c;border-color:#bd9770}
+.saf-chessboard-body{display:grid;grid-template-columns:250px minmax(0,1fr);gap:30px;padding-top:28px}
+.saf-chessboard-filters{border:1px solid #dedbd7;padding:22px;align-self:start;position:sticky;top:110px}
+.saf-chessboard-filters>p{font-size:11px;line-height:1.5;color:#687078;margin:23px 0 0}
+.saf-chessboard-content{min-width:0}.saf-chessboard-results{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:18px}
+.saf-chessboard-results h2{font-size:27px;margin:5px 0 0}.saf-chessboard-results small{font:700 12px SAF,Arial,sans-serif;color:#687078}
+.saf-chessboard-results label{display:flex;align-items:center;gap:8px;color:#687078;font-size:12px}.saf-chessboard-results select{border:1px solid #dedbd7;padding:9px;color:#2f363c;background:#fff}
+.saf-chessboard-grid{border:1px solid #e1e2ec;overflow-x:auto;scrollbar-color:#b8bee4 transparent}
+.saf-chessboard-matrix{width:100%;min-width:1080px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.saf-chessboard-grid.single-block .saf-chessboard-matrix{min-width:0}
+.saf-chessboard-matrix th,.saf-chessboard-matrix td{border-bottom:1px solid #e1e2ec;text-align:left}
+.saf-chessboard-matrix thead th{height:43px;padding:8px;background:#f0f1f8;color:#222288;font-size:12px;font-weight:600}
+.saf-chessboard-matrix th:first-child{width:90px;position:sticky;left:0;z-index:2}
+.saf-chessboard-matrix tbody th{padding:8px;background:#fff;font-size:11px;font-weight:600;white-space:nowrap}
+.saf-chessboard-matrix td{padding:8px 5px;border-left:1px solid #e1e2ec;vertical-align:middle}
+.saf-chessboard-cells{display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-height:28px}
+.saf-chessboard-cells button{border:1px solid #d9dbed;background:#f0f1f8;color:#222288;width:25px;height:25px;min-width:25px;min-height:25px;padding:0;font-size:11px;border-radius:2px}
+.saf-chessboard-cells button:hover,.saf-chessboard-cells button.selected{background:#2f363c;border-color:#2f363c;color:white}
+.saf-chessboard-cells button strong{display:block;font-size:11px}.saf-chessboard-cells button span,.saf-chessboard-cells button small{display:block;margin-top:5px}
+.saf-chessboard-grid.expanded .saf-chessboard-matrix{min-width:1930px}.saf-chessboard-grid.expanded.single-block .saf-chessboard-matrix{min-width:0}
+.saf-chessboard-grid.expanded .saf-chessboard-cells button{width:132px;height:89px;min-width:132px;min-height:89px;text-align:left;padding:12px}
+.saf-chessboard-grid.expanded .saf-chessboard-cells button strong{font-size:13px}
+.saf-chessboard-unavailable{padding:55px 35px;border:1px solid #dedbd7;background:#f8f7f5;text-align:center}.saf-chessboard-unavailable h3{font-size:23px;margin:0 0 10px}.saf-chessboard-unavailable p{color:#687078;line-height:1.55;max-width:530px;margin:0 auto 25px}.saf-chessboard-unavailable button{border:1px solid #2f363c;background:#fff;padding:11px 18px}.saf-chessboard-unavailable>a{white-space:normal}
+.saf-chessboard-table-wrap{overflow:auto;border:1px solid #dedbd7}.saf-chessboard-table-wrap table{width:100%;border-collapse:collapse;min-width:650px;font-size:12px}.saf-chessboard-table-wrap th,.saf-chessboard-table-wrap td{padding:13px;text-align:left;border-bottom:1px solid #dedbd7}.saf-chessboard-table-wrap th{background:#edeae4}.saf-chessboard-table-wrap button{border:0;background:none;color:#2f363c;font-weight:700;display:inline-flex;align-items:center;gap:5px;padding:3px}.saf-chessboard-table-wrap button:hover{text-decoration:underline}
+.saf-chessboard-backdrop{position:fixed;inset:0;background:rgba(25,30,35,.55);z-index:50;display:flex;justify-content:flex-end}.saf-chessboard-detail{width:min(100%,470px);height:100%;overflow:auto;background:#fff;padding:33px;box-shadow:-10px 0 40px #0002;position:relative}.saf-chessboard-close{position:absolute;right:23px;top:23px;background:none;border:0}.saf-chessboard-detail h2{font-size:30px;margin:10px 0 20px}.saf-chessboard-detail img{width:100%;height:250px;object-fit:contain;border:1px solid #dedbd7}.saf-chessboard-detail dl{margin:21px 0}.saf-chessboard-detail dl div{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #dedbd7;font-size:13px}.saf-chessboard-detail dt{color:#687078}.saf-chessboard-detail dd{font-weight:700;margin:0;text-align:right}.saf-chessboard-detail p{color:#687078;font-size:12px;line-height:1.5}.saf-chessboard-detail>a{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;padding:14px;background:#2f363c;color:white;font-weight:700;font-size:13px}.saf-chessboard-detail>a.saf-chessboard-official{background:#edeae4;color:#2f363c}
+.saf-chessboard-return{display:inline-flex;align-items:center;gap:7px;margin-top:30px;color:#687078;font-size:13px}.saf-chessboard-return:hover{color:#2f363c}
+.saf-chessboard-fab{position:fixed;right:15px;bottom:15px;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100px;height:100px;gap:0;padding:16px;border-radius:50%;background:#354fd5;color:#fff;box-shadow:0 8px 24px #22228845;font:600 10px/12px SensataOpenSans,Arial,sans-serif;text-align:center;transition:background .2s,transform .2s}.saf-chessboard-fab svg{width:32px;height:32px;flex:none}.saf-chessboard-fab span{display:block;width:68px}.saf-chessboard-fab:hover{background:#222288;transform:translateY(-2px)}
+@media(max-width:850px){.saf-chessboard-heading{align-items:start;flex-direction:column}.saf-chessboard-note{align-items:start;flex-direction:column;gap:4px}.saf-chessboard-body{grid-template-columns:1fr}.saf-chessboard-filters{position:static}}
+@media(max-width:540px){.saf-chessboard{padding-left:18px;padding-right:18px}.saf-chessboard-heading h1{font-size:35px}.saf-chessboard-blocks,.saf-chessboard-levels{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.saf-chessboard-blocks button,.saf-chessboard-levels button{flex:none}.saf-chessboard-results{align-items:start;flex-direction:column}.saf-chessboard-detail{padding:25px}}
+
+/* Corporate Sensata styling for the new chessboard route only. */
+.sensata-chessboard-page{font-family:SensataOpenSans,Arial,sans-serif;color:#222;background:#fff}
+.sensata-chessboard-page :focus-visible{outline-color:#354fd5}
+.sensata-chessboard-page .saf-header{border-bottom-color:#ededf4}
+.sensata-chessboard-page .saf-header nav a.active,.sensata-chessboard-page .saf-header nav a:hover{background:#222288;border-color:#222288;color:#fff}
+.sensata-chessboard-page .saf-kicker{font-family:inherit;color:#222288;letter-spacing:.08em;font-size:12px}
+.sensata-chessboard-page .saf-chessboard-heading h1{font-family:inherit;font-weight:400;color:#222;font-size:clamp(30px,3.2vw,46px);line-height:1.25}
+.sensata-chessboard-page .saf-chessboard-heading p,.sensata-chessboard-page .saf-chessboard-note span,.sensata-chessboard-page .saf-chessboard-filters>p,.sensata-chessboard-page .saf-chessboard-row-label span,.sensata-chessboard-page .saf-chessboard-results label,.sensata-chessboard-page .saf-chessboard-unavailable p,.sensata-chessboard-page .saf-chessboard-detail dt,.sensata-chessboard-page .saf-chessboard-detail p{color:#707080}
+.sensata-chessboard-page .saf-chessboard-heading>a,.sensata-chessboard-page .saf-chessboard-unavailable>a,.sensata-chessboard-page .saf-chessboard-detail>a{background:#222288;color:#fff}
+.sensata-chessboard-page .saf-chessboard-heading>a:hover,.sensata-chessboard-page .saf-chessboard-unavailable>a:hover,.sensata-chessboard-page .saf-chessboard-detail>a:hover{background:#354fd5}
+.sensata-chessboard-page .saf-chessboard-note,.sensata-chessboard-page .saf-chessboard-table-wrap th,.sensata-chessboard-page .saf-chessboard-detail>a.saf-chessboard-official{background:#f0f1f8;color:#222288}
+.sensata-chessboard-page .saf-chessboard-note strong{color:#222288}
+.sensata-chessboard-page .saf-chessboard-blocks button,.sensata-chessboard-page .saf-chessboard-levels button{border-color:#e1e2ec;color:#222288}
+.sensata-chessboard-page .saf-chessboard-blocks button.active,.sensata-chessboard-page .saf-chessboard-levels button.active,.sensata-chessboard-page .saf-chessboard-blocks button:hover,.sensata-chessboard-page .saf-chessboard-levels button:hover{background:#222288;border-color:#222288;color:#fff}
+.sensata-chessboard-page .saf-chessboard-tabs,.sensata-chessboard-page .saf-chessboard-grid,.sensata-chessboard-page .saf-chessboard-row,.sensata-chessboard-page .saf-chessboard-filters,.sensata-chessboard-page .saf-chessboard-unavailable,.sensata-chessboard-page .saf-chessboard-table-wrap,.sensata-chessboard-page .saf-chessboard-table-wrap th,.sensata-chessboard-page .saf-chessboard-table-wrap td,.sensata-chessboard-page .saf-chessboard-detail img,.sensata-chessboard-page .saf-chessboard-detail dl div{border-color:#e1e2ec}
+.sensata-chessboard-page .saf-chessboard-tabs button[aria-selected=true]{color:#222288;border-bottom-color:#222288}
+.sensata-chessboard-page .saf-chessboard-results h2,.sensata-chessboard-page .saf-chessboard-unavailable h3,.sensata-chessboard-page .saf-chessboard-detail h2{font-family:inherit;font-weight:400;color:#222}
+.sensata-chessboard-page .saf-chessboard-results small{font-family:inherit;color:#222288}
+.sensata-chessboard-page .saf-chessboard-cells button{border-color:#d9dbed;background:#f0f1f8;color:#222288}
+.sensata-chessboard-page .saf-chessboard-cells button:hover,.sensata-chessboard-page .saf-chessboard-cells button.selected{background:#222288;border-color:#222288;color:#fff}
+.sensata-chessboard-page .saf-chessboard-unavailable{background:#fafafe}
+.sensata-chessboard-page .saf-chessboard-filters .saf-room-options button.selected,.sensata-chessboard-page .saf-chessboard-filters .saf-room-options button:hover{background:#222288;border-color:#222288;color:#fff}
+.sensata-chessboard-page .saf-chessboard-table-wrap button,.sensata-chessboard-page .saf-chessboard-return{color:#222288}
+.sensata-chessboard-page .saf-chessboard-heading{padding:10px 0 18px}
+.sensata-chessboard-page .saf-chessboard-heading h1{margin:5px 0 8px}
+.sensata-chessboard-page .saf-chessboard-note{padding:12px 18px}
+.sensata-chessboard-page .saf-chessboard-toolbar{padding:16px 0 12px}
+.sensata-chessboard-page .saf-chessboard-body{display:block;padding-top:0}
+.sensata-chessboard-page .saf-chessboard-filters{display:grid;grid-template-columns:140px 250px 170px minmax(210px,1fr);align-items:start;gap:16px;position:static;border:0;border-bottom:1px solid #e1e2ec;padding:18px 0 14px;margin-bottom:17px}
+.sensata-chessboard-page .saf-chessboard-filters .saf-filter-heading{display:flex;flex-direction:column;align-items:start;gap:10px;border:0;padding:0}
+.sensata-chessboard-page .saf-chessboard-filters .saf-filter-group{padding:0}
+.sensata-chessboard-page .saf-chessboard-filters .saf-filter-group>strong,.sensata-chessboard-page .saf-chessboard-filters .saf-search-label{margin-bottom:8px}
+.sensata-chessboard-page .saf-chessboard-filters .saf-area-inputs input,.sensata-chessboard-page .saf-chessboard-filters .saf-search{background:#f8f9ff;border-color:#e1e2ec}
+.sensata-chessboard-page .saf-chessboard-filters>p{grid-column:1/-1;margin:0}
+.sensata-chessboard-page .saf-chessboard-results{margin-bottom:11px}
+.sensata-chessboard-page .saf-chessboard-results h2{font-size:21px}
+@media(max-width:1050px){.sensata-chessboard-page .saf-chessboard-filters{grid-template-columns:140px 1fr 170px}.sensata-chessboard-page .saf-chessboard-filters .saf-filter-group:last-of-type{grid-column:2/4}}
+@media(max-width:700px){.sensata-chessboard-page .saf-chessboard-filters{grid-template-columns:1fr 1fr}.sensata-chessboard-page .saf-chessboard-filters .saf-filter-heading{grid-column:1/-1;flex-direction:row;align-items:center}.sensata-chessboard-page .saf-chessboard-filters .saf-filter-group:last-of-type{grid-column:1/-1}}
+@media(max-width:500px){.sensata-chessboard-page .saf-chessboard-filters{grid-template-columns:1fr}.sensata-chessboard-page .saf-chessboard-filters .saf-filter-group:last-of-type{grid-column:auto}.sensata-chessboard-page .saf-chessboard-heading h1{font-size:31px}}

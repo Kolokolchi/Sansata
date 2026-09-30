@@ -29,7 +29,7 @@ export const securityHeaders = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'geolocation=(), camera=(), microphone=()',
   'Cross-Origin-Opener-Policy': 'same-origin',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self'; connect-src 'self' https:; media-src 'self'; frame-src 'self' https://lumalabs.ai https://*.lumalabs.ai; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
+  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self'; connect-src 'self' https:; media-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
 };
 
 export function createAppServer({ root = resolve('dist'), api = createApiRouter() } = {}) {
@@ -86,8 +86,11 @@ export function createAppServer({ root = resolve('dist'), api = createApiRouter(
 
       const contentType = mimeTypes[extname(file)] || 'application/octet-stream';
       res.setHeader('Content-Type', contentType);
+      const sandboxTour = /^\/sandbox\/zems-tour\/?$/.test(pathname);
       for (const [header, val] of Object.entries(securityHeaders)) {
-        res.setHeader(header, val);
+        res.setHeader(header, header === 'Content-Security-Policy' && sandboxTour
+          ? val.replace("frame-src 'self';", "frame-src 'self' https://ep.matterport.host;")
+          : val);
       }
       res.setHeader('Accept-Ranges', 'bytes');
 
@@ -167,7 +170,6 @@ if (
    process.argv[1].endsWith('index.mjs'))
 ) {
   server.listen(port, '127.0.0.1', () => {
-    console.log(`Shattyq server running: http://127.0.0.1:${port}`);
+    console.log(`Sensata server running: http://127.0.0.1:${port}`);
   });
 }
-

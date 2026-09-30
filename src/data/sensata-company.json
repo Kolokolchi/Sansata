@@ -1,0 +1,48 @@
+{
+  "source": "https://www.sensata.kz/",
+  "verifiedAt": "2026-09-25",
+  "socials": [
+    {
+      "city": "Астана",
+      "href": "https://t.me/sensatagroup",
+      "network": "Telegram",
+      "icon": "telegram"
+    },
+    {
+      "city": "Алматы",
+      "href": "https://t.me/Sensata_almaty",
+      "network": "Telegram",
+      "icon": "telegram"
+    },
+    {
+      "city": "Астана",
+      "href": "https://www.instagram.com/sensata.kz?igsh=MWUzMTN6bHB1cDRzaQ==",
+      "network": "Instagram",
+      "icon": "instagram"
+    },
+    {
+      "city": "Алматы",
+      "href": "https://www.instagram.com/sensata_almaty?igsh=Y3Y5bHBrOGhuc2pi",
+      "network": "Instagram",
+      "icon": "instagram"
+    },
+    {
+      "city": "YouTube",
+      "href": "https://www.youtube.com/channel/UCSoC9yOptHrz48cyH2N4SHg",
+      "network": "YouTube",
+      "icon": "youtube"
+    },
+    {
+      "city": "Астана",
+      "href": "https://www.tiktok.com/@sensata_group?_t=ZM-907vmJHfapv&_r=1",
+      "network": "TikTok",
+      "icon": "tiktok"
+    },
+    {
+      "city": "Алматы",
+      "href": "https://www.tiktok.com/@sensata_almaty?_t=ZM-907vdAo12rM&_r=1",
+      "network": "TikTok",
+      "icon": "tiktok"
+    }
+  ]
+}

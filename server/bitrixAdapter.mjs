@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
+const BITRIX_CLOUD_DOMAINS = ['bitrix24.kz', 'bitrix24.ru', 'bitrix24.com', 'bitrix24.eu'];
+
 /**
  * Изолированный адаптер взаимодействия с Bitrix24 REST API.
  * Все вызовы выполняются строго на сервере.
@@ -7,7 +9,6 @@ import { randomUUID } from 'node:crypto';
 export class BitrixAdapter {
   constructor() {
     this.webhookUrl = process.env.BITRIX_WEBHOOK_URL || '';
-    this.categoryId = Number(process.env.BITRIX_DEAL_CATEGORY_ID || 0);
   }
 
   /**
@@ -27,11 +28,14 @@ export class BitrixAdapter {
         return false;
       }
 
-      // Защита от SSRF: запрет адресов метаданных облачных провайдеров
       const host = parsed.hostname.toLowerCase();
-      if (host === '169.254.169.254' || host === 'metadata.google.internal' || host === 'instance-data') {
-        return false;
-      }
+      const localTestHost = parsed.protocol === 'http:' && (host === '127.0.0.1' || host === 'localhost');
+      const cloudHost = BITRIX_CLOUD_DOMAINS.some(domain => host.endsWith(`.${domain}`));
+      const customHosts = (process.env.BITRIX_ALLOWED_WEBHOOK_HOSTS || '').split(',').map(value => value.trim().toLowerCase());
+      if (!localTestHost && !cloudHost && !customHosts.includes(host)) return false;
+      if (parsed.username || parsed.password || parsed.search || parsed.hash) return false;
+      if (!localTestHost && parsed.port) return false;
+      if (!/^\/rest\/\d+\/[a-zA-Z0-9_-]+\/?$/.test(parsed.pathname)) return false;
 
       return true;
     } catch {
@@ -63,14 +67,14 @@ export class BitrixAdapter {
         NAME: leadData.name,
         PHONE: [{ VALUE: leadData.phone, VALUE_TYPE: 'WORK' }],
         COMMENTS: leadData.topic || 'Консультация по проекту',
-        SOURCE_ID: 'WEB',
-        CATEGORY_ID: this.categoryId
+        SOURCE_ID: 'WEB'
       }
     };
 
     try {
       const response = await fetch(`${this.webhookUrl.replace(/\/+$/, '')}/crm.lead.add.json`, {
         method: 'POST',
+        redirect: 'error',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(5000)
@@ -97,56 +101,23 @@ export class BitrixAdapter {
   }
 
   /**
-   * Фиксация временной брони квартиры (crm.deal.add)
+   * Запрос консультации о бронировании. Без проверенного реестра нельзя
+   * создавать CRM Deal и обещать резерв конкретной квартиры.
    */
   async createBooking(bookingData) {
-    const bookingId = randomUUID();
-
-    if (!this.isConfigured()) {
-      return {
-        success: true,
-        bookingId,
-        mode: 'local',
-        message: 'Запрос на бронирование зафиксирован (режим консультации).'
-      };
-    }
-
-    const payload = {
-      fields: {
-        TITLE: `Бронь квартиры ${bookingData.apartmentNumber || ''} (${bookingData.name})`,
-        NAME: bookingData.name,
-        PHONE: [{ VALUE: bookingData.phone, VALUE_TYPE: 'WORK' }],
-        CATEGORY_ID: this.categoryId,
-        STAGE_ID: 'C:NEW',
-        COMMENTS: `Квартира ID: ${bookingData.apartmentId || 'не указан'}`
-      }
+    const requestedPlan = bookingData.apartmentId || bookingData.apartmentNumber || 'не указан';
+    const lead = await this.createLead({
+      name: bookingData.name,
+      phone: bookingData.phone,
+      topic: `Запрос консультации о планировке: ${requestedPlan}. Наличие и возможность бронирования требуют подтверждения.`
+    });
+    if (!lead.success) return { success: false, message: 'Не удалось зарегистрировать запрос.' };
+    return {
+      success: true,
+      bookingId: randomUUID(),
+      mode: this.isConfigured() ? 'crm' : 'local',
+      message: 'Запрос на консультацию зарегистрирован.'
     };
-
-    try {
-      const response = await fetch(`${this.webhookUrl.replace(/\/+$/, '')}/crm.deal.add.json`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(5000)
-      });
-
-      if (!response.ok) {
-        return { success: false, message: 'Сервис бронирования временно недоступен.' };
-      }
-
-      const data = await response.json();
-      if (data?.result) {
-        return {
-          success: true,
-          bookingId,
-          message: 'Квартира успешно забронирована на предварительную консультацию.'
-        };
-      }
-
-      return { success: false, message: 'Не удалось создать бронь.' };
-    } catch {
-      return { success: false, message: 'Ошибка связи с сервером бронирования.' };
-    }
   }
 
   /**
@@ -160,6 +131,7 @@ export class BitrixAdapter {
     try {
       const response = await fetch(`${this.webhookUrl.replace(/\/+$/, '')}/crm.item.list.json`, {
         method: 'POST',
+        redirect: 'error',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entityTypeId: 1 }), // каталог объектов
         signal: AbortSignal.timeout(5000)

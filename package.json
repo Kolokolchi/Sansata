@@ -1,5 +1,5 @@
 {
-  "name": "sensata-shattyq",
+  "name": "sensata-sales-workspace",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -14,7 +14,6 @@
     "build:pages": "tsc && vite build --base=/Sansata/ --mode pages && node scripts/prepare-pages.mjs"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

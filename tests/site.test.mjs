@@ -25,7 +25,7 @@ test('Pages links retain the repository prefix and preserve external targets', a
 
   const testCases = [
     ['/', '/Sansata/'],
-    ['/flat/shattyq-1', '/Sansata/flat/shattyq-1'],
+    ['/saf/apartment/saf-observation-1-2-property-1', '/Sansata/saf/apartment/saf-observation-1-2-property-1'],
     ['/sensata/hero.jpg', '/Sansata/sensata/hero.jpg'],
     ['/Sansata/tour', '/Sansata/tour'],
     ['tel:700', 'tel:700'],
@@ -37,8 +37,8 @@ test('Pages links retain the repository prefix and preserve external targets', a
     assert.equal(siteUrl(input), expectedOutput);
   }
 
-  globalThis.location = { pathname: '/Sansata/flat/shattyq-1' };
-  assert.equal(sitePath(), '/flat/shattyq-1');
+  globalThis.location = { pathname: '/Sansata/saf/apartment/saf-observation-1-2-property-1' };
+  assert.equal(sitePath(), '/saf/apartment/saf-observation-1-2-property-1');
 
   globalThis.location = { pathname: '/Sansata/' };
   assert.equal(sitePath(), '/');

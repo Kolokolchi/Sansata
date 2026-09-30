@@ -1,0 +1,50 @@
+import {expect,test} from '@playwright/test';
+const unit='/saf/apartment/saf-observation-1-2-property-1';
+
+test('apartment favorites persist and the consultation form sends only the existing local lead payload',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  let submitted:Record<string,unknown>|null=null;
+  await page.route('**/api/leads',async route=>{submitted=route.request().postDataJSON();await route.fulfill({json:{ok:true,message:'Заявка сохранена локально. Это не подтверждённая бронь.'}});});
+  await page.goto(unit);
+  await page.getByRole('button',{name:'Сохранить квартиру в избранное'}).click();
+  await page.reload();
+  await expect(page.getByRole('button',{name:'Убрать квартиру из избранного'})).toHaveAttribute('aria-pressed','true');
+  await page.getByRole('button',{name:'Обсудить бронирование'}).click();
+  const dialog=page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('не резервируется автоматически');
+  await dialog.getByLabel('Ваше имя').fill('Тестовая заявка');
+  await dialog.getByLabel('Телефон',{exact:true}).fill('+70000000001');
+  await dialog.getByRole('checkbox').check();
+  await dialog.getByRole('button',{name:'Оставить заявку'}).click();
+  await expect(dialog.getByRole('status')).toContainText('сохранена локально');
+  expect(submitted).toMatchObject({name:'Тестовая заявка',phone:'+70000000001',consent:true,website:''});
+  expect(submitted!['topic']).toContain('квартира № 1, секция 1, этаж 2');
+  expect(Object.keys(submitted!).sort()).toEqual(['consent','name','phone','requestId','topic','website']);
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('payment arithmetic, related apartments and print card preserve apartment facts',async({page})=>{
+  await page.goto(unit);
+  await page.getByLabel('Стоимость квартиры, ₸',{exact:true}).fill('12000000');
+  await page.getByLabel('Первый взнос, ₸',{exact:true}).fill('2000000');
+  await page.getByLabel('Ставка, % годовых',{exact:true}).fill('0');
+  await page.getByLabel('Срок, лет',{exact:true}).fill('10');
+  await expect(page.locator('output')).toContainText('83 333');
+  await page.getByLabel('Первый взнос, ₸',{exact:true}).fill('20000000');
+  await expect(page.locator('output')).toContainText('Заполните параметры');
+  await page.getByRole('tab',{name:'Оплата 100%',exact:true}).click();
+  await expect(page.locator('.saf-purchase-options')).toContainText('уточнит отдел продаж');
+  await page.emulateMedia({media:'print'});
+  await expect(page.locator('.saf-apartment-print')).toBeVisible();
+  await expect(page.locator('.saf-apartment-summary')).toBeHidden();
+  await expect(page.locator('.saf-apartment-print')).toContainText('80.58');
+  await page.emulateMedia({media:'screen'});
+  const related=page.locator('.saf-related-apartments a').first();
+  const href=await related.getAttribute('href');
+  await related.click();
+  await expect(page).toHaveURL(new RegExp(href!+'$'));
+  await expect(page.locator('h1')).toContainText('2-комнатная');
+});

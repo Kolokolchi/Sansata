@@ -1,26 +1,16 @@
-/**
- * Извлекает строгий публичный идентификатор лота или планировки (например, 'shattyq-1').
- * Категорически запрещено передавать внутренний числовой item.id из CRM или Deal ID в публичный DTO.
- */
+import { readFileSync } from 'node:fs';
+
+const snapshot = JSON.parse(readFileSync(new URL('../src/data/saf-stock-snapshot.json', import.meta.url), 'utf8'));
+const publicApartmentIds = new Set(snapshot.observations.map(unit => unit.id));
+
+/** Match public SAF IDs only; raw CRM IDs and unregistered titles never enter the DTO. */
 function getPublicApartmentId(item) {
   if (!item || typeof item !== 'object') return null;
-
-  const candidates = [item.publicId, item.xmlId, item.code, item.lotId, item.lotCode, item.title];
-  for (const c of candidates) {
-    if (typeof c === 'string') {
-      const trimmed = c.trim();
-      // Разрешены строго публичные идентификаторы каталога Shattyq или лотов
-      if (/^shattyq-[a-zA-Z0-9_-]{1,64}$/i.test(trimmed)) {
-        return trimmed.toLowerCase();
-      }
-      // Дополнительно разрешены канонические селекторы вида s{section}-f{floor}-u{unit}
-      if (/^s\d+-f\d+-u\d+$/i.test(trimmed)) {
-        return trimmed.toLowerCase();
-      }
-    }
+  for (const value of [item.publicId, item.xmlId, item.code, item.lotId, item.lotCode, item.title]) {
+    if (typeof value !== 'string') continue;
+    const id = value.trim().toLowerCase();
+    if (publicApartmentIds.has(id)) return id;
   }
-
-  // Внутренние CRM/Deal ID (числовые, префиксы CRM_, DEAL_, STAGE_ и т.д.) отсекаются
   return null;
 }
 
@@ -34,7 +24,7 @@ export class StatusCache {
     this.negativeTtlMs = negativeTtlMs;
     this.cachedData = Object.create(null);
     this.lastUpdated = 0;
-    this.isFetching = false;
+    this.inFlight = null;
   }
 
   /**
@@ -42,59 +32,59 @@ export class StatusCache {
    */
   async getStatuses(adapter) {
     const now = Date.now();
+    const snapshot = () => ({
+      updatedAt: new Date(this.lastUpdated || now).toISOString(),
+      statuses: { ...this.cachedData }
+    });
 
     // Если кэш свежий, отдаем немедленно (включая валидное пустое состояние)
     if (this.lastUpdated > 0 && now - this.lastUpdated < this.ttlMs) {
-      return {
-        updatedAt: new Date(this.lastUpdated).toISOString(),
-        statuses: { ...this.cachedData }
-      };
+      return snapshot();
     }
 
-    // Если обновление уже идет другим запросом, отдаем текущие данные
-    if (this.isFetching) {
-      return {
-        updatedAt: new Date(this.lastUpdated || now).toISOString(),
-        statuses: { ...this.cachedData }
-      };
+    // During a cold load there is no stale snapshot to serve: share the pending result.
+    if (this.inFlight) {
+      return this.lastUpdated > 0 ? snapshot() : this.inFlight;
     }
 
-    this.isFetching = true;
-    try {
-      const rawItems = await adapter.fetchApartmentStatuses();
-      const newMap = Object.create(null);
+    this.inFlight = (async () => {
+      try {
+        const rawItems = await adapter.fetchApartmentStatuses();
+        const newMap = Object.create(null);
 
-      if (Array.isArray(rawItems)) {
-        for (const item of rawItems) {
-          const publicId = getPublicApartmentId(item);
-          if (publicId && publicId !== '__proto__' && publicId !== 'constructor' && publicId !== 'prototype') {
-            let status = 'available';
-            const stage = String(item.stageId || '').toUpperCase();
-            const itemStatus = String(item.status || '').toLowerCase();
-            if (stage.includes('RESERVED') || itemStatus === 'reserved') {
-              status = 'reserved';
-            } else if (stage.includes('SOLD') || itemStatus === 'sold') {
-              status = 'sold';
+        if (Array.isArray(rawItems)) {
+          for (const item of rawItems) {
+            const publicId = getPublicApartmentId(item);
+            if (publicId && publicId !== '__proto__' && publicId !== 'constructor' && publicId !== 'prototype') {
+              // Missing CRM status must never be presented as available stock.
+              let status = 'unknown';
+              const stage = String(item.stageId || '').toUpperCase();
+              const itemStatus = String(item.status || '').toLowerCase();
+              if (stage === 'RESERVED' || stage.endsWith(':RESERVED') || itemStatus === 'reserved') {
+                status = 'reserved';
+              } else if (stage === 'SOLD' || stage.endsWith(':SOLD') || itemStatus === 'sold') {
+                status = 'sold';
+              } else if (stage === 'AVAILABLE' || stage.endsWith(':AVAILABLE') || itemStatus === 'available') {
+                status = 'available';
+              }
+              newMap[publicId] = status;
             }
-            newMap[publicId] = status;
           }
         }
+
+        this.cachedData = newMap;
+        this.lastUpdated = now;
+      } catch {
+        // Negative caching cooldown: при ошибке внешнего сервиса CRM
+        // выдерживаем паузу negativeTtlMs перед следующей попыткой
+        this.lastUpdated = now - this.ttlMs + this.negativeTtlMs;
       }
-
-      this.cachedData = newMap;
-      this.lastUpdated = now;
-    } catch {
-      // Negative caching cooldown: при ошибке внешнего сервиса CRM
-      // выдерживаем паузу negativeTtlMs перед следующей попыткой
-      this.lastUpdated = now - this.ttlMs + this.negativeTtlMs;
+      return snapshot();
+    })();
+    try {
+      return await this.inFlight;
     } finally {
-      this.isFetching = false;
+      this.inFlight = null;
     }
-
-    return {
-      updatedAt: new Date(this.lastUpdated || now).toISOString(),
-      statuses: { ...this.cachedData }
-    };
   }
 }
-

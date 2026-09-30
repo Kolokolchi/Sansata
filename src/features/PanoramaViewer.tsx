@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { siteUrl } from '../lib/site';
-import { Panorama } from '../lib/experience';
+import type { Panorama } from '../types';
 import { Plus, Minus, RotateCcw, Maximize, Compass, X } from 'lucide-react';
 
 export interface PanoramaViewerProps {
@@ -12,6 +12,7 @@ export interface PanoramaViewerProps {
   captureToken?: number;
   inline?: boolean;
   onClose?: () => void;
+  captureFilename?: string;
 }
 
 interface MarkerItem {
@@ -40,7 +41,8 @@ export function PanoramaViewer({
   onSelect,
   captureToken = 0,
   inline = false,
-  onClose
+  onClose,
+  captureFilename = 'panorama.png'
 }: PanoramaViewerProps) {
   const [internalId, setInternalId] = useState<string>(selectedId || panoramas[0]?.id || '');
 
@@ -72,6 +74,7 @@ export function PanoramaViewer({
     controls: OrbitControls;
     material: THREE.MeshBasicMaterial;
     geometry: THREE.BufferGeometry;
+    replaceTexture: (texture: THREE.Texture) => void;
   } | null>(null);
 
   const markersRef = useRef<MarkerItem[]>([]);
@@ -112,22 +115,48 @@ export function PanoramaViewer({
 
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
+    const previousMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false });
+    const previousMesh = new THREE.Mesh(geometry, previousMaterial);
+    previousMesh.renderOrder = 1;
+    previousMesh.visible = false;
+    scene.add(previousMesh);
+    let fadeStarted = 0;
+    const clearPrevious = () => {
+      previousMaterial.map?.dispose();
+      previousMaterial.map = null;
+      previousMesh.visible = false;
+    };
+    const replaceTexture = (texture: THREE.Texture) => {
+      clearPrevious();
+      const oldTexture = material.map;
+      material.map = texture;
+      material.needsUpdate = true;
+      if (oldTexture && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        previousMaterial.map = oldTexture;
+        previousMaterial.opacity = 1;
+        previousMaterial.needsUpdate = true;
+        previousMesh.visible = true;
+        fadeStarted = performance.now();
+      } else oldTexture?.dispose();
+    };
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
     renderer.domElement.style.display = 'block';
+    renderer.domElement.tabIndex = 0;
+    renderer.domElement.setAttribute('aria-label', 'Панорама 360°. Стрелки — поворот, плюс и минус — масштаб.');
     container.appendChild(renderer.domElement);
 
     captureRef.current = () => {
       renderer.render(scene, camera);
       const link = document.createElement('a');
       link.href = renderer.domElement.toDataURL('image/png');
-      link.download = 'Shattyq-panorama.png';
+      link.download = captureFilename;
       link.click();
     };
 
-    apiRef.current = { renderer, scene, camera, controls, material, geometry };
+    apiRef.current = { renderer, scene, camera, controls, material, geometry, replaceTexture };
 
     const handleResize = () => {
       if (isDisposed || !container) return;
@@ -152,6 +181,10 @@ export function PanoramaViewer({
     renderer.setAnimationLoop(() => {
       if (isDisposed) return;
       controls.update();
+      if (previousMesh.visible) {
+        previousMaterial.opacity = Math.max(0, 1 - (performance.now() - fadeStarted) / 300);
+        if (previousMaterial.opacity === 0) clearPrevious();
+      }
       renderer.render(scene, camera);
 
       camera.getWorldDirection(forward);
@@ -172,6 +205,20 @@ export function PanoramaViewer({
       camera.updateProjectionMatrix();
     };
     renderer.domElement.addEventListener('wheel', handleWheel, { passive: false });
+    const handleKey = (event: KeyboardEvent) => {
+      if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','='].includes(event.key)) return;
+      event.preventDefault();
+      if (event.key === '+' || event.key === '=' || event.key === '-') {
+        camera.fov = THREE.MathUtils.clamp(camera.fov + (event.key === '-' ? 8 : -8), 30, 95);
+        camera.updateProjectionMatrix();
+      } else {
+        const direction = camera.getWorldDirection(new THREE.Vector3());
+        const yaw = THREE.MathUtils.radToDeg(Math.atan2(direction.x, -direction.z));
+        const pitch = THREE.MathUtils.radToDeg(Math.asin(direction.y));
+        orientCameraTo(camera, controls, yaw + (event.key==='ArrowRight'?8:event.key==='ArrowLeft'?-8:0), THREE.MathUtils.clamp(pitch+(event.key==='ArrowUp'?6:event.key==='ArrowDown'?-6:0),-80,80));
+      }
+    };
+    renderer.domElement.addEventListener('keydown', handleKey);
 
     return () => {
       isDisposed = true;
@@ -180,6 +227,7 @@ export function PanoramaViewer({
       captureRef.current = null;
       resizeObserver.disconnect();
       renderer.domElement.removeEventListener('wheel', handleWheel);
+      renderer.domElement.removeEventListener('keydown', handleKey);
       renderer.setAnimationLoop(null);
       controls.dispose();
 
@@ -190,6 +238,8 @@ export function PanoramaViewer({
         material.map.dispose();
       }
       material.dispose();
+      clearPrevious();
+      previousMaterial.dispose();
       geometry.dispose();
       renderer.dispose();
       renderer.domElement.remove();
@@ -217,12 +267,7 @@ export function PanoramaViewer({
             return;
           }
           posterTex.colorSpace = THREE.SRGBColorSpace;
-          const oldTex = api.material.map;
-          api.material.map = posterTex;
-          api.material.needsUpdate = true;
-          if (oldTex && oldTex !== posterTex) {
-            oldTex.dispose();
-          }
+          api.replaceTexture(posterTex);
         },
         undefined,
         () => {
@@ -241,12 +286,7 @@ export function PanoramaViewer({
         }
         mainLoaded = true;
         newTexture.colorSpace = THREE.SRGBColorSpace;
-        const oldTex = api.material.map;
-        api.material.map = newTexture;
-        api.material.needsUpdate = true;
-        if (oldTex && oldTex !== newTexture) {
-          oldTex.dispose();
-        }
+        api.replaceTexture(newTexture);
       },
       undefined,
       () => {
@@ -279,7 +319,7 @@ export function PanoramaViewer({
     markersRef.current.forEach((m) => m.button.remove());
     markersRef.current = [];
 
-    const newMarkers: MarkerItem[] = (currentPanorama.links || []).map((link) => {
+    const newMarkers: MarkerItem[] = (currentPanorama.links || []).filter(link => panoramas.some(panorama => panorama.id === link.target)).map((link) => {
       const button = document.createElement('button');
       button.className = 'panorama-marker';
       button.textContent = '↗';
@@ -342,7 +382,7 @@ export function PanoramaViewer({
   };
 
   return (
-    <div className={`panorama-viewer-root ${inline ? 'is-inline' : 'is-full'}`}>
+    <div className={`panorama-viewer-root ${inline ? 'is-inline' : 'is-full'}`} data-panorama-id={currentPanorama?.id}>
       {/* Top Bar with scene switching chips */}
       <div className="panorama-top-bar">
         <div className="panorama-chips-container" role="tablist" aria-label="Точки обзора 360°">

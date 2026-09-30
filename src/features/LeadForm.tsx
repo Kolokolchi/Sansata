@@ -1,13 +1,14 @@
 import React, { useRef, useState } from 'react';
 import { ArrowUpRight, Check, Phone } from 'lucide-react';
 import { siteUrl, staticHosting } from '../lib/site';
+import sensataLogo from '../assets/sensata-logo.png';
 
 interface LeadFormProps {
   topic: string;
-  endpoint?: string;
 }
 
-export function LeadForm({ topic, endpoint = '/api/leads' }: LeadFormProps) {
+export function LeadForm({ topic }: LeadFormProps) {
+  const endpoint = '/api/leads';
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
@@ -91,7 +92,7 @@ export function LeadForm({ topic, endpoint = '/api/leads' }: LeadFormProps) {
   if (staticHosting && endpoint.startsWith('/')) {
     return (
       <div className="lead-form">
-        <img src={siteUrl('/sensata/logo.png')} alt="Sensata Group" />
+        <img src={sensataLogo} alt="Sensata Group" />
         <span className="eyebrow">КОНСУЛЬТАЦИЯ</span>
         <h2>
           Обсудим ваш
@@ -109,7 +110,7 @@ export function LeadForm({ topic, endpoint = '/api/leads' }: LeadFormProps) {
 
   return (
     <div className="lead-form">
-      <img src={siteUrl('/sensata/logo.png')} alt="Sensata Group" />
+      <img src={sensataLogo} alt="Sensata Group" />
       {status === 'success' ? (
         <div className="lead-success" role="status">
           <Check size={40} />

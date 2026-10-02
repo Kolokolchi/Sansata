@@ -1,0 +1,520 @@
+[
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/",
+    "file": "desktop-home.jpg",
+    "title": "SAF Avenue · Привилегия приватной жизни",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/projects",
+    "file": "desktop-projects.jpg",
+    "title": "Выбор объекта | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf",
+    "file": "desktop-parameters.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual/block/1",
+    "file": "desktop-section.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "file": "desktop-floor.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1",
+    "file": "desktop-apartment-tour.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": [
+      "[.WebGL-0x1f2c02e0d600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1f2c02e0d600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1f2c02e0d600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[.WebGL-0x1f2c02e0d600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ]
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "file": "desktop-apartment-plan.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/chessboard",
+    "file": "desktop-chessboard.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual",
+    "file": "desktop-visual.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/",
+    "file": "tablet-home.jpg",
+    "title": "SAF Avenue · Привилегия приватной жизни",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/projects",
+    "file": "tablet-projects.jpg",
+    "title": "Выбор объекта | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf",
+    "file": "tablet-parameters.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual/block/1",
+    "file": "tablet-section.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "file": "tablet-floor.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1",
+    "file": "tablet-apartment-tour.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "file": "tablet-apartment-plan.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/chessboard",
+    "file": "tablet-chessboard.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual",
+    "file": "tablet-visual.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/",
+    "file": "mobile-home.jpg",
+    "title": "SAF Avenue · Привилегия приватной жизни",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/projects",
+    "file": "mobile-projects.jpg",
+    "title": "Выбор объекта | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf",
+    "file": "mobile-parameters.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual/block/1",
+    "file": "mobile-section.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "file": "mobile-floor.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1",
+    "file": "mobile-apartment-tour.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "file": "mobile-apartment-plan.jpg",
+    "title": "Квартира № 1 · SAF Avenue",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/chessboard",
+    "file": "mobile-chessboard.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual",
+    "file": "mobile-visual.jpg",
+    "title": "SAF Avenue · Конфигуратор планировок | Sensata",
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "overflow": false,
+    "brokenImages": 0,
+    "errors": [],
+    "failed": [],
+    "warnings": []
+  }
+]

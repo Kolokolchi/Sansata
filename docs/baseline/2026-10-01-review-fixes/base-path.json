@@ -1,0 +1,14 @@
+[
+  {
+    "entry": "/Sansata/",
+    "url": "http://127.0.0.1:3002/Sansata/saf/visual?source=legacy#complex",
+    "backPoint": "cam-6",
+    "reloadVisual": true
+  },
+  {
+    "entry": "/Sansata/index.html",
+    "url": "http://127.0.0.1:3002/Sansata/saf/visual?source=legacy#complex",
+    "backPoint": "cam-6",
+    "reloadVisual": true
+  }
+]

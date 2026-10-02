@@ -23,4 +23,10 @@ test('Zemsdesign tour stays isolated and fills the viewport', async ({ page }) =
   if (await page.evaluate(() => matchMedia('(pointer: coarse)').matches)) await reopen.tap();
   else await reopen.click();
   await expect(frame).toBeVisible();
+  const shortcut = page.locator('.saf-chessboard-fab');
+  await expect(shortcut).toBeVisible();
+  await shortcut.click();
+  await expect(page).toHaveURL(/\/saf\/chessboard$/);
+  await expect(page.getByRole('heading', { name: 'Шахматка планировок.', exact: true })).toBeVisible();
+  await expect(shortcut).toHaveCount(0);
 });

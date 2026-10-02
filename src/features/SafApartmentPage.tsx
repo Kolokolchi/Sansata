@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Copy, Download, Maximize, Heart, Printer, X } from 'lucide-react';
+import { ArrowLeft, Copy, Download, Maximize, Heart, Check, Printer, X } from 'lucide-react';
 import { SafApartmentViewer } from './SafApartmentViewer';
 import { SafMasterplan } from './SafMasterplan';
 import { SafInteractiveFloor } from './SafInteractiveFloor';
 import { SelectionLink } from './SafVisualFloor';
 import { safPlans } from '../lib/safMaterials';
-import { safFloorPath, safSectionFloors, safObservedDate, safObservedLabels, safApartments, safApartmentById, safApartmentPath, type SafObservedApartment } from '../lib/safInventory';
+import { safFloorPath, safSectionFloors, safObservedDate, safObservedLabels, safApartments, safApartmentPath, type SafObservedApartment } from '../lib/safInventory';
 import { navigateTo, siteUrl } from '../lib/site';
 import { LeadForm } from './LeadForm';
 import { SafPurchaseOptions } from './SafPurchaseOptions';
@@ -13,14 +13,10 @@ import { SafPurchaseOptions } from './SafPurchaseOptions';
 const tabs = [['tour', '3D-тур'], ['plan', 'Планировка'], ['floor', 'На этаже'], ['masterplan', 'На генплане']] as const;
 type Tab = typeof tabs[number][0];
 function readTab(): Tab { const value = new URLSearchParams(location.search).get('tab'); return tabs.some(([key]) => key === value) ? value as Tab : 'tour'; }
-const favoriteKey='saf-favorite-apartments';
-function readFavorites():string[]{try{const value:unknown=JSON.parse(localStorage.getItem(favoriteKey)||'[]');return Array.isArray(value)?value.filter((id):id is string=>typeof id==='string'&&safApartmentById.has(id)):[];}catch{return [];}}
-
-export function SafApartmentPage({ unit }: { unit: SafObservedApartment }) {
+export function SafApartmentPage({ unit, favorite, compared, onFavorite, onCompare }: { unit: SafObservedApartment; favorite: boolean; compared: boolean; onFavorite: () => void; onCompare: () => void }) {
   const [tab, setTab] = useState<Tab>(readTab);
   const [notice, setNotice] = useState('');
   const [zoom, setZoom] = useState(1);
-  const [favorite,setFavorite]=useState(()=>readFavorites().includes(unit.id));
   const [consult,setConsult]=useState(false);
   const dialog=useRef<HTMLDialogElement>(null);
   const viewer = useRef<HTMLDivElement>(null);
@@ -28,7 +24,7 @@ export function SafApartmentPage({ unit }: { unit: SafObservedApartment }) {
   const floorPath = safFloorPath(unit.section, unit.floor);
   const related=safApartments.filter(other=>other.id!==unit.id&&other.rooms===unit.rooms&&other.planCode).sort((a,b)=>Math.abs(a.area-unit.area)-Math.abs(b.area-unit.area)||a.id.localeCompare(b.id)).slice(0,3);
   useEffect(()=>{if(consult)dialog.current?.showModal();else dialog.current?.close();},[consult]);
-  const toggleFavorite=()=>{const values=readFavorites();const next=values.includes(unit.id)?values.filter(id=>id!==unit.id):[...values,unit.id];try{localStorage.setItem(favoriteKey,JSON.stringify(next));setFavorite(next.includes(unit.id));setNotice(next.includes(unit.id)?'Квартира сохранена в избранное на этом устройстве.':'Квартира удалена из избранного.');}catch{setNotice('Браузер не разрешает сохранить избранное.');}};
+  const toggleFavorite = () => { onFavorite(); setNotice(favorite ? 'Квартира удалена из избранного.' : 'Квартира добавлена в избранное.'); };
   useEffect(() => { const sync = () => setTab(readTab()); window.addEventListener('popstate', sync); return () => window.removeEventListener('popstate', sync); }, []);
   const change = (next: Tab) => { const url = new URL(location.href); url.searchParams.set('tab', next); history.pushState(null, '', url); setTab(next); setNotice(''); };
   const fullscreen = async () => { try { if (document.fullscreenElement) await document.exitFullscreen(); else if (viewer.current?.requestFullscreen) await viewer.current.requestFullscreen(); else setNotice('Полноэкранный режим недоступен в этом браузере.'); } catch { setNotice('Полноэкранный режим недоступен в этом браузере.'); } };
@@ -44,7 +40,7 @@ export function SafApartmentPage({ unit }: { unit: SafObservedApartment }) {
       <button type="button" className="saf-apartment-booking" onClick={()=>setConsult(true)}>Обсудить бронирование</button>
       <a className="saf-payment-link" href="#saf-payment">Рассчитать платёж ↓</a>
       <dl><div><dt>Площадь</dt><dd>{unit.area.toLocaleString('ru-RU')} м²</dd></div><div><dt>Комнат</dt><dd>{unit.rooms}</dd></div><div><dt>Секция</dt><dd>{unit.section}</dd></div><div><dt>Этаж</dt><dd>{unit.floor} из {Math.max(...safSectionFloors(unit.section))}</dd></div><div><dt>Номер квартиры</dt><dd>{unit.number}</dd></div>{plan && <div><dt>Код планировки</dt><dd>{plan.code}</dd></div>}</dl>
-      <div className="saf-apartment-actions">{plan && <a href={plan.image} download={`SAF-${unit.section}-${unit.number}.png`}><Download size={17} /> Скачать план</a>}<button type="button" onClick={copy}><Copy size={17} /> Поделиться</button><button type="button" onClick={()=>window.print()}><Printer size={17}/> Печать / PDF</button></div>
+      <div className="saf-apartment-actions"><button type="button" aria-pressed={compared} onClick={onCompare}><Check size={17} />{compared ? 'Убрать из сравнения' : 'Сравнить'}</button>{compared && <SelectionLink to="/saf/compare">Смотреть сравнение</SelectionLink>}<SelectionLink to="/saf/favorites">Моё избранное</SelectionLink>{plan && <a href={plan.image} download={`SAF-${unit.section}-${unit.number}.png`}><Download size={17} /> Скачать план</a>}<button type="button" onClick={copy}><Copy size={17} /> Поделиться</button><button type="button" onClick={()=>window.print()}><Printer size={17}/> Печать / PDF</button></div>
       {!plan && <p>Изображение для этой квартиры не опубликовано. Данные секции и этажа сохранены.</p>}
       {notice && <p role="status">{notice}</p>}
     </aside>

@@ -1,0 +1,37 @@
+[
+  {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "url": "http://127.0.0.1:3001/saf/visual",
+    "reloadVisual": true,
+    "identicalScreenshot": true
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "url": "http://127.0.0.1:3001/saf/visual",
+    "reloadVisual": true,
+    "identicalScreenshot": true
+  },
+  {
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "url": "http://127.0.0.1:3001/saf/visual",
+    "reloadVisual": true,
+    "identicalScreenshot": true
+  },
+  {
+    "fallback": "unavailable",
+    "selection": []
+  },
+  {
+    "fallback": "rejected",
+    "selection": []
+  }
+]

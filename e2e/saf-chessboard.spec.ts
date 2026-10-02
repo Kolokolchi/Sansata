@@ -6,7 +6,7 @@ test('SAF chessboard keeps object selection intact and opens a layout by block a
 
   await page.goto('/projects');
   await expect(page.getByRole('heading', { name: 'Выберите объект.' })).toBeVisible();
-  await expect(page.locator('.saf-chessboard-fab')).toHaveCount(0);
+  await expect(page.locator('.saf-chessboard-fab')).toBeVisible();
   await page.goto('/saf');
   const chessboardButton = page.getByRole('link', { name: 'Шахматка, выбрать квартиру или нежилое помещение' });
   const buttonBounds = await chessboardButton.boundingBox();
@@ -16,6 +16,7 @@ test('SAF chessboard keeps object selection intact and opens a layout by block a
   await expect(chessboardButton).toHaveCSS('background-color', 'rgb(53, 79, 213)');
   await chessboardButton.click();
   await expect(page).toHaveURL(/\/saf\/chessboard$/);
+  await expect(page.locator('.saf-chessboard-fab')).toHaveCount(0);
   await expect(page.locator('.saf-app')).toHaveClass(/sensata-chessboard-page/);
   await expect(page.locator('.saf-chessboard-matrix thead th')).toHaveCount(8);
   await page.getByRole('button', { name: 'Блок 2', exact: true }).click();

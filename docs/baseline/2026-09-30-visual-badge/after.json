@@ -1,0 +1,113 @@
+[
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual",
+    "title": [],
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual/block/1",
+    "title": [
+      "Секция 1"
+    ],
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "title": [
+      "Секция 1 · Этаж 2"
+    ],
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual",
+    "title": [],
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual/block/1",
+    "title": [
+      "Секция 1"
+    ],
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "title": [
+      "Секция 1 · Этаж 2"
+    ],
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual",
+    "title": [],
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual/block/1",
+    "title": [
+      "Секция 1"
+    ],
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/saf/visual/block/1/floor/2",
+    "title": [
+      "Секция 1 · Этаж 2"
+    ],
+    "errors": [],
+    "overflow": false
+  }
+]

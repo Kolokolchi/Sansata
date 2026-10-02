@@ -5,7 +5,7 @@ import { SafInteractiveFloor } from './SafInteractiveFloor';
 import { SelectionLink } from './SafVisualFloor';
 import { safSectionUnits, safSectionFloors, safFloorUnits, safApartmentPath, safFloorPath, safObservedLabels, safObservedDate } from '../lib/safInventory';
 import { safPlans } from '../lib/safMaterials';
-import { navigateTo, siteUrl } from '../lib/site';
+import { navigateTo, sitePath, siteUrl } from '../lib/site';
 import { SafBuildingScene } from './SafBuildingScene';
 import { SafComplexTour } from './SafComplexTour';
 
@@ -18,7 +18,15 @@ export function SafVisualJourney({ section, floor }: { section: string | null; f
   const [hovered, setHovered] = useState<string | null>(null);
   useEffect(() => { setHovered(null); }, [section, floor]);
   useEffect(()=>{const sync=()=>{const query=new URLSearchParams(location.search);setTour(query.get('view')==='360');setPoint(query.get('point') || 'cam-5');};window.addEventListener('popstate',sync);return()=>window.removeEventListener('popstate',sync);},[]);
-  const changeTour=(enabled:boolean,id=point)=>{const url=new URL(location.href);if(enabled){url.searchParams.set('view','360');url.searchParams.set('point',id);}else{url.searchParams.delete('view');url.searchParams.delete('point');}history.pushState(null,'',url);setTour(enabled);setPoint(id);};
+  const changeTour = (enabled: boolean, id = point) => {
+    const url = new URL(location.href);
+    if (enabled) { url.searchParams.set('view', '360'); url.searchParams.set('point', id); }
+    else { url.searchParams.delete('view'); url.searchParams.delete('point'); }
+    const path = sitePath().replace(/\/$/, '') || '/';
+    if (!enabled && (path === '/' || path === '/index.html')) navigateTo(`/saf/visual${url.search}${url.hash}`);
+    else history.pushState(null, '', url);
+    setTour(enabled); setPoint(id);
+  };
   const floors = section ? safSectionFloors(section) : [];
   const units = section && floor !== null ? safFloorUnits.get(`${section}/${floor}`) || [] : [];
   const shown = units.filter(unit => !rooms.length || rooms.includes(unit.rooms));
@@ -27,7 +35,7 @@ export function SafVisualJourney({ section, floor }: { section: string | null; f
   const selectSection = (value: string) => navigateTo(`/saf/visual/block/${value}`);
   return <main className={`saf-journey ${section ? 'has-section' : 'saf-complex-entry'} ${!render ? 'is-map' : ''} ${floor !== null ? 'has-floor' : ''} ${section && floor===null ? 'saf-facade-entry' : ''} ${tour && floor===null ? 'is-complex-tour' : ''}`}>
     <h1 className="saf-visually-hidden">Квартиры на 3D-плане</h1>
-    <div className="saf-journey-top"><SelectionLink to={floor !== null ? `/saf/visual/block/${section}` : section ? '/saf/visual' : '/saf'} className="saf-journey-back"><ArrowLeft size={20} /><span>{floor !== null ? 'К секции' : section ? 'К комплексу' : 'По параметрам'}</span></SelectionLink><strong>{section ? `Секция ${section}${floor !== null ? ` · Этаж ${floor}` : ''}` : 'SAF Avenue'}</strong><SelectionLink to="/saf">По параметрам <ArrowRight size={15} /></SelectionLink></div>
+    <div className="saf-journey-top"><SelectionLink to={floor !== null ? `/saf/visual/block/${section}` : section ? '/saf/visual' : '/saf'} className="saf-journey-back"><ArrowLeft size={20} /><span>{floor !== null ? 'К секции' : section ? 'К комплексу' : 'По параметрам'}</span></SelectionLink>{section && <strong>{`Секция ${section}${floor !== null ? ` · Этаж ${floor}` : ''}`}</strong>}<SelectionLink to="/saf">По параметрам <ArrowRight size={15} /></SelectionLink></div>
     <div className="saf-journey-body">
       {section && <aside className="saf-floor-rail"><label>Секция<select value={section} onChange={event => selectSection(event.target.value)}>{[...safSectionUnits.keys()].map(id => <option key={id} value={id}>{id}</option>)}</select></label><span>Этаж</span><div role="group" aria-label={`Этажи секции ${section}`}>{floors.map(value => <SelectionLink key={value} to={safFloorPath(section, value)} className={floor === value ? 'active' : ''}>{value}</SelectionLink>)}</div></aside>}
       <section className="saf-journey-canvas" aria-label={floor !== null ? 'План этажа' : 'Выбор секции на генплане'}>

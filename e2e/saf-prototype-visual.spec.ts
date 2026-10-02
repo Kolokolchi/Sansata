@@ -6,7 +6,7 @@ test('photo polygons lead through all seven facades to a highlighted numbered ap
   page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${new URL(r.url()).pathname}`);});
   const touch=!!test.info().project.use.hasTouch;
   for(const section of ['1','2','3','4','5','6','7']){
-    await page.goto('/');
+    await page.goto('/saf/visual');
     const region=page.locator('.saf-building-region').filter({hasNotText:'unused'}).and(page.getByRole('button',{name:new RegExp(`^Секция ${section},`)}));
     if(touch)await region.tap();else{await region.hover();await expect(page.locator('.saf-building-info')).toContainText(`Секция ${section}`);await region.click();}
     await expect(page).toHaveURL(new RegExp(`/block/${section}$`));
@@ -34,7 +34,7 @@ test('complex panorama has real textures, three points, keyboard rotation and pe
   page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
   const loaded:string[]=[];
   page.on('response',r=>{if(/cam-5.*\.jpg/.test(r.url())&&r.status()===200)loaded.push(r.url());});
-  await page.goto('/');
+  await page.goto('/saf/visual');
   await page.getByRole('button',{name:'3D-тур по комплексу',exact:true}).click();
   await expect(page).toHaveURL(/view=360/);
   const canvas=page.locator('.saf-complex-tour canvas');
@@ -66,4 +66,30 @@ test('panorama texture failure remains recoverable by choosing another point',as
   await page.getByRole('tab',{name:'Общий вид',exact:true}).click();
   await expect(page.getByRole('alert')).toHaveCount(0);
   await expect(page.locator('.panorama-viewer-root')).toHaveAttribute('data-panorama-id','cam-5');
+});
+
+test('closing legacy complex tours preserves the visual route, query and browser history', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('response', response => { if (response.status() >= 400) errors.push(`${response.status()} ${new URL(response.url()).pathname}`); });
+  for (const entry of ['/', '/index.html']) {
+    await page.goto(`${entry}?view=360&point=cam-6&source=legacy#complex`);
+    await expect(page.locator('.panorama-viewer-root')).toHaveAttribute('data-panorama-id', 'cam-6');
+    const close = page.getByRole('button', { name: 'Закрыть 360-тур', exact: true });
+    if (test.info().project.use.hasTouch) await close.tap();
+    else { await close.focus(); await page.keyboard.press('Enter'); }
+    await expect(page).toHaveURL(/\/saf\/visual\?source=legacy#complex$/);
+    await expect(page.locator('.saf-building-scene')).toBeVisible();
+    await expect(page.locator('.saf-home')).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator('.saf-building-scene')).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/view=360&point=cam-6&source=legacy#complex$/);
+    await expect(page.locator('.panorama-viewer-root')).toHaveAttribute('data-panorama-id', 'cam-6');
+    await page.goForward();
+    await expect(page).toHaveURL(/\/saf\/visual\?source=legacy#complex$/);
+    await expect(page.locator('.saf-building-scene')).toBeVisible();
+  }
+  expect(errors).toEqual([]);
 });

@@ -1,0 +1,74 @@
+[
+  {
+    "device": "desktop",
+    "route": "/",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "desktop",
+    "route": "/saf/avenue",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "desktop",
+    "route": "/saf",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "desktop",
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "route": "/",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "route": "/saf/avenue",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "route": "/saf",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "route": "/",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "route": "/saf/avenue",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "route": "/saf",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "route": "/saf/apartment/saf-observation-1-2-property-1?tab=plan",
+    "errors": [],
+    "overflow": false
+  }
+]

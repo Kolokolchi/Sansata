@@ -1,0 +1,68 @@
+[
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/",
+    "title": "SAF Avenue · Привилегия приватной жизни",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "route": "/projects",
+    "title": "Выбор объекта | Sensata",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/",
+    "title": "SAF Avenue · Привилегия приватной жизни",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "route": "/projects",
+    "title": "Выбор объекта | Sensata",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/",
+    "title": "SAF Avenue · Привилегия приватной жизни",
+    "errors": [],
+    "overflow": false
+  },
+  {
+    "device": "mobile",
+    "viewport": {
+      "width": 393,
+      "height": 851
+    },
+    "route": "/projects",
+    "title": "Выбор объекта | Sensata",
+    "errors": [],
+    "overflow": false
+  }
+]

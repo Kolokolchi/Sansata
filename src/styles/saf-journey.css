@@ -70,7 +70,7 @@
 
 /* Entry view: the complex fills the first screen, with controls over the scene. */
 .saf-complex-entry{position:relative;min-height:480px;height:calc(100svh - 64px);overflow:hidden}
-.saf-complex-entry>.saf-journey-top{position:absolute;z-index:2;top:22px;left:24px;right:24px;background:transparent;border:0;padding:0;pointer-events:none}
+.saf-complex-entry>.saf-journey-top{position:absolute;z-index:2;top:22px;left:24px;right:24px;min-height:53px;background:transparent;border:0;padding:0;pointer-events:none}
 .saf-complex-entry>.saf-journey-top .saf-journey-back{display:none}
 .saf-complex-entry>.saf-journey-top strong,.saf-complex-entry>.saf-journey-top>a:last-child{background:white;border-radius:30px;padding:13px 20px;pointer-events:auto;box-shadow:0 4px 20px #0002}
 .saf-complex-entry .saf-journey-body{display:block;height:100%}
@@ -84,7 +84,7 @@
 .saf-complex-entry .saf-map-note{bottom:20px;left:24px;right:auto;max-width:calc(100% - 160px);padding:6px 12px;border-radius:5px;background:#fffefbeF;color:#363b3d}
 @media(max-width:800px){
  .saf-complex-entry{height:calc(100svh - 110px);min-height:520px}
- .saf-complex-entry>.saf-journey-top{top:15px;left:12px;right:12px}
+ .saf-complex-entry>.saf-journey-top{top:15px;left:12px;right:12px;min-height:48px}
  .saf-complex-entry>.saf-journey-top>a:last-child{display:flex}
  .saf-complex-entry .saf-journey-picker{left:12px;right:12px;bottom:135px;flex-wrap:wrap;padding:12px;gap:6px}
  .saf-complex-entry .saf-journey-picker h2{width:100%;margin:0 0 4px}

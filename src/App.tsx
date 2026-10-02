@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, ArrowUpRight, Building2, Check, Copy, Heart, MapPin, Printer, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, Heart, MapPin, Printer, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
 import { safPlans as safData, safHero } from './lib/safMaterials';
 import { SafMaterials } from './features/SafMaterials';
 import { SafStockSnapshot } from './features/SafStockSnapshot';
@@ -20,6 +20,9 @@ import { SafNavigation } from './features/SafNavigation';
 import './styles/saf-selection-shell.css';
 import { SafVisualSelector } from './features/SafVisualSelector';
 import { SafChessboard } from './features/SafChessboard';
+import { SafChessboardShortcut } from './features/SafChessboardShortcut';
+import { SafShortlist } from './features/SafShortlist';
+import { SafLanding } from './features/SafLanding';
 import { groupSafPlans, parseOptionalBound, SAF_BLOCKS, SAF_ROOMS, safLevelLabel } from './lib/safSelection';
 
 type PublishedPlan = (typeof safData.plans)[number];
@@ -29,13 +32,14 @@ type ResultView = 'cards' | 'table';
 const heroImage = safHero;
 const projectAddress = 'Алматы, пр. Аль-Фараби — ул. Розыбакиева';
 const projects = [{
-  id: 'saf', href: '/saf', name: 'SAF Avenue', city: 'АЛМАТЫ',
+  id: 'saf', href: '/saf/avenue', name: 'SAF Avenue', city: 'АЛМАТЫ',
   address: projectAddress, image: heroImage, logo: safLogo,
   note: 'Планировки загружены из публичного каталога SAF Avenue. Наличие и цены проверяются отдельно.',
 }];
 const savedKey = 'sensata-saf-saved-plans';
 const compareKey = 'sensata-saf-compare-plans';
-const compareLimit = 3;
+const favoriteApartmentsKey = 'saf-favorite-apartments';
+const comparedApartmentsKey = 'saf-compare-apartments';
 const pageSize = 18;
 const noticeDurationMs = 3200;
 const retiredPaths = new Set([
@@ -45,12 +49,65 @@ const retiredPaths = new Set([
 ]);
 const retiredPrefixes = ['/visual/section/', '/flat-classic/', '/flat/', '/akcii/', '/news/'];
 const safCatalog = groupSafPlans(safData.plans);
+const selectionUpdatePrefix = 'saf-selection-update:';
+type SelectionUpdate = { key: string; code: string; selected: boolean; time: number };
 
-function readCodes(key: string, max = Number.POSITIVE_INFINITY): string[] {
+function isStoredCode(key: string, code: unknown): code is string {
+  return typeof code === 'string' && (key === favoriteApartmentsKey || key === comparedApartmentsKey ? safApartmentById.has(code) : safCatalog.byCode.has(code));
+}
+
+function readSelectionUpdates(key: string): SelectionUpdate[] {
+  const updates: SelectionUpdate[] = [];
+  for (const name of Object.keys(localStorage)) {
+    if (!name.startsWith(`${selectionUpdatePrefix}${key}:`)) continue;
+    try {
+      const value = JSON.parse(localStorage.getItem(name) || 'null') as Partial<SelectionUpdate> | null;
+      if (value && isStoredCode(key, value.code) && typeof value.selected === 'boolean' && typeof value.time === 'number' && Number.isFinite(value.time)) {
+        updates.push({ key: name, code: value.code, selected: value.selected, time: value.time });
+      }
+    } catch { /* Ignore a malformed pending update without clearing the saved selection. */ }
+  }
+  return updates.sort((a, b) => a.time - b.time || a.key.localeCompare(b.key));
+}
+
+function readCodes(key: string, updates?: SelectionUpdate[]): string[] {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem(key) || '[]');
-    return Array.isArray(value) ? [...new Set(value.filter((code): code is string => typeof code === 'string' && safCatalog.byCode.has(code)))].slice(0, max) : [];
+    let value: unknown = [];
+    try { value = JSON.parse(localStorage.getItem(key) || '[]'); } catch { /* Recover corrupt JSON through the next valid update. */ }
+    const codes = new Set(Array.isArray(value) ? value.filter((code): code is string => isStoredCode(key, code)) : []);
+    for (const update of updates || readSelectionUpdates(key)) {
+      if (update.selected) codes.add(update.code); else codes.delete(update.code);
+    }
+    return [...codes];
   } catch { return []; }
+}
+
+function flushStoredCodes(key: string, setCodes: React.Dispatch<React.SetStateAction<string[]>>) {
+  const flush = () => {
+    try {
+      const updates = readSelectionUpdates(key);
+      if (!updates.length) return;
+      localStorage.setItem(key, JSON.stringify(readCodes(key, updates)));
+      for (const update of updates) localStorage.removeItem(update.key);
+      setCodes(readCodes(key));
+    } catch { /* Pending updates remain durable; unavailable storage leaves selection in memory. */ }
+  };
+  if (navigator.locks) void navigator.locks.request(`saf-selection:${key}`, flush).catch(flush);
+  else flush();
+}
+
+function toggleStoredCode(key: string, code: string, setCodes: React.Dispatch<React.SetStateAction<string[]>>) {
+  try {
+    const selected = !readCodes(key).includes(code);
+    const time = Math.max(Date.now(), ...readSelectionUpdates(key).map(update => update.time + 1));
+    const updateKey = `${selectionUpdatePrefix}${key}:${time}:${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`;
+    // Persist the intent synchronously so reload cannot discard a queued lock request.
+    localStorage.setItem(updateKey, JSON.stringify({ code, selected, time }));
+    setCodes(readCodes(key));
+    flushStoredCodes(key, setCodes);
+  } catch {
+    setCodes(current => current.includes(code) ? current.filter(item => item !== code) : [...current, code]);
+  }
 }
 
 function formatArea(area: number): string {
@@ -80,15 +137,17 @@ function PlanCard({ plan, saved, compared, onSave, onCompare }: {
 
 export default function App() {
   const [path, setPath] = useState(() => sitePath());
+  const [search, setSearch] = useState(() => location.search);
   const [saved, setSaved] = useState<string[]>(() => readCodes(savedKey));
-  const [compared, setCompared] = useState<string[]>(() => readCodes(compareKey, compareLimit));
+  const [compared, setCompared] = useState<string[]>(() => readCodes(compareKey));
+  const [favoriteApartments, setFavoriteApartments] = useState<string[]>(() => readCodes(favoriteApartmentsKey));
+  const [comparedApartments, setComparedApartments] = useState<string[]>(() => readCodes(comparedApartmentsKey));
   const [rooms, setRooms] = useState<number[]>([]);
   const [minArea, setMinArea] = useState('');
   const [maxArea, setMaxArea] = useState('');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortOrder>('area-asc');
   const [savedOnly, setSavedOnly] = useState(false);
-  const [showCompare, setShowCompare] = useState(false);
   const [visibleCount, setVisibleCount] = useState(pageSize);
   const [advancedFilters, setAdvancedFilters] = useState(false);
   const [resultView, setResultView] = useState<ResultView>('cards');
@@ -97,16 +156,37 @@ export default function App() {
   const [maxFloor, setMaxFloor] = useState('');
   const [notice, setNotice] = useState('');
 
-  useEffect(() => { const onPopState = () => setPath(sitePath()); window.addEventListener('popstate', onPopState); return () => window.removeEventListener('popstate', onPopState); }, []);
-  useEffect(() => { try { localStorage.setItem(savedKey, JSON.stringify(saved)); } catch { /* Storage can be disabled. */ } }, [saved]);
-  useEffect(() => { try { localStorage.setItem(compareKey, JSON.stringify(compared)); } catch { /* Keep the current selection in memory. */ } }, [compared]);
+  useEffect(() => { const onPopState = () => { setPath(sitePath()); setSearch(location.search); }; window.addEventListener('popstate', onPopState); return () => window.removeEventListener('popstate', onPopState); }, []);
   useEffect(() => { if (!notice) return; const timeout = window.setTimeout(() => setNotice(''), noticeDurationMs); return () => window.clearTimeout(timeout); }, [notice]);
   useEffect(() => { setVisibleCount(pageSize); }, [rooms, minArea, maxArea, query, sort, savedOnly, selectedBlocks, minFloor, maxFloor]);
-  useEffect(() => { if (showCompare && compared.length) document.getElementById('saf-compare')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [showCompare, compared.length]);
+
+  useEffect(() => {
+    flushStoredCodes(savedKey, setSaved);
+    flushStoredCodes(compareKey, setCompared);
+    flushStoredCodes(favoriteApartmentsKey, setFavoriteApartments);
+    flushStoredCodes(comparedApartmentsKey, setComparedApartments);
+  }, []);
+
+  useEffect(() => {
+    const sync = (event: StorageEvent) => {
+      const key = event.key?.startsWith(selectionUpdatePrefix) ? event.key.slice(selectionUpdatePrefix.length).split(':')[0] : event.key;
+      if (key === null || key === savedKey) setSaved(readCodes(savedKey));
+      if (key === null || key === compareKey) setCompared(readCodes(compareKey));
+      if (key === null || key === favoriteApartmentsKey) setFavoriteApartments(readCodes(favoriteApartmentsKey));
+      if (key === null || key === comparedApartmentsKey) setComparedApartments(readCodes(comparedApartmentsKey));
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
 
   const normalizedPath = path.replace(/\/$/, '') || '/';
-  const isHome = normalizedPath === '/projects';
-  const isVisualEntry = normalizedPath === '/' || normalizedPath === '/index.html' || normalizedPath === '/visual';
+  const isRoot = normalizedPath === '/' || normalizedPath === '/index.html';
+  const isLegacyTourEntry = isRoot && new URLSearchParams(search).get('view') === '360';
+  const isHome = normalizedPath === '/projects' || (isRoot && !isLegacyTourEntry);
+  const isFavorites = normalizedPath === '/saf/favorites';
+  const isCompare = normalizedPath === '/saf/compare';
+  const isLanding = normalizedPath === '/saf/avenue';
+  const isVisualEntry = normalizedPath === '/visual' || isLegacyTourEntry;
   let planCode = '';
   if (normalizedPath.startsWith('/saf/plan/')) {
     try { planCode = decodeURIComponent(normalizedPath.slice('/saf/plan/'.length)); } catch { planCode = ''; }
@@ -131,12 +211,11 @@ export default function App() {
   const visualLevel = visualMatch?.[2] || null;
   const isLegacy = retiredPaths.has(normalizedPath) || retiredPrefixes.some((prefix) => normalizedPath.startsWith(prefix));
   const isTour = normalizedPath === '/tour';
-  const isNotFound = !isHome && normalizedPath !== '/saf' && !isVisual && !isChessboard && !isMaterials && !isStock && !selectedPlan && !selectedApartment && !isLegacy && !isTour;
-  const showChessboardFab = normalizedPath === '/saf' || isVisual || isStock || isMaterials;
+  const isNotFound = !isFavorites && !isCompare && !isHome && !isLanding && normalizedPath !== '/saf' && !isVisual && !isChessboard && !isMaterials && !isStock && !selectedPlan && !selectedApartment && !isLegacy && !isTour;
   useEffect(() => {
-    document.title = isHome ? 'Выбор объекта | Sensata' : isNotFound ? 'Страница не найдена | Sensata'
+    document.title = isFavorites ? 'Избранное · SAF Avenue' : isCompare ? 'Сравнение · SAF Avenue' : isLanding ? 'SAF Avenue · Привилегия приватной жизни' : isHome ? 'Выбор объекта | Sensata' : isNotFound ? 'Страница не найдена | Sensata'
       : selectedApartment ? `Квартира № ${selectedApartment.number} · SAF Avenue` : isMaterials ? 'Материалы проекта · SAF Avenue' : isStock ? 'Снимок помещений · SAF Avenue' : selectedPlan ? `${selectedPlan.code} · SAF Avenue | Sensata` : 'SAF Avenue · Конфигуратор планировок | Sensata';
-  }, [isHome, isNotFound, isMaterials, isStock, selectedPlan, selectedApartment]);
+  }, [isFavorites, isCompare, isLanding, isHome, isNotFound, isMaterials, isStock, selectedPlan, selectedApartment]);
   const filtered = useMemo(() => {
     const lower = parseOptionalBound(minArea, 0);
     const upper = parseOptionalBound(maxArea, Number.POSITIVE_INFINITY);
@@ -155,14 +234,10 @@ export default function App() {
     }).map(({ plan }) => plan).sort((a, b) => sort === 'area-desc' ? b.area - a.area : sort === 'rooms' ? a.rooms - b.rooms || a.area - b.area : a.area - b.area);
   }, [rooms, minArea, maxArea, query, sort, savedOnly, saved, selectedBlocks, minFloor, maxFloor]);
 
-  const toggleSaved = (code: string) => setSaved((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code]);
-  const toggleCompared = (code: string) => {
-    if (!compared.includes(code) && compared.length >= compareLimit) {
-      setNotice('Можно сравнить не более трёх планировок.');
-      return;
-    }
-    setCompared((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code].slice(0, compareLimit));
-  };
+  const toggleSaved = (code: string) => toggleStoredCode(savedKey, code, setSaved);
+  const toggleCompared = (code: string) => toggleStoredCode(compareKey, code, setCompared);
+  const toggleFavoriteApartment = (id: string) => toggleStoredCode(favoriteApartmentsKey, id, setFavoriteApartments);
+  const toggleComparedApartment = (id: string) => toggleStoredCode(comparedApartmentsKey, id, setComparedApartments);
   const resetFilters = () => { setRooms([]); setMinArea(''); setMaxArea(''); setQuery(''); setSort('area-asc'); setSavedOnly(false); setSelectedBlocks([]); setMinFloor(''); setMaxFloor(''); };
   const copyPlanLink = async (code: string) => {
     try { await navigator.clipboard.writeText(new URL(siteUrl(planHref(code)), location.origin).href); setNotice('Ссылка на планировку скопирована.'); }
@@ -172,17 +247,17 @@ export default function App() {
   return <div className={`saf-app${isHome ? ' sensata-home-page' : ''}${isChessboard ? ' sensata-chessboard-page' : ''}${isVisual && !visualLevel ? ' saf-journey-page' : ''}`}>
     {isHome ? <header className="sensata-header"><AppLink to="/" label="К выбору объектов"><img src={sensataLogo} alt="Sensata Group" /></AppLink><nav aria-label="Основная навигация"><a href="#projects" className="active">Наши проекты</a><a href="https://www.sensata.kz/contacts" target="_blank" rel="noopener noreferrer">Контакты</a></nav><a className="sensata-header-phone" href="tel:700"><strong>700</strong><span>Единый колл-центр<br />(отдел продаж)</span></a></header> : <header className="saf-header">
       <AppLink to="/" className="saf-brand" label="На главную"><img className="saf-company-logo" src={sensataLogo} alt="Sensata Group" /></AppLink>
-      <SafNavigation path={normalizedPath} />
-      <AppLink to="/" className="saf-header-project" label="SAF Avenue"><img src={safGoldLogo} alt="SAF Avenue" /></AppLink>
+      <SafNavigation path={normalizedPath} favoriteCount={saved.length + favoriteApartments.length} compareCount={compared.length + comparedApartments.length} />
+      <AppLink to="/saf/avenue" className="saf-header-project" label="SAF Avenue"><img src={safGoldLogo} alt="SAF Avenue" /></AppLink>
     </header>}
 
-    {isHome ? <main className="saf-home" id="projects">
+    {isFavorites || isCompare ? <SafShortlist mode={isCompare ? 'compare' : 'favorites'} saved={saved} compared={compared} favoriteApartments={favoriteApartments} comparedApartments={comparedApartments} onSave={toggleSaved} onCompare={toggleCompared} onFavoriteApartment={toggleFavoriteApartment} onCompareApartment={toggleComparedApartment} /> : isLanding ? <SafLanding /> : isHome ? <main className="saf-home" id="projects">
       <div className="saf-home-intro"><span className="saf-kicker">НАШИ ПРОЕКТЫ</span><h1>Выберите объект<span>.</span></h1><p>Найдите пространство для своей жизни.<br />Выберите проект и познакомьтесь с его планировками.</p><div className="saf-home-count"><strong>{String(projects.length).padStart(2, '0')}</strong><span>{projects.length === 1 ? 'объект' : 'объектов'} в рабочем пространстве</span></div></div>
-      <div className={`saf-project-grid${projects.length > 1 ? ' multi' : ''}`}>{projects.map((project, index) => <div className="saf-project-entry" key={project.id}><AppLink to={project.href} className="saf-project-card"><div className="saf-project-photo" style={{ backgroundImage: `linear-gradient(90deg, rgba(13,24,27,.72), rgba(13,24,27,.06)), url(${project.image})` }} /><div className="saf-project-content"><span className="saf-project-index">{String(index + 1).padStart(2, '0')} / {project.city}</span><div><img className="saf-project-logo" src={project.logo} alt={project.name} /><h2>{project.name}</h2><p><MapPin size={17} /> {project.address}</p></div><span className="saf-project-open">Открыть конфигуратор <ArrowUpRight size={21} /></span></div></AppLink><p className="saf-home-footnote">{project.note}</p></div>)}</div>
-    </main> : selectedApartment ? <SafApartmentPage key={selectedApartment.id} unit={selectedApartment} /> : isVisual && !visualLevel ? <SafVisualJourney section={visualBlock ? String(visualBlock) : null} floor={visualMatch?.[3] ? Number(visualMatch[3]) : null} /> : isMaterials ? <SafMaterials /> : isStock ? <SafStockSnapshot /> : selectedPlan ? <main className="saf-detail">
+      <div className={`saf-project-grid${projects.length > 1 ? ' multi' : ''}`}>{projects.map((project, index) => <div className="saf-project-entry" key={project.id}><AppLink to={project.href} className="saf-project-card"><div className="saf-project-photo" style={{ backgroundImage: `linear-gradient(90deg, rgba(13,24,27,.72), rgba(13,24,27,.06)), url(${project.image})` }} /><div className="saf-project-content"><span className="saf-project-index">{String(index + 1).padStart(2, '0')} / {project.city}</span><div><img className="saf-project-logo" src={project.logo} alt={project.name} /><h2>{project.name}</h2><p><MapPin size={17} /> {project.address}</p></div><span className="saf-project-open">Открыть проект <ArrowUpRight size={21} /></span></div></AppLink><p className="saf-home-footnote">{project.note}</p></div>)}</div>
+    </main> : selectedApartment ? <SafApartmentPage key={selectedApartment.id} unit={selectedApartment} favorite={favoriteApartments.includes(selectedApartment.id)} compared={comparedApartments.includes(selectedApartment.id)} onFavorite={() => toggleFavoriteApartment(selectedApartment.id)} onCompare={() => toggleComparedApartment(selectedApartment.id)} /> : isVisual && !visualLevel ? <SafVisualJourney section={visualBlock ? String(visualBlock) : null} floor={visualMatch?.[3] ? Number(visualMatch[3]) : null} /> : isMaterials ? <SafMaterials /> : isStock ? <SafStockSnapshot /> : selectedPlan ? <main className="saf-detail">
       <div className="saf-breadcrumbs"><AppLink to="/projects">Объекты</AppLink><span>/</span><AppLink to="/saf">SAF Avenue</AppLink><span>/</span><span>{selectedPlan.code}</span></div>
       <div className="saf-detail-heading"><AppLink to={detailBack} className="saf-back"><ArrowLeft size={18} /> К планировкам</AppLink><span className="saf-kicker">SAF AVENUE / КАРТОЧКА ПЛАНИРОВКИ</span><h1>{selectedPlan.rooms}-комнатная планировка</h1><p>Код в публичном каталоге: {selectedPlan.code}</p>{selectedLocation && <div className="saf-detail-context"><AppLink to={`/saf/visual/block/${selectedLocation.block}/level/${selectedLocation.level}`}>На {safLevelLabel(selectedLocation.level).toLowerCase()} · блок {selectedLocation.block}</AppLink><AppLink to="/saf/visual">На 3D-схеме блоков</AppLink><AppLink to="/saf">По параметрам</AppLink></div>}</div>
-      <div className="saf-detail-grid"><SafApartmentViewer key={selectedPlan.code} code={selectedPlan.code} rooms={selectedPlan.rooms} image={selectedPlan.image} /><aside className="saf-detail-panel"><span className="saf-panel-kicker">ПАРАМЕТРЫ</span><div className="saf-detail-fact"><span>Комнат</span><strong>{selectedPlan.rooms}</strong></div><div className="saf-detail-fact"><span>Общая площадь</span><strong>{formatArea(selectedPlan.area)}</strong></div><div className="saf-detail-fact"><span>Код планировки</span><strong>{selectedPlan.code}</strong></div><div className="saf-detail-availability"><span className="saf-status-dot" /> Наличие и цена уточняются</div><p>Это планировка из публичного каталога. Карточка не подтверждает наличие конкретной квартиры.</p><div className="saf-detail-actions"><button type="button" onClick={() => toggleSaved(selectedPlan.code)}><Heart size={18} fill={saved.includes(selectedPlan.code) ? 'currentColor' : 'none'} />{saved.includes(selectedPlan.code) ? 'В подборке' : 'В подборку'}</button><button type="button" onClick={() => toggleCompared(selectedPlan.code)}><Check size={18} />{compared.includes(selectedPlan.code) ? 'Убрать из сравнения' : 'Сравнить'}</button><button type="button" onClick={() => copyPlanLink(selectedPlan.code)}><Copy size={18} />Скопировать ссылку</button><button type="button" onClick={() => window.print()}><Printer size={18} />Печать</button></div><a className="saf-source-link" href="https://saf.sensata.kz/quiz" target="_blank" rel="noopener noreferrer">Открыть официальный каталог <ArrowUpRight size={16} /></a></aside></div>
+      <div className="saf-detail-grid"><SafApartmentViewer key={selectedPlan.code} code={selectedPlan.code} rooms={selectedPlan.rooms} image={selectedPlan.image} /><aside className="saf-detail-panel"><span className="saf-panel-kicker">ПАРАМЕТРЫ</span><div className="saf-detail-fact"><span>Комнат</span><strong>{selectedPlan.rooms}</strong></div><div className="saf-detail-fact"><span>Общая площадь</span><strong>{formatArea(selectedPlan.area)}</strong></div><div className="saf-detail-fact"><span>Код планировки</span><strong>{selectedPlan.code}</strong></div><div className="saf-detail-availability"><span className="saf-status-dot" /> Наличие и цена уточняются</div><p>Это планировка из публичного каталога. Карточка не подтверждает наличие конкретной квартиры.</p><div className="saf-detail-actions"><button type="button" onClick={() => toggleSaved(selectedPlan.code)}><Heart size={18} fill={saved.includes(selectedPlan.code) ? 'currentColor' : 'none'} />{saved.includes(selectedPlan.code) ? 'В подборке' : 'В подборку'}</button><button type="button" onClick={() => toggleCompared(selectedPlan.code)}><Check size={18} />{compared.includes(selectedPlan.code) ? 'Убрать из сравнения' : 'Сравнить'}</button><button type="button" onClick={() => copyPlanLink(selectedPlan.code)}><Copy size={18} />Скопировать ссылку</button><button type="button" onClick={() => window.print()}><Printer size={18} />Печать</button></div>{compared.includes(selectedPlan.code) && <AppLink to="/saf/compare" className="saf-source-link">Смотреть сравнение <ArrowRight size={16} /></AppLink>}<a className="saf-source-link" href="https://saf.sensata.kz/quiz" target="_blank" rel="noopener noreferrer">Открыть официальный каталог <ArrowUpRight size={16} /></a></aside></div>
       <SafPlanEvidence code={selectedPlan.code} />
     </main> : isChessboard ? <SafChessboard plans={safData.plans} /> : isTour ? <main className="saf-detail"><div className="saf-breadcrumbs"><AppLink to="/saf">SAF Avenue · Все планировки</AppLink></div><h1>3D-просмотр квартиры</h1><p>Исследуйте интерьер и переключайте ракурсы. Для выбора планировки откройте конфигуратор.</p><SafApartmentViewer code="demo" rooms={2} image={safData.plans[0].image} /></main> : isLegacy ? <main className="saf-legacy"><span className="saf-kicker">SENSATA / РАБОЧЕЕ ПРОСТРАНСТВО</span><h1>Раздел обновлён.</h1><p>Перейдите к подбору планировок SAF Avenue.</p><AppLink to="/saf" className="saf-primary-link">Открыть конфигуратор <ArrowRight size={18} /></AppLink></main> : (normalizedPath === '/saf' || isVisual) ? <main className="saf-workspace">
       <div className="saf-breadcrumbs"><AppLink to="/projects">Объекты</AppLink><span>/</span><span>SAF Avenue</span></div>
@@ -194,10 +269,9 @@ export default function App() {
           {filtered.length ? <>{resultView === 'cards' ? <div className="saf-plan-grid">{filtered.slice(0, visibleCount).map((plan) => <PlanCard key={plan.code} plan={plan} saved={saved.includes(plan.code)} compared={compared.includes(plan.code)} onSave={() => toggleSaved(plan.code)} onCompare={() => toggleCompared(plan.code)} />)}</div> : <div className="saf-plan-table-wrap"><table className="saf-plan-table"><thead><tr><th>Планировка</th><th>Блок</th><th>Уровень</th><th>Комнат</th><th>Площадь</th><th>Наличие</th><th>Действия</th></tr></thead><tbody>{filtered.slice(0, visibleCount).map((plan) => { const codeLocation = safCatalog.byCode.get(plan.code)?.place; return <tr key={plan.code}><td><AppLink to={planHref(plan.code)}><img src={plan.image} alt="" loading="lazy" /><span>{plan.code}</span></AppLink></td><td>{codeLocation ? `P${codeLocation.block}` : '—'}</td><td>{codeLocation ? safLevelLabel(codeLocation.level) : '—'}</td><td>{plan.rooms}</td><td>{formatArea(plan.area)}</td><td>Уточняется</td><td><button type="button" aria-label={`${saved.includes(plan.code) ? 'Убрать из подборки' : 'Добавить в подборку'} ${plan.code}`} onClick={() => toggleSaved(plan.code)}><Heart size={17} fill={saved.includes(plan.code) ? 'currentColor' : 'none'} /></button><button type="button" aria-label={`${compared.includes(plan.code) ? 'Убрать из сравнения' : 'Сравнить'} ${plan.code}`} onClick={() => toggleCompared(plan.code)}>{compared.includes(plan.code) ? <Check size={17} /> : '+'}</button></td></tr>; })}</tbody></table></div>}{visibleCount < filtered.length && <button type="button" className="saf-load-more" onClick={() => setVisibleCount((count) => count + pageSize)}>Показать ещё <span>{Math.min(visibleCount, filtered.length)} из {filtered.length}</span><ArrowRight size={17} /></button>}</> : <div className="saf-empty"><h3>Планировки не найдены</h3><p>Измените параметры или сбросьте фильтры.</p><button type="button" onClick={resetFilters}>Сбросить фильтры</button></div>}
         </section>
       </div>}
-      {compared.length > 0 && <div className="saf-compare-bar"><div><strong>Сравнение</strong><span>{compared.length} из {compareLimit} планировок</span></div><div className="saf-compare-codes">{compared.map((code) => <span key={code}>{code}<button type="button" onClick={() => toggleCompared(code)} aria-label={`Убрать ${code} из сравнения`}><X size={14} /></button></span>)}</div><button type="button" onClick={() => setShowCompare(true)}>Смотреть сравнение <ArrowRight size={17} /></button></div>}
-      {showCompare && compared.length > 0 && <section className="saf-compare" id="saf-compare" aria-label="Сравнение планировок"><div className="saf-compare-heading"><div><span className="saf-kicker">ДЛЯ КЛИЕНТА</span><h2>Сравнение планировок</h2></div><button type="button" onClick={() => setShowCompare(false)} aria-label="Закрыть сравнение"><X size={20} /></button></div><div className="saf-compare-grid">{compared.map((code) => { const plan = safCatalog.byCode.get(code)!.plan; return <article key={code}><img src={plan.image} alt={`Планировка ${code}`} /><small>{code}</small><strong>{plan.rooms}-комнатная</strong><span>{formatArea(plan.area)}</span><AppLink to={planHref(code)}>Открыть <ArrowUpRight size={15} /></AppLink></article>; })}</div></section>}
+      {compared.length > 0 && <div className="saf-compare-bar"><div><strong>Сравнение</strong><span>Выбрано планировок: {compared.length}</span></div><div className="saf-compare-codes">{compared.slice(0, 3).map((code) => <span key={code}>{code}<button type="button" onClick={() => toggleCompared(code)} aria-label={`Убрать ${code} из сравнения`}><X size={14} /></button></span>)}{compared.length > 3 && <span>Ещё {compared.length - 3}</span>}</div><button type="button" onClick={() => navigateTo('/saf/compare')}>Смотреть сравнение <ArrowRight size={17} /></button></div>}
     </main> : <main className="saf-legacy"><span className="saf-kicker">SENSATA / РАБОЧЕЕ ПРОСТРАНСТВО</span><h1>Страница не найдена.</h1><p>Проверьте адрес или откройте каталог планировок SAF Avenue.</p><AppLink to="/saf" className="saf-primary-link">Открыть конфигуратор <ArrowRight size={18} /></AppLink></main>}
-    {showChessboardFab && <AppLink to="/saf/chessboard" className="saf-chessboard-fab" label="Шахматка, выбрать квартиру или нежилое помещение"><Building2 size={26} /><span>Шахматка, выбрать квартиру/НП</span></AppLink>}
+    {!isChessboard && <SafChessboardShortcut />}
     {isHome ? <SensataFooter /> : <footer className="saf-footer"><span>© Sensata · SAF Avenue</span><span>Планировочные материалы: <a href="https://saf.sensata.kz/quiz" target="_blank" rel="noopener noreferrer">официальный каталог SAF Avenue</a></span></footer>}
     {notice && <div className="saf-toast" role="status">{notice}</div>}
   </div>;

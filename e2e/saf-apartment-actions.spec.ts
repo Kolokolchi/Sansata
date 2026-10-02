@@ -48,3 +48,76 @@ test('payment arithmetic, related apartments and print card preserve apartment f
   await expect(page).toHaveURL(new RegExp(href!+'$'));
   await expect(page.locator('h1')).toContainText('2-комнатная');
 });
+
+test('favorites collect apartments and compare two or more with real parameters and history',async({page})=>{
+  const errors:string[]=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
+  page.on('response',response=>{if(response.status()>=400)errors.push(`${response.status()} ${response.url()}`);});
+  for(let number=1;number<=4;number++){
+    await page.goto(`/saf/apartment/saf-observation-1-2-property-${number}?tab=plan`);
+    await page.getByRole('button',{name:'Сохранить квартиру в избранное',exact:true}).click();
+    if(number<=2)await page.getByRole('button',{name:'Сравнить',exact:true}).click();
+  }
+  await page.getByRole('link',{name:'Моё избранное',exact:true}).click();
+  await expect(page).toHaveURL(/\/saf\/favorites$/);
+  await expect(page.locator('.saf-shortlist-cards article')).toHaveCount(4);
+  await page.getByRole('link',{name:'Смотреть сравнение (2)',exact:true}).click();
+  const table=page.getByRole('table');
+  await expect(table.locator('thead th')).toHaveCount(3);
+  await expect(table.getByRole('row',{name:/Площадь/})).toContainText('80,58 м²');
+  await expect(table.getByRole('row',{name:/Площадь/})).toContainText('118,87 м²');
+  await expect(table.getByRole('row',{name:/Цена сейчас/})).toContainText('Уточняется');
+  await page.getByLabel('Только различия').check();
+  await expect(table.getByRole('row',{name:/^Секция/})).toHaveCount(0);
+  await expect(table.getByRole('row',{name:/Площадь/})).toBeVisible();
+  await page.getByLabel('Только различия').uncheck();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/saf\/favorites$/);
+  await page.getByRole('button',{name:'Сравнить',exact:true}).first().click();
+  await page.getByRole('button',{name:'Сравнить',exact:true}).first().click();
+  await page.getByRole('link',{name:'Смотреть сравнение (4)',exact:true}).click();
+  await page.reload();
+  await expect(table.locator('thead th')).toHaveCount(5);
+  const scroll=page.getByRole('region',{name:'Сравнение: Квартиры',exact:true});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
+  if((page.viewportSize()?.width||0)<1000){
+    await scroll.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(()=>scroll.evaluate(element=>element.scrollLeft)).toBeGreaterThan(0);
+  }
+  await table.getByRole('button',{name:'Убрать 2-комнатная № 4 из сравнения',exact:true}).click();
+  await expect(table.locator('thead th')).toHaveCount(4);
+  await page.getByRole('link',{name:'Открыть избранное',exact:true}).click();
+  await expect(page.locator('.saf-shortlist-cards article')).toHaveCount(4);
+  await page.getByRole('button',{name:'Убрать 2-комнатная № 1 из избранного',exact:true}).click();
+  await page.reload();
+  await expect(page.locator('.saf-shortlist-cards article')).toHaveCount(3);
+  await page.getByRole('button',{name:'Квартиры',exact:true}).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#saf-nav-apartments').getByRole('link',{name:'Избранное (3)',exact:true})).toBeVisible();
+  await page.locator('#saf-nav-apartments').getByRole('link',{name:'Сравнение (3)',exact:true}).click();
+  await table.locator('a').filter({hasText:'2-комнатная № 1'}).click();
+  await expect(page.getByRole('button',{name:'Сохранить квартиру в избранное',exact:true})).toHaveAttribute('aria-pressed','false');
+  await expect(page.getByRole('button',{name:'Убрать из сравнения',exact:true})).toHaveAttribute('aria-pressed','true');
+  expect(errors).toEqual([]);
+});
+
+test('missing plans, old saved keys and corrupted selection remain usable',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('saf-favorite-apartments',JSON.stringify(['saf-observation-1-4-property-14','saf-observation-1-4-property-14','missing',17]));
+    localStorage.setItem('sensata-saf-saved-plans',JSON.stringify(['KV-P7-E3-S1']));
+    localStorage.setItem('saf-compare-apartments','broken json');
+    localStorage.setItem('sensata-saf-compare-plans','{}');
+  });
+  await page.goto('/saf/favorites');
+  await expect(page.locator('.saf-shortlist-cards article')).toHaveCount(2);
+  await expect(page.getByText('План не опубликован',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Планировки из каталога 1',exact:true})).toBeVisible();
+  await page.getByRole('region',{name:'Квартиры',exact:true}).getByRole('button',{name:'Сравнить',exact:true}).click();
+  await page.getByRole('link',{name:'Смотреть сравнение (1)',exact:true}).click();
+  await expect(page.getByText('Добавьте ещё один вариант этой категории для сравнения.',{exact:true})).toBeVisible();
+  await expect(page.getByText('План не опубликован',{exact:true})).toBeVisible();
+  await page.locator('.saf-shortlist-remove').click();
+  await expect(page.getByRole('heading',{name:'Пока нечего сравнивать',exact:true})).toBeVisible();
+});

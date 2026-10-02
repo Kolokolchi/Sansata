@@ -4,7 +4,7 @@ const html = await readFile('dist/index.html', 'utf8');
 const catalog = JSON.parse(await readFile('src/data/saf-plans.json', 'utf8'));
 const stock = JSON.parse(await readFile('src/data/saf-stock-snapshot.json', 'utf8'));
 const routes = new Set([
-  'projects', 'saf', 'saf/visual', 'saf/chessboard', 'saf/stock', 'saf/materials',
+  'projects', 'saf', 'saf/avenue', 'saf/favorites', 'saf/compare', 'saf/visual', 'saf/chessboard', 'saf/stock', 'saf/materials',
   'tour', 'visual', 'sandbox/greybox-tour', 'sandbox/zems-tour'
 ]);
 

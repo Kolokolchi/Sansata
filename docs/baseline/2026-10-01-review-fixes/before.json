@@ -1,0 +1,139 @@
+{
+  "reports": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "afterClose": {
+        "url": "http://127.0.0.1:3000/",
+        "home": 0,
+        "visual": 1
+      },
+      "afterReload": {
+        "url": "http://127.0.0.1:3000/",
+        "home": 1,
+        "visual": 0
+      },
+      "comparisonOverflow": {
+        "page": 0,
+        "table": 0
+      },
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "afterClose": {
+        "url": "http://127.0.0.1:3000/",
+        "home": 0,
+        "visual": 1
+      },
+      "afterReload": {
+        "url": "http://127.0.0.1:3000/",
+        "home": 1,
+        "visual": 0
+      },
+      "comparisonOverflow": {
+        "page": 0,
+        "table": 455
+      },
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 393,
+        "height": 851
+      },
+      "afterClose": {
+        "url": "http://127.0.0.1:3000/",
+        "home": 0,
+        "visual": 1
+      },
+      "afterReload": {
+        "url": "http://127.0.0.1:3000/",
+        "home": 1,
+        "visual": 0
+      },
+      "comparisonOverflow": {
+        "page": 0,
+        "table": 595
+      },
+      "errors": []
+    }
+  ],
+  "races": [
+    {
+      "index": 0,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-2"
+      ]
+    },
+    {
+      "index": 1,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-2"
+      ]
+    },
+    {
+      "index": 2,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-1"
+      ]
+    },
+    {
+      "index": 3,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-1"
+      ]
+    },
+    {
+      "index": 4,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-1"
+      ]
+    },
+    {
+      "index": 5,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-1"
+      ]
+    },
+    {
+      "index": 6,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-2"
+      ]
+    },
+    {
+      "index": 7,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-1"
+      ]
+    },
+    {
+      "index": 8,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-2"
+      ]
+    },
+    {
+      "index": 9,
+      "count": 1,
+      "values": [
+        "saf-observation-1-2-property-2"
+      ]
+    }
+  ]
+}

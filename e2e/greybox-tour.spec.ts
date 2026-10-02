@@ -79,6 +79,11 @@ test('Greybox walking, panorama/model, hover, drag, touch, keyboard and history'
   await expect(page).toHaveURL(/point=bedroom/);
   await page.screenshot({ path: `output/greybox-${info.project.name.replaceAll(' ', '-').toLowerCase()}.png` });
   expect(errors).toEqual([]);
+  await expect(page.locator('.saf-chessboard-fab')).toBeVisible();
+  await page.locator('.saf-chessboard-fab').click();
+  await expect(page).toHaveURL(/\/saf\/chessboard$/);
+  await expect(page.getByRole('heading', { name: 'Шахматка планировок.', exact: true })).toBeVisible();
+  await expect(page.locator('.saf-chessboard-fab')).toHaveCount(0);
 });
 
 test('Walls select a nearby scan, preserve heading, and dragging never walks', async ({ page }, info) => {
